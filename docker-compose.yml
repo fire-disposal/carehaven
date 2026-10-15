@@ -15,8 +15,9 @@ services:
       - carehaven_data:/pb/pb_data
 
     # 只监听回环，由宿主机的 Caddy/Nginx 负责 HTTPS 与域名
+    # 宿主端口 8200：8080/8090 已被同机其他服务占用（勿改回 8090）
     ports:
-      - '127.0.0.1:8090:8090'
+      - '127.0.0.1:8200:8090'
 
     environment:
       TZ: Asia/Shanghai
