@@ -92,51 +92,27 @@ ssh app-host 'set -a; . /srv/carehaven/.env; set +a; \
 
 ## 五、备份
 
-- **部署前备份**：由 `deploy.sh` 自动完成
-- **日常备份**：宿主机 cron 调 `docker/backup.sh`（会把备份导出到宿主机，卷损坏时仍能恢复）
-
-```bash
-ssh app-host 'echo "15 3 * * * cd /srv/carehaven && bash backup.sh >> /var/log/carehaven-backup.log 2>&1" | crontab -'
-```
+- **部署前备份**：由 `deploy.sh` 自动完成（含导出到宿主机）
+- **日常备份**：已登记 server-ops 统一账本，每日 04:30 自动执行（见上）
 
 恢复：管理后台 `/_/` → Settings → Backups 点恢复最直观（**不要在运行中直接 cp SQLite 主库文件**）。
 
-### 接入 server-ops 统一备份（建议，本项目尚未登记）
+### 统一备份（**已登记 server-ops**，2026-10-15）
 
-服务器上已有 `/opt/server-ops` 统一备份账本，且 crontab 是它的**受管区块**——
-手改 crontab 会在下次 `ops.sh sync` 时被覆盖、并让 doctor 报漂移。因此**不要手加 cron**，
-按下面两条登记到 `/opt/server-ops/backup/datasets.toml`（与同机其他项目的两个数据集同构；本项目两类备份的产物名天然不同，
-不会撞 INV-12 的「一目录一 pruner」）：
+日常备份已纳入服务器的统一备份账本，不再手改 crontab（手改会被 `ops.sh sync` 覆盖并让 doctor 报漂移）：
 
-```toml
-[[dataset]]
-name = "carehaven-data"
-owner = "carehaven"
-note = "PocketBase 全量备份（SQLite + 上传文件 + 附件），zip；每日周期备份"
-dir = "/srv/carehaven/backups"
-glob = "auto-*.zip"
-freshness_hours = 80
-budget_mb = 512
-command = ["bash", "backup.sh"]
-cwd = "/srv/carehaven"
-timeout_s = 600
-verify = ["unzip", "-t"]
-restore_hint = "管理后台 /_/ → Settings → Backups 恢复；或把 zip 放回容器 /pb/pb_data/backups 后从后台恢复"
+| 项 | 值 |
+|---|---|
+| 数据集 | `carehaven-data`（声明在 `/root/server-ops/backup/datasets.toml`） |
+| 调度 | 受管 cron：**每日 04:30** 宿主时间（排在同机其他数据集之后，避免相互争 I/O） |
+| 命令 | `cd /opt/server-ops && /usr/bin/python3 backup/cli.py run carehaven-data --notify` |
+| 产物 | `/srv/carehaven/backups/*.zip` —— `auto-*`（每日）+ `predeploy-*`（每次部署，`deploy.sh` 产出并导出） |
+| 校验 | `verify = ["unzip", "-t"]`，产物与账本由 CLI 代记 |
+| 手工跑一次 | `cd /opt/server-ops && /usr/bin/python3 backup/cli.py run carehaven-data` |
+| 查看状态 | `cd /opt/server-ops && /usr/bin/python3 backup/cli.py status` |
 
-[[dataset]]
-name = "carehaven-predeploy"
-owner = "carehaven"
-note = "发布前快照（发布驱动，不判过期）——由 docker/deploy.sh 在切换镜像前产生并导出宿主机"
-dir = "/srv/carehaven/backups"
-glob = "predeploy-*.zip"
-cycle_kinds = ["pre-deploy"]
-release_driven = true
-budget_mb = 0          # 与 carehaven-data 同盘，预算只算一次
-verify = ["unzip", "-t"]
-restore_hint = "同上"
-```
-
-登记后按 server-ops 的常规流程同步（`ops.sh sync`），由它负责排程与记账。
+恢复：管理后台 `/_/` → Settings → Backups；或把 zip 放回容器 `/pb/pb_data/backups` 再从后台恢复。
+（**不要在运行中直接 cp SQLite 主库文件**。）
 
 ---
 
