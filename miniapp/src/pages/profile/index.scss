@@ -66,6 +66,32 @@
 
 /* ---------- 状态提示 ---------- */
 
+/* ---------- 微信绑定（仅小程序端） ---------- */
+
+.pf-wechat-text {
+  flex: 1;
+  padding-right: $sp-3;
+}
+
+.pf-wechat-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+  margin-bottom: 4rpx;
+}
+
+.pf-wechat-desc {
+  display: block;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.6;
+}
+
+.pf-wechat-btn {
+  margin-top: $sp-3;
+}
+
 .pf-error-line {
   display: block;
   color: $c-red;

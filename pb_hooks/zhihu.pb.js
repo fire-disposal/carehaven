@@ -175,3 +175,27 @@ routerAdd('POST', '/api/zz/wechat/login', function (e) {
     return e.badRequestError(String(err && err.message ? err.message : err), null)
   }
 })
+
+// ---------------- 微信绑定（把 openid 绑到当前账号） ----------------
+// 需要登录态：先用邮箱登录，再绑定微信，实现跨端同账号。
+
+routerAdd(
+  'POST',
+  '/api/zz/wechat/bind',
+  function (e) {
+    const wechat = require(__hooks + '/lib/wechat.js')
+    const missing = wechat.missingEnv()
+    if (missing.length > 0) {
+      return e.json(503, { message: '微信登录未配置，缺少环境变量：' + missing.join(' / ') })
+    }
+    const info = e.requestInfo()
+    const body = info.body || {}
+    try {
+      const record = wechat.bindWithCode(info.auth ? info.auth.id : '', String(body.code || ''))
+      return e.json(200, { record: record })
+    } catch (err) {
+      return e.badRequestError(String(err && err.message ? err.message : err), null)
+    }
+  },
+  $apis.requireAuth()
+)

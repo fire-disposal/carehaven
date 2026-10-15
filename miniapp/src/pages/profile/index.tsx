@@ -8,6 +8,7 @@ import {
   getUser,
   isLoggedIn,
   logout,
+  wechatBind,
   type InterventionLog,
   type Level,
   type PhysioRecord,
@@ -15,6 +16,9 @@ import {
   type StressScore,
 } from '@/lib/api'
 import './index.scss'
+
+// 微信绑定只在小程序端有意义（网页端拿不到微信登录凭证），H5 下整块不渲染。
+const IS_WEAPP = Taro.getEnv() === Taro.ENV_TYPE.WEAPP
 
 // ---------- 文案表 ----------
 
@@ -121,6 +125,28 @@ export default function ProfilePage() {
   const [physioError, setPhysioError] = useState('')
   const [physioDone, setPhysioDone] = useState(false)
   const [savingPhysio, setSavingPhysio] = useState(false)
+
+  // 微信绑定（仅小程序端）：初始值取自本地会话里的用户记录
+  const [boundOpenid, setBoundOpenid] = useState(() => getUser()?.wechat_openid || '')
+  const [binding, setBinding] = useState(false)
+
+  async function bindWechat() {
+    if (binding) return
+    setBinding(true)
+    try {
+      const res = await Taro.login()
+      if (!res.code) {
+        throw new Error('未能获取微信登录凭证')
+      }
+      const updated = await wechatBind(res.code)
+      setBoundOpenid(updated.wechat_openid || '')
+      Taro.showToast({ title: '微信已绑定', icon: 'success' })
+    } catch (e) {
+      Taro.showToast({ title: e instanceof Error ? e.message : '绑定失败，请稍后重试', icon: 'none' })
+    } finally {
+      setBinding(false)
+    }
+  }
 
   const load = useCallback(async () => {
     if (!isLoggedIn()) {
@@ -334,6 +360,30 @@ export default function ProfilePage() {
             退出登录
           </View>
         </View>
+
+        {/* ---------- 微信绑定（仅小程序端） ---------- */}
+        {IS_WEAPP ? (
+          <View className="card pf-wechat">
+            <View className="row-between">
+              <View className="pf-wechat-text">
+                <Text className="pf-wechat-title">微信绑定</Text>
+                <Text className="pf-wechat-desc">
+                  {boundOpenid
+                    ? '已绑定微信，网页端与小程序使用同一个账号。'
+                    : '绑定后可用微信一键登录，并与网页端共用同一账号。'}
+                </Text>
+              </View>
+              <Text className={boundOpenid ? 'pill pill-green' : 'pill pill-primary'}>
+                {boundOpenid ? '已绑定' : '未绑定'}
+              </Text>
+            </View>
+            {!boundOpenid ? (
+              <View className={`btn-primary pf-wechat-btn ${binding ? 'busy' : ''}`} onClick={bindWechat}>
+                {binding ? '绑定中…' : '绑定微信'}
+              </View>
+            ) : null}
+          </View>
+        ) : null}
 
         {error && hasAnyData ? <Text className="pf-error-line">{error}</Text> : null}
 

@@ -15,6 +15,8 @@ export interface User {
   email: string
   name?: string
   avatar?: string
+  /** 微信 openid（绑定后存在；H5 端通常为空） */
+  wechat_openid?: string
 }
 
 // ---------------- 会话 ----------------
@@ -178,6 +180,20 @@ export async function wechatLogin(code: string): Promise<User> {
     data: { code },
   })
   setSession(res.token, res.record)
+  return res.record
+}
+
+/**
+ * 把微信绑定到当前登录账号（仅小程序端）。
+ * 用于跨端同账号：先用邮箱登录，再绑定微信，之后两端指向同一条 users 记录。
+ */
+export async function wechatBind(code: string): Promise<User> {
+  const res = await request<{ record: User }>('/api/zz/wechat/bind', {
+    method: 'POST',
+    data: { code },
+  })
+  // token 不变，但用户记录多了 openid，刷新本地会话以便界面立即反映绑定状态
+  setSession(getToken(), res.record)
   return res.record
 }
 

@@ -83,7 +83,40 @@ function loginWithCode(code) {
   }
 }
 
+/**
+ * 把微信身份绑定到「当前已登录账号」。
+ * 用于跨端同账号：先用邮箱登录（H5 或小程序），再在小程序里绑定微信，
+ * 之后两端都指向同一条 users 记录。
+ * 若该 openid 已属于别的账号，拒绝绑定并提示直接用它登录——避免悄悄把两个账号合并。
+ */
+function bindWithCode(userId, code) {
+  if (!userId) {
+    throw new Error('缺少当前登录账号')
+  }
+  if (!code) {
+    throw new Error('缺少微信登录凭证 code')
+  }
+
+  const session = exchangeCode(code)
+  const owner = findByOpenid(session.openid)
+  if (owner && owner.id !== userId) {
+    throw new Error('该微信已绑定到其他账号，请直接使用微信登录')
+  }
+
+  const user = $app.findRecordById('users', userId)
+  user.set('wechat_openid', session.openid)
+  if (session.unionid) {
+    user.set('wechat_unionid', session.unionid)
+  }
+  if (!user.get('verified')) {
+    user.set('verified', true)
+  }
+  $app.save(user)
+  return user
+}
+
 module.exports = {
   loginWithCode: loginWithCode,
+  bindWithCode: bindWithCode,
   missingEnv: configError,
 }
