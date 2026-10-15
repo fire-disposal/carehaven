@@ -111,3 +111,21 @@ routerAdd(
   },
   $apis.requireAuth()
 )
+
+// ---------------- 帖子点赞（服务端自增） ----------------
+// posts 的 updateRule 只允许作者改自己的帖子，因此点赞不能由客户端 PATCH，
+// 改由服务端路由自增计数。
+
+routerAdd(
+  'POST',
+  '/api/zz/posts/{id}/like',
+  function (e) {
+    const postId = e.request.pathValue('id')
+    const post = $app.findRecordById('posts', postId)
+    const likes = Number(post.get('likes')) || 0
+    post.set('likes', likes + 1)
+    $app.save(post)
+    return e.json(200, { likes: likes + 1 })
+  },
+  $apis.requireAuth()
+)

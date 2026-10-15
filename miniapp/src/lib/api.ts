@@ -296,10 +296,41 @@ export const api = {
     return res.items
   },
 
+  /** 读取系统配置（HPS 权重、三色阈值等），value 为 JSON 字段 */
+  async appConfig<T>(key: string, fallback: T): Promise<T> {
+    const res = await list<{ id: string; key: string; value: T; description: string }>('app_config', {
+      filter: `key = "${key}"`,
+      perPage: 1,
+    })
+    const row = res.items[0]
+    return row && row.value !== undefined && row.value !== null ? row.value : fallback
+  },
+
   // 生理数据
   async latestPhysio(): Promise<PhysioRecord | null> {
     const res = await list<PhysioRecord>('physio_records', { sort: '-date', perPage: 1 })
     return res.items[0] || null
+  },
+
+  /** 写入一条生理数据：手动录入或蓝牙设备同步（source 决定来源标注） */
+  createPhysioRecord(data: {
+    hrv: number
+    gsr: number
+    sleep_quality: number
+    steps: number
+    source: PhysioRecord['source']
+    measuredAt?: string
+  }): Promise<PhysioRecord> {
+    const user = getUser()
+    return create<PhysioRecord>('physio_records', {
+      user: user?.id,
+      date: data.measuredAt || new Date().toISOString().replace('T', ' '),
+      hrv: data.hrv,
+      gsr: data.gsr,
+      sleep_quality: data.sleep_quality,
+      steps: data.steps,
+      source: data.source,
+    })
   },
 
   // 打卡
@@ -412,6 +443,14 @@ export const api = {
       likes: 0,
       comments_count: 0,
     })
+  },
+
+  /**
+   * 点赞：由服务端路由自增计数。
+   * 不能直接 PATCH posts —— 该表的 updateRule 只允许作者修改自己的帖子。
+   */
+  likePost(postId: string): Promise<{ likes: number }> {
+    return request<{ likes: number }>(`/api/zz/posts/${postId}/like`, { method: 'POST' })
   },
 
   async comments(postId: string): Promise<Comment[]> {
