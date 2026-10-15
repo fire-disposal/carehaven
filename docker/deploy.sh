@@ -65,6 +65,14 @@ if [ "$HAD_RUNNING" = "1" ] && [ -f "$ENV_FILE" ]; then
         -d "{\"name\":\"$backup_name\"}" >/dev/null \
       && curl -fsS "$BASE_URL/api/backups" -H "Authorization: $token" | grep -q "$backup_name"; then
       log "备份完成：$backup_name"
+      # 导出到宿主机：备份只躺在数据卷里的话，卷损坏时会与数据一起丢失
+      mkdir -p "$APP_DIR/backups"
+      if docker cp "$CONTAINER:/pb/pb_data/backups/$backup_name" "$APP_DIR/backups/$backup_name" 2>/dev/null; then
+        log "已导出到 $APP_DIR/backups/$backup_name"
+      else
+        [ "$REQUIRE_BACKUP" = "1" ] && die "备份导出宿主机失败（$backup_name）"
+        warn "备份导出宿主机失败，备份仍在容器卷内"
+      fi
     else
       [ "$REQUIRE_BACKUP" = "1" ] && die "备份失败（REQUIRE_BACKUP=1 要求必须成功）"
       warn "备份失败，继续部署（如需强制，请设 REQUIRE_BACKUP=1）"

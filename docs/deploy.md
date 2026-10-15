@@ -92,6 +92,43 @@ ssh app-host 'echo "15 3 * * * cd /srv/carehaven && bash backup.sh >> /var/log/c
 
 恢复：管理后台 `/_/` → Settings → Backups 点恢复最直观（**不要在运行中直接 cp SQLite 主库文件**）。
 
+### 接入 server-ops 统一备份（建议，本项目尚未登记）
+
+服务器上已有 `/opt/server-ops` 统一备份账本，且 crontab 是它的**受管区块**——
+手改 crontab 会在下次 `ops.sh sync` 时被覆盖、并让 doctor 报漂移。因此**不要手加 cron**，
+按下面两条登记到 `/opt/server-ops/backup/datasets.toml`（与同机其他项目的两个数据集同构；本项目两类备份的产物名天然不同，
+不会撞 INV-12 的「一目录一 pruner」）：
+
+```toml
+[[dataset]]
+name = "carehaven-data"
+owner = "carehaven"
+note = "PocketBase 全量备份（SQLite + 上传文件 + 附件），zip；每日周期备份"
+dir = "/srv/carehaven/backups"
+glob = "auto-*.zip"
+freshness_hours = 80
+budget_mb = 512
+command = ["bash", "backup.sh"]
+cwd = "/srv/carehaven"
+timeout_s = 600
+verify = ["unzip", "-t"]
+restore_hint = "管理后台 /_/ → Settings → Backups 恢复；或把 zip 放回容器 /pb/pb_data/backups 后从后台恢复"
+
+[[dataset]]
+name = "carehaven-predeploy"
+owner = "carehaven"
+note = "发布前快照（发布驱动，不判过期）——由 docker/deploy.sh 在切换镜像前产生并导出宿主机"
+dir = "/srv/carehaven/backups"
+glob = "predeploy-*.zip"
+cycle_kinds = ["pre-deploy"]
+release_driven = true
+budget_mb = 0          # 与 carehaven-data 同盘，预算只算一次
+verify = ["unzip", "-t"]
+restore_hint = "同上"
+```
+
+登记后按 server-ops 的常规流程同步（`ops.sh sync`），由它负责排程与记账。
+
 ---
 
 ## 六、回滚
