@@ -1,0 +1,322 @@
+@use '@/styles/tokens.scss' as *;
+
+.hello {
+  margin-bottom: $sp-3;
+}
+
+.hello-name {
+  display: block;
+  font-size: $fs-h1;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.hello-date {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $fs-small;
+  color: $c-muted;
+}
+
+.error-line {
+  display: block;
+  color: $c-red;
+  font-size: $fs-small;
+  background: $c-red-bg;
+  border-radius: $radius-sm;
+  padding: $sp-2 $sp-3;
+  margin-bottom: $sp-2;
+}
+
+/* ---------- 压力状态卡片 ---------- */
+
+.stress-card {
+  border-radius: $radius-lg;
+  padding: $sp-4;
+  margin-bottom: $sp-3;
+  border: 2rpx solid transparent;
+  box-shadow: $shadow-lg;
+}
+
+.stress-card.level-green {
+  background: $c-green-bg;
+  border-color: $c-green-line;
+}
+.stress-card.level-yellow {
+  background: $c-yellow-bg;
+  border-color: $c-yellow-line;
+}
+.stress-card.level-red {
+  background: $c-red-bg;
+  border-color: $c-red-line;
+}
+
+.stress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stress-label {
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.stress-body {
+  display: flex;
+  align-items: baseline;
+  margin: $sp-2 0 $sp-1;
+}
+
+.stress-value {
+  font-size: $fs-display;
+  font-weight: 700;
+  line-height: 1.1;
+  color: $c-text;
+}
+
+.stress-unit {
+  margin-left: $sp-2;
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.level-green .stress-value {
+  color: $c-green;
+}
+.level-yellow .stress-value {
+  color: $c-yellow;
+}
+.level-red .stress-value {
+  color: $c-red;
+}
+
+.stress-advice {
+  display: block;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+.stress-bar {
+  margin-top: $sp-3;
+  padding-top: $sp-3;
+  border-top: 2rpx solid rgba(28, 43, 42, 0.08);
+}
+
+.stress-bar-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: $sp-1;
+}
+
+.bar-name {
+  width: 72rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+.bar-track {
+  flex: 1;
+  height: 14rpx;
+  background: rgba(28, 43, 42, 0.08);
+  border-radius: 999rpx;
+  overflow: hidden;
+  margin: 0 $sp-2;
+}
+
+.bar-fill {
+  height: 100%;
+  background: $c-primary;
+  border-radius: 999rpx;
+}
+
+.bar-value {
+  width: 60rpx;
+  text-align: right;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+/* ---------- 生理面板 ---------- */
+
+.physio-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 (-$sp-1) $sp-2;
+}
+
+.physio-tile {
+  width: calc(50% - #{$sp-2});
+  margin: $sp-1;
+  background: $c-card;
+  border-radius: $radius;
+  padding: $sp-3;
+  box-shadow: $shadow;
+  box-sizing: border-box;
+}
+
+.tile-name {
+  font-size: $fs-small;
+  color: $c-muted;
+}
+
+.tile-value-row {
+  display: flex;
+  align-items: baseline;
+  margin-top: 4rpx;
+}
+
+.tile-value {
+  font-size: 52rpx;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.tile-unit {
+  margin-left: 6rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+/* ---------- 打卡 ---------- */
+
+.checkin-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.checkin-text {
+  flex: 1;
+  padding-right: $sp-3;
+}
+
+.checkin-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+  margin-bottom: 4rpx;
+}
+
+.checkin-btn {
+  width: 200rpx;
+  flex: none;
+}
+
+.form-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 600;
+  margin-bottom: $sp-2;
+}
+
+.mood-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $sp-3;
+}
+
+.mood-item {
+  flex: 1;
+  margin: 0 4rpx;
+  padding: $sp-2 0;
+  border-radius: $radius-sm;
+  border: 2rpx solid $c-border;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fafcfb;
+}
+
+.mood-item.picked {
+  border-color: $c-primary;
+  background: $c-primary-light;
+}
+
+.mood-icon {
+  font-size: 46rpx;
+  line-height: 1.2;
+}
+
+.mood-label {
+  margin-top: 4rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+.mood-item.picked .mood-label {
+  color: $c-primary-dark;
+  font-weight: 600;
+}
+
+.slider-row {
+  margin-bottom: $sp-3;
+}
+
+.form-label {
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.slider-value {
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-primary;
+}
+
+.num-row {
+  display: flex;
+  margin-bottom: $sp-3;
+}
+
+.num-field {
+  flex: 1;
+  margin-right: $sp-2;
+}
+
+.num-field:last-child {
+  margin-right: 0;
+}
+
+.num-input {
+  margin-top: 6rpx;
+  height: 88rpx;
+  padding: 0 $sp-3;
+  background: #f7faf9;
+  border: 2rpx solid $c-border;
+  border-radius: $radius-sm;
+  font-size: $fs-body;
+}
+
+.note-area {
+  width: 100%;
+  height: 140rpx;
+  margin-top: 6rpx;
+  padding: $sp-2;
+  background: #f7faf9;
+  border: 2rpx solid $c-border;
+  border-radius: $radius-sm;
+  font-size: $fs-small;
+  box-sizing: border-box;
+}
+
+.form-actions {
+  display: flex;
+  margin-top: $sp-3;
+}
+
+.action {
+  flex: 1;
+  margin-right: $sp-2;
+}
+
+.action:last-child {
+  margin-right: 0;
+}
+
+.busy {
+  opacity: 0.6;
+}

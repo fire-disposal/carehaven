@@ -1,0 +1,15 @@
+{
+  "miniprogramRoot": "./dist",
+  "projectname": "zhihuyizhan",
+  "description": "智护忆站 —— 失智症家庭照护者压力监测与个性化支持系统",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": false,
+    "es6": false,
+    "enhance": false,
+    "compileHotReLoad": false,
+    "postcss": false,
+    "minified": false
+  },
+  "compileType": "miniprogram"
+}

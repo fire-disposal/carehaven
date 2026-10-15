@@ -1,0 +1,43 @@
+@use '@/styles/tokens.scss' as *;
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 128rpx;
+  display: flex;
+  background: #fff;
+  border-top: 2rpx solid $c-border;
+  box-shadow: 0 -2rpx 16rpx rgba(28, 43, 42, 0.05);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 100;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: $c-muted;
+  font-size: $fs-tiny;
+}
+
+.nav-item.active {
+  color: $c-primary;
+}
+
+.nav-icon {
+  font-size: 44rpx;
+  line-height: 1.1;
+}
+
+.nav-label {
+  margin-top: 4rpx;
+  font-weight: 600;
+}
+
+.nav-item.active .nav-label {
+  color: $c-primary-dark;
+}

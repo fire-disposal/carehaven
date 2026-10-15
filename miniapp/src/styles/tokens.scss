@@ -1,0 +1,50 @@
+// 设计令牌（Design Tokens）—— 只放变量，不放任何选择器。
+// 面向中老年照护者：正文 ≥32rpx、关键数字超大、对比度符合 WCAG AA、
+// 主色取提案要求的「柔和蓝绿色调」。
+
+// ---- 主色 ----
+$c-primary: #2e8b84;
+$c-primary-light: #e6f2f0;
+$c-primary-dark: #1f6b65;
+
+// ---- 三色压力分层（文字色均按浅底上的对比度挑选）----
+$c-green: #23795a;
+$c-green-bg: #e7f5ee;
+$c-green-line: #9fd6bd;
+
+$c-yellow: #9a6410;
+$c-yellow-bg: #fdf3e0;
+$c-yellow-line: #ecc98a;
+
+$c-red: #a83a34;
+$c-red-bg: #fbebea;
+$c-red-line: #e6a9a5;
+
+// ---- 中性色 ----
+$c-bg: #f4f8f7;
+$c-card: #ffffff;
+$c-text: #1c2b2a;
+$c-text-2: #45585a;
+$c-muted: #71868a;
+$c-border: #e3ecea;
+
+// ---- 字号 ----
+$fs-display: 96rpx; // 关键数值（HPS 等）
+$fs-h1: 44rpx;
+$fs-h2: 36rpx;
+$fs-body: 32rpx;
+$fs-small: 28rpx;
+$fs-tiny: 24rpx;
+
+// ---- 间距 / 圆角 / 阴影 ----
+$sp-1: 8rpx;
+$sp-2: 16rpx;
+$sp-3: 24rpx;
+$sp-4: 32rpx;
+$sp-5: 48rpx;
+
+$radius-sm: 16rpx;
+$radius: 24rpx;
+$radius-lg: 32rpx;
+$shadow: 0 4rpx 16rpx rgba(28, 43, 42, 0.06);
+$shadow-lg: 0 8rpx 28rpx rgba(28, 43, 42, 0.1);
