@@ -21,15 +21,14 @@ text {
 /* ---------------------------------------------------------------------------
    H5 宽屏适配（横屏手机 / 平板 / 桌面浏览器）
    字号放大问题由 Taro 官方配置解决（config/index.ts 的 pxtransform.maxRootSize
-   把根字号钉在手机档位 20.8px），因此这里只需处理「内容宽度」：
+   把根字号钉在手机档位 20.8px），这里只处理「内容宽度」：
 
-   超过手机宽度后，把应用列限制在一个阅读宽度内并居中——即你说的
-   「左右自动加边距」，而不是让卡片横向拉满（拉满会让一行字过长、卡片扁平化）。
-   上限取 560px：桌面/横屏下是正常的窄版网页观感，不会出现手机窄框那种
-   大片留白，也远小于「铺满 1440px」的夸张版式。
+   超过手机宽度后给左右边距，但**边距要随屏幕分级**：
+   固定 560px 在 1440 宽屏上会留下 440px×2 的空白，看起来像一条长条；
+   改为 720 / 880 两档，宽屏下边距收敛到 ~200–280px，是常见网页版式的观感。
 
    这几处宽度必须是**固定 CSS 像素**：写大写的 PX 让 Taro 的 pxtransform
-   跳过换算（Taro 官方约定），否则会变成 rem 而随根字号变化。
+   跳过换算（Taro 官方约定），否则会被转成 rem 而随根字号变化。
    --------------------------------------------------------------------------- */
 @media screen and (min-width: 700px) {
   body {
@@ -37,7 +36,7 @@ text {
   }
 
   #app {
-    max-width: 560PX;
+    max-width: 720PX;
     min-height: 100vh;
     margin: 0 auto;
     background: #f4f8f7;
@@ -46,9 +45,31 @@ text {
 
   /* 底部导航是 fixed 定位（相对视口），需与内容列同宽同轴 */
   .bottom-nav {
-    width: 560PX;
+    width: 720PX;
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%);
+  }
+}
+
+/* 大屏再放宽一档，避免两侧留白过当 */
+@media screen and (min-width: 1280px) {
+  #app {
+    max-width: 880PX;
+  }
+
+  .bottom-nav {
+    width: 880PX;
+  }
+}
+
+/* 超宽屏（1920+）再放宽一档 */
+@media screen and (min-width: 1800px) {
+  #app {
+    max-width: 1040PX;
+  }
+
+  .bottom-nav {
+    width: 1040PX;
   }
 }
