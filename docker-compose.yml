@@ -44,5 +44,7 @@ services:
 
 volumes:
   carehaven_data:
-    # 固定卷名：重命名项目或目录都不会另建空卷把数据晾在一边
+    # 固定卷名 + external：由部署脚本确保存在，compose 不自建
+    # （重命名项目或目录都不会另建空卷把数据晾在一边）
+    external: true
     name: carehaven_data

@@ -128,6 +128,14 @@ jobs:
             docker-compose.yml docker/deploy.sh docker/backup.sh \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/carehaven/"
 
+      - name: 服务器 GHCR 登录（拉取私有镜像）
+        # 服务器上那份 docker 凭据会过期（2026-10-15 实测已失效且影响范围波及既有项目），
+        # 因此每次部署都由流水线重新登录，不让部署依赖服务器上的历史残留状态。
+        run: |
+          printf '%s' "${{ secrets.GHCR_TOKEN }}" | \
+            ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+              "docker login ghcr.io -u '${{ github.actor }}' --password-stdin"
+
       - name: 执行部署
         run: |
           ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
