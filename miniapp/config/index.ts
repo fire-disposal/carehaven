@@ -48,6 +48,18 @@ export default defineConfig<'vite'>(async (merge) => {
         mode: 'hash',
       },
       postcss: {
+        // Taro 注入的缩放脚本按 clamp(40 × min(视口宽, 视口高) / 750, min, max) 设置根字号。
+        // 默认 max=40：宽屏下 min 取到视口高度（如 800）→ 字号顶到 40px，
+        // 相对手机竖屏（20.8px）整页放大近 2 倍，即「横屏/桌面过度变形」。
+        // 把上限钉在手机竖屏档位（390 / 750 × 40 = 20.8），
+        // 并放宽下限让小屏手机按比例缩小而不是硬撑 20px。
+        pxtransform: {
+          enable: true,
+          config: {
+            maxRootSize: 20.8,
+            minRootSize: 12,
+          },
+        },
         autoprefixer: {
           enable: true,
           config: {},

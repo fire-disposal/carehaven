@@ -17,3 +17,30 @@ view,
 text {
   box-sizing: border-box;
 }
+
+/* ---------------------------------------------------------------------------
+   H5 宽屏适配（横屏手机 / 平板 / 桌面浏览器）
+   字号放大问题交给 Taro 官方配置解决（config/index.ts 里 pxtransform 的
+   maxRootSize = 手机竖屏档位），这里只负责把内容收进一列：
+   超过手机宽度后，把 html 约束成 750rpx（= 18.75rem，手机设计宽度）并居中，
+   两侧用浅色底衬托。因为字号的放大已被上限钉住，rem 与根字号之间不存在循环依赖。
+   --------------------------------------------------------------------------- */
+@media screen and (min-width: 500px) {
+  html {
+    max-width: 18.75rem; // 750rpx —— 手机设计宽度
+    min-height: 100vh;
+    margin: 0 auto;
+    background: #e6eeec;
+    box-shadow: 0 0 48px rgba(28, 43, 42, 0.12);
+  }
+
+  /* 底部导航是 fixed 定位，需手动对齐到同一列：
+     1) 显式给出宽度（只留 left 会让 fixed 元素变成收缩宽度）
+     2) 视口居中 —— 内容列本身也是视口居中，两者因此对齐 */
+  .bottom-nav {
+    width: 18.75rem; // 750rpx，与内容列同宽
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%);
+  }
+}
