@@ -68,8 +68,17 @@ Actions → Run workflow → 自动部署
 ```bash
 ssh app-host 'mkdir -p /srv/carehaven'
 ssh app-host 'docker volume create carehaven_data'
-ssh app-host 'printf "SUPERUSER_EMAIL=admin@care.example.com\nSUPERUSER_PASSWORD=<强口令>\n" > /srv/carehaven/.env && chmod 600 /srv/carehaven/.env'
+ssh app-host 'printf "SUPERUSER_EMAIL=admin@care.example.com\nSUPERUSER_PASSWORD=<强口令>\nWECHAT_APP_ID=\nWECHAT_APP_SECRET=\n" > /srv/carehaven/.env && chmod 600 /srv/carehaven/.env'
 ```
+
+`.env` 的键：
+
+| 键 | 用途 |
+|---|---|
+| `SUPERUSER_EMAIL` / `SUPERUSER_PASSWORD` | 备份脚本与后台登录（`docker/deploy.sh`、`docker/backup.sh` 读取） |
+| `WECHAT_APP_ID` / `WECHAT_APP_SECRET` | 微信一键登录；留空则接口返回 503 并说明缺少哪个变量（详见 docs/wechat-onboarding.md） |
+
+compose 会自动读取同目录 `.env` 做变量插值，**改完 `.env` 后 `docker compose up -d` 即生效**（无需重建镜像）。
 
 `.env` 里的超级用户口令用于备份与后台登录，**口令在服务器本地生成、不进 git**。
 容器起来之后创建同口令的超级用户：

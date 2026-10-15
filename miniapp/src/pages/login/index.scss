@@ -15,13 +15,13 @@
 }
 
 .brand-logo {
-  font-size: 96rpx;
+  font-size: $icon-hero;
   line-height: 1;
   margin-bottom: $sp-2;
 }
 
 .brand-name {
-  font-size: 52rpx;
+  font-size: 48rpx;
   font-weight: 700;
   color: $c-primary-dark;
   letter-spacing: 4rpx;
@@ -35,6 +35,45 @@
 
 .form {
   padding: $sp-4 $sp-4 $sp-5;
+}
+
+/* ---------- 微信一键登录（仅小程序端渲染）---------- */
+
+.wechat-block {
+  margin-bottom: $sp-4;
+}
+
+.btn-wechat {
+  height: 96rpx;
+  line-height: 96rpx;
+  text-align: center;
+  border-radius: $radius;
+  background: #07c160; // 微信品牌绿
+  color: #fff;
+  font-size: $fs-h2;
+  font-weight: 600;
+}
+
+.btn-wechat.busy {
+  opacity: 0.6;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin-top: $sp-4;
+}
+
+.divider-line {
+  flex: 1;
+  height: 2rpx;
+  background: $c-border;
+}
+
+.divider-text {
+  margin: 0 $sp-2;
+  font-size: $fs-tiny;
+  color: $c-muted;
 }
 
 .field {

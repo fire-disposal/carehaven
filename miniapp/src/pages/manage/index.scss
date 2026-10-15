@@ -250,14 +250,14 @@
 .mg-emoji {
   flex: none;
   width: 84rpx;
-  font-size: 56rpx;
+  font-size: $icon-card;
   line-height: 1.1;
   text-align: center;
 }
 
 .mg-it.compact .mg-emoji {
   width: 72rpx;
-  font-size: 48rpx;
+  font-size: $icon-sm;
 }
 
 .mg-it-main {
@@ -387,7 +387,7 @@
 }
 
 .mg-star-icon {
-  font-size: 44rpx;
+  font-size: $icon-sm;
   line-height: 1.1;
   color: $c-muted;
 }

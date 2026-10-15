@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import { Input, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { login, register } from '@/lib/api'
+import { login, register, wechatLogin } from '@/lib/api'
 import './index.scss'
+
+// 微信一键登录只在小程序端可用（网页端拿不到微信登录凭证），
+// 因此在 H5 构建下这个入口整体不渲染。
+const IS_WEAPP = Taro.getEnv() === Taro.ENV_TYPE.WEAPP
 
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -40,6 +44,24 @@ export default function LoginPage() {
     }
   }
 
+  async function wechatAuth() {
+    if (busy) return
+    setError('')
+    setBusy(true)
+    try {
+      const res = await Taro.login()
+      if (!res.code) {
+        throw new Error('未能获取微信登录凭证')
+      }
+      await wechatLogin(res.code)
+      Taro.reLaunch({ url: '/pages/index/index' })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '微信登录失败，请稍后重试')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <View className="login">
       <View className="brand">
@@ -47,6 +69,19 @@ export default function LoginPage() {
         <Text className="brand-name">智护忆站</Text>
         <Text className="brand-slogan">照护者的压力监测与支持系统</Text>
       </View>
+
+      {IS_WEAPP && (
+        <View className="wechat-block">
+          <View className={`btn-wechat ${busy ? 'busy' : ''}`} onClick={wechatAuth}>
+            微信一键登录
+          </View>
+          <View className="divider">
+            <View className="divider-line" />
+            <Text className="divider-text">或使用邮箱登录</Text>
+            <View className="divider-line" />
+          </View>
+        </View>
+      )}
 
       <View className="card-lg form">
         <View className="field">

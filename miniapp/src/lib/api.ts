@@ -168,6 +168,19 @@ export function logout() {
   Taro.reLaunch({ url: '/pages/login/index' })
 }
 
+/**
+ * 微信一键登录（仅小程序端）：用 `Taro.login()` 的 code 换本系统会话。
+ * 网页端拿不到微信登录凭证，因此 H5 界面不展示该入口。
+ */
+export async function wechatLogin(code: string): Promise<User> {
+  const res = await request<AuthResult>('/api/zz/wechat/login', {
+    method: 'POST',
+    data: { code },
+  })
+  setSession(res.token, res.record)
+  return res.record
+}
+
 // ---------------- 领域类型 ----------------
 
 export type Level = 'green' | 'yellow' | 'red'

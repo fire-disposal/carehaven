@@ -78,27 +78,36 @@ request 合法域名:  https://care.example.com
 
 （H5 与 API 同域，只需一条。小程序请求不受 CORS 限制，无需额外 CORS 配置。）
 
-### 3. 微信登录（后端已预留位置）
+### 3. 微信登录（**已实装**，待配置凭证）
 
-当前登录是**邮箱 + 密码**（`miniapp/src/pages/login/index.tsx` + `api.login`）。
-换成微信登录需要新增一段服务端逻辑，位置在 `pb_hooks/`：
+一键登录的后端与前端都已就位，只差 AppID/AppSecret：
 
+| 环节 | 位置 | 状态 |
+|---|---|---|
+| 后端接口 | `POST /api/zz/wechat/login`，逻辑在 `pb_hooks/lib/wechat.js` | ✅ 已跑通（未配凭证时返回 503 并说明缺少哪个变量） |
+| 身份字段 | `users.wechat_openid` / `wechat_unionid`（`pb_migrations/1730000200_wechat_auth.js`） | ✅ 已迁移，openid 带唯一部分索引 |
+| 前端入口 | 登录页「微信一键登录」，`Taro.login()` → 换会话 | ✅ 小程序端渲染，**H5 端自动不展示** |
+
+配置方式（服务器上，密钥不进 git）：
+
+```bash
+ssh app-host 'printf "%s\n%s\n" "WECHAT_APP_ID=wx..." "WECHAT_APP_SECRET=..." >> /srv/carehaven/.env'
+ssh app-host 'cd /srv/carehaven && docker compose up -d'   # compose 会自动读取同目录 .env 注入容器
 ```
-POST /api/zz/wechat/login   { code }
-  1. 用 APPID/APPSECRET 调 https://api.weixin.qq.com/sns/jscode2session 换 openid
-  2. 按 openid 找 users 记录：命中则登录；未命中则创建（邮箱可留空，openid 存自定义字段）
-  3. 用 record.newAuthToken() 签发 PocketBase token 返回
-```
+
+之后在小程序里点「微信一键登录」即可完成 `code → openid → 本地会话`。
 
 注意事项：
 
-- **openid 必须绑定到同一条 users 记录**，否则同一人用 H5 与小程序会变成两个账号；
-  若将来做多端统一，建议同时保存 unionid（需开放平台绑定）。
-- 小程序端用 `Taro.login()` 拿 code，再调上面这个接口；
-- APPID/APPSECRET 放服务器 `/srv/carehaven/.env`，不要进 git；
-- 现有的邮箱登录**保留**（管理员/演示账号仍需要它）。
+- **openid 绑定在同一条 users 记录上**：同一人用邮箱与微信登录会落到两条记录（`wechat_openid` 唯一，邮箱也唯一）。
+  要做到跨端同账号，需再做一步「已登录时绑定微信」（在「我的」里加绑定入口），这是后续工作，不是当前实现。
+- 新建的微信用户邮箱为 `<openid>@wechat.local`（占位，满足 users 集合的唯一约束），日后可补绑真实邮箱。
+- 若将来做多端统一，建议同时保存 `unionid`（需在微信开放平台绑定同一主体下的多个应用）。
+- 小程序端用 `Taro.login()` 取 code；接口地址与 H5 共用同一域名，无需额外配置。
 
-### 4. 订阅消息（消息推送）
+## 三·补 语音与订阅消息
+
+### 订阅消息（消息推送）
 
 - 需要在微信后台申请模板（如「测评提醒」），拿到模板 ID；
 - 每次下发都需用户**逐次授权**（`wx.requestSubscribeMessage`），配额有限、不能当推送通道用；

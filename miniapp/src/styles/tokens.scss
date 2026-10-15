@@ -36,6 +36,13 @@ $fs-body: 32rpx;
 $fs-small: 28rpx;
 $fs-tiny: 24rpx;
 
+// ---- 图标尺寸（emoji 的视觉重量按此统一；emoji 与汉字字重不同，需单独一档）----
+$icon-nav: 36rpx; // 底部导航
+$icon-sm: 40rpx; // 列表项 / 紧凑场景 / 星级
+$icon-card: 48rpx; // 卡片封面
+$icon-empty: 56rpx; // 空态与欢迎插画
+$icon-hero: 80rpx; // 首屏品牌主视觉
+
 // ---- 间距 / 圆角 / 阴影 ----
 $sp-1: 8rpx;
 $sp-2: 16rpx;

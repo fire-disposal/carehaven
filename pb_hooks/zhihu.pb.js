@@ -156,3 +156,22 @@ onRecordAfterDeleteSuccess(function (e) {
   }
   return e.next()
 }, 'comments')
+
+// ---------------- 微信一键登录（小程序端） ----------------
+// 小程序 wx.login 取 code → 这里换取 openid 并签发 PocketBase token。
+// 无需登录态（本身就是登录入口）；未配置 AppID/Secret 时返回 503 并说明原因。
+
+routerAdd('POST', '/api/zz/wechat/login', function (e) {
+  const wechat = require(__hooks + '/lib/wechat.js')
+  const missing = wechat.missingEnv()
+  if (missing.length > 0) {
+    return e.json(503, { message: '微信登录未配置，缺少环境变量：' + missing.join(' / ') })
+  }
+  const info = e.requestInfo()
+  const body = info.body || {}
+  try {
+    return e.json(200, wechat.loginWithCode(String(body.code || '')))
+  } catch (err) {
+    return e.badRequestError(String(err && err.message ? err.message : err), null)
+  }
+})

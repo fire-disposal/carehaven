@@ -297,14 +297,14 @@
 }
 
 .welcome-emoji {
-  font-size: 72rpx;
+  font-size: $icon-empty;
   line-height: 1.2;
 }
 
 .welcome-title {
   display: block;
   margin-top: $sp-2;
-  font-size: 40rpx;
+  font-size: $fs-h2;
   font-weight: 700;
   color: $c-text;
 }
@@ -364,7 +364,7 @@
 }
 
 .state-emoji {
-  font-size: 72rpx;
+  font-size: $icon-empty;
   line-height: 1.2;
 }
 
@@ -574,7 +574,7 @@
 }
 
 .qa-send-text {
-  font-size: 38rpx;
+  font-size: $fs-h2;
   font-weight: 700;
   color: #ffffff;
 }

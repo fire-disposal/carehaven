@@ -48,16 +48,19 @@ export default defineConfig<'vite'>(async (merge) => {
         mode: 'hash',
       },
       postcss: {
-        // Taro 注入的缩放脚本按 clamp(40 × min(视口宽, 视口高) / 750, min, max) 设置根字号。
-        // 默认 max=40：宽屏下 min 取到视口高度（如 800）→ 字号顶到 40px，
-        // 相对手机竖屏（20.8px）整页放大近 2 倍，即「横屏/桌面过度变形」。
-        // 把上限钉在手机竖屏档位（390 / 750 × 40 = 20.8），
-        // 并放宽下限让小屏手机按比例缩小而不是硬撑 20px。
+        // Taro 注入的缩放脚本形如：fontSize = clamp(2×baseFontSize × min(视口宽, 视口高) / 750, min, max)
+        // 默认 baseFontSize=20（即脚本里的 40/750），宽屏下 min 取到视口高度（如 800）
+        // → 字号顶到上限 40px，比手机竖屏（20.8px）大近 2 倍，这就是「宽屏/横屏变形」的成因。
+        //
+        // 只钉上限：maxRootSize = 390 / 750 × 40 = 20.8（手机竖屏档位）。
+        // ⚠️ 不要设 minRootSize —— Taro 会把 minRootSize 当作 baseFontSize 的取值
+        //   （baseFontSize = minRootSize >= 1 ? minRootSize : 20），
+        //   而那会一并改变构建期的 rem 换算基准，导致宽屏与手机的比例关系错乱
+        //   （实测 minRootSize=12 时缩放系数从 40 变 24，桌面字号反而比手机大 1.67 倍）。
         pxtransform: {
           enable: true,
           config: {
             maxRootSize: 20.8,
-            minRootSize: 12,
           },
         },
         autoprefixer: {
