@@ -17,7 +17,8 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/srv/carehaven}"
 ENV_FILE="$APP_DIR/.env"
 CONTAINER="${CONTAINER:-carehaven}"
-BASE_URL="${BASE_URL:-http://127.0.0.1:8090}"
+# 宿主端口为 8200（8090 已被同机其他服务占用）—— 必须与 compose 的端口映射一致
+BASE_URL="${BASE_URL:-http://127.0.0.1:8200}"
 KEEP_DAYS="${KEEP_DAYS:-14}"
 
 log() { printf '[backup] %s\n' "$*"; }

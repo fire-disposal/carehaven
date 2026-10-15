@@ -18,7 +18,8 @@ COMPOSE_FILE="$APP_DIR/docker-compose.yml"
 ENV_FILE="$APP_DIR/.env"
 CONTAINER="${CONTAINER:-carehaven}"
 VOLUME="${VOLUME:-carehaven_data}"
-BASE_URL="${BASE_URL:-http://127.0.0.1:8090}"
+# 宿主端口为 8200（8090 已被同机其他服务占用）—— 必须与 compose 的端口映射一致
+BASE_URL="${BASE_URL:-http://127.0.0.1:8200}"
 IMAGE="${IMAGE:?需要 IMAGE 环境变量（例如 ghcr.io/owner/repo:sha-abc12345）}"
 HEALTH_RETRIES="${HEALTH_RETRIES:-24}" # 24 × 5s = 最多等 2 分钟
 HEALTH_INTERVAL="${HEALTH_INTERVAL:-5}"
