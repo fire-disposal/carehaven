@@ -11,7 +11,7 @@
 ## 目录结构
 
 ```
-zhihuyizhan/
+carehaven/
 ├── pocketbase                 # 后端：单二进制（含后台 / 自动 REST / 鉴权 / 定时任务）
 ├── pb_migrations/             # 表结构与演示数据（JS 迁移，可复现）
 │   ├── 1730000000_init_schema.js
@@ -31,7 +31,7 @@ zhihuyizhan/
 ### 1. 后端
 
 ```bash
-cd zhihuyizhan
+cd carehaven
 ./pocketbase migrate up                 # 建表 + 灌初始数据
 ./pocketbase serve --http=127.0.0.1:8090
 ```
@@ -51,8 +51,26 @@ bun run build:weapp   # 微信小程序版：产物在 miniapp/dist，用开发�
 H5 开发期可直接把产物拷进 `pb_public/` 由 PocketBase 托管（同源，无跨域问题）：
 
 ```bash
-mkdir -p pb_public && cp -r miniapp/dist/* pb_public/
+bun run deploy:h5    # 构建 H5 并同步到 ../pb_public（一条命令）
 ```
+
+---
+
+## 部署（Docker + GitHub Actions）
+
+单容器：后端与 H5 产物打进同一个镜像，替换镜像标签即完成发布。
+
+```
+main 分支推送      → 自动构建镜像推送到 GHCR（不部署）
+Actions 手动触发   → 自动部署：备份 → 切换 → 健康检查 → 失败自动回滚
+```
+
+- 镜像：`ghcr.io/<owner>/<repo>:sha-<8位>`，单架构 linux/amd64，层缓存走 Actions cache
+- CI 相关文件：`Dockerfile`、`.dockerignore`、`docker-compose.yml`、`docker/{entrypoint,deploy,backup}.sh`、`.github/workflows/build-and-deploy.yml`
+- 需要的仓库 Secrets：`SERVER_HOST`、`SERVER_USER`、`SERVER_SSH_KEY`
+- 完整步骤、备份与回滚：见 **[docs/deploy-app-host.md](docs/deploy-app-host.md)**
+
+⚠️ 不要起多副本：PocketBase 的定时任务是进程内的，多副本会重复执行。
 
 ---
 

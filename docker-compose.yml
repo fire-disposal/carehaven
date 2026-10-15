@@ -1,0 +1,47 @@
+# 智护忆站 —— 单容器部署
+# 后端（PocketBase）与前端（H5 产物）在同一个镜像里，CI 只替换镜像标签。
+#
+# ⚠️ 不要起多个副本：PocketBase 的定时任务是进程内的，多副本会重复执行。
+#    需要扩展时改为「多副本只读 + 单一写副本」，或把定时任务挪出进程。
+
+services:
+  app:
+    image: __IMAGE__ # 由 CI 渲染为 ghcr.io/<owner>/<repo>:sha-<commit>
+    container_name: carehaven
+    restart: unless-stopped
+
+    volumes:
+      # 全部应用状态都在这里（SQLite + 上传文件 + 备份）
+      - carehaven_data:/pb/pb_data
+
+    # 只监听回环，由宿主机的 Caddy/Nginx 负责 HTTPS 与域名
+    ports:
+      - '127.0.0.1:8090:8090'
+
+    environment:
+      TZ: Asia/Shanghai
+      # goja 运行时池，单机原型 5 足够（默认 15 会多占内存）
+      PB_HOOKS_POOL: '5'
+
+    # 资源上限：留出余量但不与宿主机其他服务抢
+    mem_limit: 256m
+    cpus: 1.0
+
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:8090/api/health']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+
+    # 日志轮转，避免长期占用磁盘
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+volumes:
+  carehaven_data:
+    # 固定卷名：重命名项目或目录都不会另建空卷把数据晾在一边
+    name: carehaven_data

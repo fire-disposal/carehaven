@@ -1,0 +1,616 @@
+@use '@/styles/tokens.scss' as *;
+
+// 「我的」页样式。
+// 目标用户是中老年失智症家庭照护者：正文 ≥28rpx、辅助信息 ≥24rpx、
+// 可点区域 ≥88rpx、浅底上的文字统一用 $c-text-2 及以上对比度。
+// 类名统一加 pf- 前缀，避免与其他页面的样式在 H5 打包后互相覆盖。
+
+/* ---------- 用户卡 ---------- */
+
+.pf-user-top {
+  display: flex;
+  align-items: center;
+}
+
+.pf-avatar {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background: $c-primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56rpx;
+  flex: none;
+}
+
+.pf-user-info {
+  flex: 1;
+  margin-left: $sp-3;
+  min-width: 0;
+}
+
+.pf-user-name {
+  display: block;
+  font-size: $fs-h1;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.pf-user-email {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $fs-small;
+  color: $c-text-2;
+  word-break: break-all;
+}
+
+.pf-user-hint {
+  display: block;
+  margin-top: $sp-3;
+  padding: $sp-2;
+  background: #f7faf9;
+  border-radius: $radius-sm;
+  font-size: $fs-body;
+  color: $c-text-2;
+  line-height: 1.6;
+}
+
+.btn-ghost.pf-logout {
+  margin-top: $sp-3;
+  color: $c-red;
+  border-color: $c-red-line;
+  height: 96rpx;
+  line-height: 92rpx;
+}
+
+/* ---------- 状态提示 ---------- */
+
+.pf-error-line {
+  display: block;
+  color: $c-red;
+  background: $c-red-bg;
+  font-size: $fs-small;
+  line-height: 1.6;
+  border-radius: $radius-sm;
+  padding: $sp-2 $sp-3;
+  margin-bottom: $sp-2;
+}
+
+.pf-success-line {
+  display: block;
+  color: $c-green;
+  background: $c-green-bg;
+  font-size: $fs-small;
+  line-height: 1.6;
+  border-radius: $radius-sm;
+  padding: $sp-2 $sp-3;
+  margin-bottom: $sp-2;
+}
+
+.pf-error-card {
+  border: 2rpx solid $c-red-line;
+}
+
+.pf-error-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.pf-error-desc {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-small;
+  color: $c-red;
+  line-height: 1.6;
+}
+
+.btn-ghost.pf-retry {
+  margin-top: $sp-3;
+}
+
+.pf-empty-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.pf-empty-desc {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-body;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+.btn-ghost.pf-empty-action {
+  margin-top: $sp-3;
+}
+
+/* ---------- 30 天压力柱状图（纯 CSS，无图表库 / canvas / svg） ---------- */
+
+.card.pf-chart-card {
+  padding: $sp-3 $sp-2;
+}
+
+.pf-chart-scroll {
+  width: 100%;
+  height: 360rpx;
+  white-space: nowrap;
+}
+
+.pf-chart-inner {
+  display: inline-block;
+  padding: 0 4rpx;
+}
+
+.pf-chart-col {
+  display: inline-block;
+  width: 64rpx;
+  margin-right: 8rpx;
+  text-align: center;
+  vertical-align: top;
+}
+
+.pf-chart-col:last-child {
+  margin-right: 0;
+}
+
+.pf-bar-val {
+  display: block;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+.pf-bar-track {
+  height: 240rpx;
+  margin-top: 6rpx;
+  background: #eef4f2;
+  border-radius: 12rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.pf-bar-fill {
+  width: 100%;
+  border-radius: 12rpx 12rpx 0 0;
+}
+
+.pf-bar-fill.lv-green {
+  background: $c-green;
+}
+
+.pf-bar-fill.lv-yellow {
+  background: $c-yellow;
+}
+
+.pf-bar-fill.lv-red {
+  background: $c-red;
+}
+
+.pf-bar-date {
+  display: block;
+  margin-top: 6rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+.pf-chart-col.is-peak .pf-bar-val {
+  color: $c-red;
+  font-weight: 700;
+}
+
+.pf-chart-col.is-peak .pf-bar-track {
+  border: 2rpx solid $c-red-line;
+}
+
+.pf-chart-hint {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.pf-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: $sp-2;
+  padding-top: $sp-2;
+  border-top: 2rpx solid $c-border;
+}
+
+.pf-legend-item {
+  display: flex;
+  align-items: center;
+  margin: 6rpx $sp-2 0 0;
+}
+
+.pf-legend-dot {
+  width: 22rpx;
+  height: 22rpx;
+  border-radius: 50%;
+  margin-right: 8rpx;
+  flex: none;
+}
+
+.pf-dot-green {
+  background: $c-green;
+}
+
+.pf-dot-yellow {
+  background: $c-yellow;
+}
+
+.pf-dot-red {
+  background: $c-red;
+}
+
+.pf-legend-text {
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+/* ---------- 近 30 天摘要 ---------- */
+
+.pf-stat-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 (-$sp-1);
+}
+
+.pf-stat-tile {
+  width: calc(50% - #{$sp-2});
+  margin: $sp-1;
+  background: $c-card;
+  border-radius: $radius;
+  padding: $sp-3;
+  box-shadow: $shadow;
+  box-sizing: border-box;
+}
+
+.pf-stat-tile.wide {
+  width: calc(100% - #{$sp-2});
+}
+
+.pf-stat-name {
+  display: block;
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.pf-stat-value-row {
+  display: flex;
+  align-items: baseline;
+  margin-top: 4rpx;
+  flex-wrap: wrap;
+}
+
+.pf-stat-value {
+  font-size: 52rpx;
+  font-weight: 700;
+  color: $c-text;
+  line-height: 1.2;
+}
+
+.pf-stat-unit {
+  margin-left: 6rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+.pf-stat-hint {
+  display: block;
+  margin-top: 6rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+  line-height: 1.6;
+}
+
+.pf-stat-pills {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: $sp-1;
+}
+
+.pf-stat-pills .pill {
+  margin: 6rpx $sp-2 0 0;
+}
+
+/* ---------- 干预记录 ---------- */
+
+.card.pf-log-card {
+  padding: $sp-2 $sp-4;
+}
+
+.pf-log-item {
+  display: flex;
+  align-items: flex-start;
+  padding: $sp-3 0;
+}
+
+.pf-log-item + .pf-log-item {
+  border-top: 2rpx solid $c-border;
+}
+
+.pf-log-icon {
+  width: 64rpx;
+  font-size: 44rpx;
+  line-height: 1.2;
+  text-align: center;
+  flex: none;
+}
+
+.pf-log-main {
+  flex: 1;
+  margin-left: $sp-1;
+  min-width: 0;
+}
+
+.pf-log-title {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.pf-log-meta {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.pf-log-feel {
+  display: inline-block;
+  margin-top: 6rpx;
+  padding: 6rpx 16rpx;
+  background: $c-primary-light;
+  color: $c-primary-dark;
+  border-radius: 999rpx;
+  font-size: $fs-tiny;
+}
+
+.pf-expand-row {
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $fs-small;
+  font-weight: 600;
+  color: $c-primary;
+}
+
+/* ---------- 星级反馈 ---------- */
+
+.pf-form-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.pf-star-row {
+  display: flex;
+  margin-top: $sp-3;
+}
+
+.pf-star-item {
+  flex: 1;
+  height: 96rpx;
+  margin-right: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafcfb;
+  border: 2rpx solid $c-border;
+  border-radius: $radius-sm;
+  box-sizing: border-box;
+}
+
+.pf-star-item:last-child {
+  margin-right: 0;
+}
+
+.pf-star-item.picked {
+  background: $c-primary-light;
+  border-color: $c-primary;
+}
+
+.pf-star-icon {
+  font-size: 52rpx;
+  line-height: 1;
+  color: #cfdad8;
+}
+
+.pf-star-item.picked .pf-star-icon {
+  color: $c-yellow;
+}
+
+.pf-star-note {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-body;
+  color: $c-text-2;
+}
+
+.pf-form-label {
+  display: block;
+  margin-top: $sp-3;
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.pf-textarea {
+  width: 100%;
+  height: 150rpx;
+  margin-top: 6rpx;
+  padding: $sp-2;
+  background: #f7faf9;
+  border: 2rpx solid $c-border;
+  border-radius: $radius-sm;
+  font-size: $fs-small;
+  box-sizing: border-box;
+}
+
+.btn-primary.pf-submit {
+  margin-top: $sp-3;
+}
+
+.pf-rating-list {
+  margin-top: $sp-3;
+  padding-top: $sp-1;
+  border-top: 2rpx solid $c-border;
+}
+
+.pf-rating-item {
+  padding: $sp-3 0;
+}
+
+.pf-rating-item + .pf-rating-item {
+  border-top: 2rpx solid $c-border;
+}
+
+.pf-rating-stars {
+  font-size: $fs-small;
+  font-weight: 700;
+  color: $c-yellow;
+  letter-spacing: 4rpx;
+}
+
+.pf-rating-meta {
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+.pf-rating-comment {
+  display: block;
+  margin-top: 6rpx;
+  font-size: $fs-body;
+  color: $c-text;
+  line-height: 1.7;
+}
+
+/* ---------- 生理数据来源 ---------- */
+
+.pf-source-state {
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.pf-source-desc {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-body;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+.pf-source-note {
+  display: block;
+  margin-top: $sp-2;
+  padding: $sp-2 $sp-3;
+  border-radius: $radius-sm;
+  font-size: $fs-small;
+  line-height: 1.7;
+}
+
+.pf-source-note.note-device {
+  background: $c-green-bg;
+  color: $c-green;
+}
+
+.pf-source-note.note-simulated {
+  background: $c-yellow-bg;
+  color: $c-yellow;
+}
+
+.pf-source-note.note-manual {
+  background: $c-primary-light;
+  color: $c-primary-dark;
+}
+
+.pf-physio-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: $sp-2 (-$sp-1) 0;
+}
+
+.pf-physio-tile {
+  width: calc(50% - #{$sp-2});
+  margin: $sp-1;
+  background: #f7faf9;
+  border-radius: $radius-sm;
+  padding: $sp-2 $sp-3;
+  box-sizing: border-box;
+}
+
+.pf-physio-name {
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.pf-physio-value-row {
+  display: flex;
+  align-items: baseline;
+  margin-top: 4rpx;
+}
+
+.pf-physio-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.pf-physio-unit {
+  margin-left: 6rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+.pf-form-block {
+  margin-top: $sp-3;
+  padding-top: $sp-3;
+  border-top: 2rpx solid $c-border;
+}
+
+.pf-form-desc {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-body;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+.pf-num-row {
+  display: flex;
+  margin-top: $sp-3;
+}
+
+.pf-num-field {
+  flex: 1;
+  margin-right: $sp-2;
+  min-width: 0;
+}
+
+.pf-num-field:last-child {
+  margin-right: 0;
+}
+
+.pf-num-input {
+  margin-top: 6rpx;
+  height: 88rpx;
+  padding: 0 $sp-3;
+  background: #f7faf9;
+  border: 2rpx solid $c-border;
+  border-radius: $radius-sm;
+  font-size: $fs-body;
+}

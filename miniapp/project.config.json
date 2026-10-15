@@ -1,6 +1,6 @@
 {
   "miniprogramRoot": "./dist",
-  "projectname": "zhihuyizhan",
+  "projectname": "carehaven",
   "description": "智护忆站 —— 失智症家庭照护者压力监测与个性化支持系统",
   "appid": "touristappid",
   "setting": {

@@ -1,0 +1,501 @@
+@use '@/styles/tokens.scss' as *;
+
+/* ---------- 页头 ---------- */
+
+.mg-page-head {
+  margin-bottom: $sp-3;
+}
+
+.mg-page-title {
+  display: block;
+  font-size: $fs-h1;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.mg-page-sub {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $fs-small;
+  color: $c-muted;
+}
+
+.mg-error {
+  display: block;
+  color: $c-red;
+  font-size: $fs-small;
+  background: $c-red-bg;
+  border-radius: $radius-sm;
+  padding: $sp-2 $sp-3;
+  margin-bottom: $sp-2;
+}
+
+.mg-notice {
+  display: block;
+  color: $c-green;
+  font-size: $fs-small;
+  background: $c-green-bg;
+  border: 2rpx solid $c-green-line;
+  border-radius: $radius-sm;
+  padding: $sp-2 $sp-3;
+  margin-bottom: $sp-2;
+}
+
+/* ---------- 1. 当前分层卡 ---------- */
+
+.mg-hero {
+  border-radius: $radius-lg;
+  padding: $sp-4;
+  margin-bottom: $sp-3;
+  border: 2rpx solid $c-border;
+  background: $c-card;
+  box-shadow: $shadow-lg;
+}
+
+.mg-hero.level-green {
+  background: $c-green-bg;
+  border-color: $c-green-line;
+}
+
+.mg-hero.level-yellow {
+  background: $c-yellow-bg;
+  border-color: $c-yellow-line;
+}
+
+.mg-hero.level-red {
+  background: $c-red-bg;
+  border-color: $c-red-line;
+}
+
+.mg-hero-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mg-hero-label {
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.mg-hps {
+  display: flex;
+  align-items: baseline;
+  margin: $sp-2 0 $sp-1;
+}
+
+.mg-hps-value {
+  font-size: $fs-display;
+  font-weight: 700;
+  line-height: 1.1;
+  color: $c-text;
+}
+
+.level-green .mg-hps-value {
+  color: $c-green;
+}
+.level-yellow .mg-hps-value {
+  color: $c-yellow;
+}
+.level-red .mg-hps-value {
+  color: $c-red;
+}
+
+.mg-hps-unit {
+  margin-left: $sp-2;
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.mg-hero-desc {
+  display: block;
+  font-size: $fs-body;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+.mg-advice {
+  display: block;
+  margin-top: $sp-2;
+  padding: $sp-2 $sp-3;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: $radius-sm;
+  font-size: $fs-body;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+.mg-urgent {
+  margin-top: $sp-3;
+  padding: $sp-3;
+  background: $c-card;
+  border: 2rpx solid $c-red-line;
+  border-radius: $radius;
+}
+
+.mg-urgent-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-red;
+  margin-bottom: 6rpx;
+}
+
+.mg-urgent-text {
+  display: block;
+  font-size: $fs-body;
+  color: $c-text;
+  line-height: 1.7;
+}
+
+/* 分层刻度条 */
+
+.mg-scale {
+  margin-top: $sp-3;
+  padding-top: $sp-3;
+  border-top: 2rpx solid rgba(28, 43, 42, 0.08);
+}
+
+.mg-scale-bar {
+  position: relative;
+  display: flex;
+  height: 24rpx;
+}
+
+.mg-seg {
+  height: 100%;
+}
+
+.seg-green {
+  background: $c-green;
+  border-radius: 999rpx 0 0 999rpx;
+}
+.seg-yellow {
+  background: $c-yellow;
+}
+.seg-red {
+  background: $c-red;
+  border-radius: 0 999rpx 999rpx 0;
+}
+
+.mg-pointer {
+  position: absolute;
+  top: -12rpx;
+  width: 8rpx;
+  height: 48rpx;
+  margin-left: -4rpx;
+  border-radius: 4rpx;
+  background: $c-text;
+  border: 2rpx solid $c-card;
+}
+
+.mg-legend {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: $sp-2;
+}
+
+.mg-legend-item {
+  display: flex;
+  align-items: center;
+  margin: 4rpx $sp-3 4rpx 0;
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.mg-dot {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 999rpx;
+  margin-right: 8rpx;
+}
+
+.dot-green {
+  background: $c-green;
+}
+.dot-yellow {
+  background: $c-yellow;
+}
+.dot-red {
+  background: $c-red;
+}
+
+.mg-threshold-note {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+/* ---------- 2/3. 方案卡片 ---------- */
+
+.mg-it {
+  background: $c-card;
+  border: 2rpx solid $c-border;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  margin-bottom: $sp-3;
+}
+
+.mg-it-head {
+  display: flex;
+  align-items: center;
+  min-height: 96rpx;
+  padding: $sp-3 $sp-3;
+  box-sizing: border-box;
+}
+
+.mg-emoji {
+  flex: none;
+  width: 84rpx;
+  font-size: 56rpx;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.mg-it.compact .mg-emoji {
+  width: 72rpx;
+  font-size: 48rpx;
+}
+
+.mg-it-main {
+  flex: 1;
+  min-width: 0;
+  padding-right: $sp-2;
+}
+
+.mg-it-title {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $c-text;
+  line-height: 1.5;
+}
+
+.mg-it-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 6rpx;
+}
+
+.mg-duration {
+  margin-left: $sp-2;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+.mg-it-summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin-top: 6rpx;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.6;
+}
+
+.mg-toggle {
+  flex: none;
+  padding: $sp-2 $sp-2;
+  font-size: $fs-small;
+  font-weight: 600;
+  color: $c-primary-dark;
+}
+
+.mg-it-body {
+  padding: 0 $sp-3 $sp-3;
+  border-top: 2rpx solid $c-border;
+}
+
+.mg-desc {
+  display: block;
+  padding: $sp-3 0;
+  font-size: $fs-body;
+  color: $c-text-2;
+  line-height: 1.75;
+}
+
+.mg-start {
+  margin-top: $sp-1;
+}
+
+/* 完成表单 */
+
+.mg-form {
+  padding-top: $sp-3;
+  border-top: 2rpx solid $c-border;
+}
+
+.mg-hint {
+  display: block;
+  margin-bottom: $sp-3;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+.mg-field {
+  margin-bottom: $sp-3;
+}
+
+.mg-label {
+  display: block;
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.mg-input {
+  width: 100%;
+  height: 88rpx;
+  margin-top: 6rpx;
+  padding: 0 $sp-3;
+  background: #f7faf9;
+  border: 2rpx solid $c-border;
+  border-radius: $radius-sm;
+  font-size: $fs-body;
+  color: $c-text;
+  box-sizing: border-box;
+}
+
+.mg-star-row {
+  display: flex;
+  margin-top: 6rpx;
+}
+
+.mg-star {
+  flex: 1;
+  min-height: 104rpx;
+  margin: 0 4rpx;
+  padding: $sp-2 0;
+  border: 2rpx solid $c-border;
+  border-radius: $radius-sm;
+  background: #fafcfb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.mg-star.on {
+  border-color: $c-primary;
+  background: $c-primary-light;
+}
+
+.mg-star-icon {
+  font-size: 44rpx;
+  line-height: 1.1;
+  color: $c-muted;
+}
+
+.mg-star.on .mg-star-icon {
+  color: $c-yellow;
+}
+
+.mg-star-label {
+  margin-top: 4rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+  text-align: center;
+}
+
+.mg-star.on .mg-star-label {
+  color: $c-primary-dark;
+  font-weight: 600;
+}
+
+.mg-form-actions {
+  display: flex;
+  margin-top: $sp-3;
+}
+
+.mg-action {
+  flex: 1;
+  margin-right: $sp-2;
+}
+
+.mg-action:last-child {
+  margin-right: 0;
+}
+
+/* 工具分类标题 */
+
+.mg-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: $sp-3 0 $sp-2;
+}
+
+.mg-group-name {
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $c-text;
+}
+
+/* ---------- 空态 / 加载态 ---------- */
+
+.mg-empty .muted {
+  display: block;
+  color: $c-text-2;
+  font-size: $fs-body;
+  line-height: 1.7;
+}
+
+.mg-retry {
+  margin-bottom: $sp-3;
+}
+
+/* ---------- 4. 最近完成记录 ---------- */
+
+.mg-log {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 96rpx;
+}
+
+.mg-log-main {
+  flex: 1;
+  min-width: 0;
+  padding-right: $sp-2;
+}
+
+.mg-log-title {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $c-text;
+  line-height: 1.5;
+}
+
+.mg-log-meta {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+.mg-log-stars {
+  flex: none;
+  text-align: right;
+}
+
+.mg-log-star-icons {
+  display: block;
+  font-size: 32rpx;
+  color: $c-yellow;
+  letter-spacing: 2rpx;
+  line-height: 1.3;
+}
+
+.mg-log-star-label {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}

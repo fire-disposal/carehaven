@@ -1,0 +1,546 @@
+@use '@/styles/tokens.scss' as *;
+
+/* ---------- 分区切换 ---------- */
+
+.seg {
+  display: flex;
+  background: $c-card;
+  border: 2rpx solid $c-border;
+  border-radius: $radius;
+  padding: 6rpx;
+  box-shadow: $shadow;
+}
+
+.seg-item {
+  flex: 1;
+  min-height: 88rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-sm;
+  color: $c-text-2;
+}
+
+.seg-item.on {
+  background: $c-primary;
+  color: #fff;
+}
+
+.seg-icon {
+  font-size: $fs-small;
+  line-height: 1.2;
+}
+
+.seg-label {
+  margin-top: 2rpx;
+  font-size: $fs-small;
+  font-weight: 600;
+}
+
+/* ---------- 合规提示（内部测试 · UGC 审核未就绪） ---------- */
+
+.ugc-notice {
+  display: flex;
+  align-items: flex-start;
+  background: $c-yellow-bg;
+  border: 2rpx solid $c-yellow-line;
+  border-radius: $radius-sm;
+  padding: $sp-2 $sp-3;
+  margin-top: $sp-2;
+}
+
+.ugc-notice-icon {
+  font-size: $fs-small;
+  line-height: 1.6;
+  margin-right: $sp-1;
+}
+
+.ugc-notice-text {
+  flex: 1;
+  font-size: $fs-tiny;
+  line-height: 1.6;
+  color: $c-yellow;
+}
+
+.ugc-notice-sheet {
+  margin-top: $sp-3;
+}
+
+/* ---------- 状态块（loading / empty / error） ---------- */
+
+.state-block {
+  background: $c-card;
+  border-radius: $radius-lg;
+  padding: $sp-4;
+  margin-top: $sp-3;
+  box-shadow: $shadow;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.state-icon {
+  font-size: 72rpx;
+  line-height: 1.2;
+}
+
+.state-text {
+  margin-top: $sp-2;
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.state-hint {
+  margin-top: $sp-1;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.cm-error {
+  display: block;
+  width: 100%;
+  color: $c-red;
+  font-size: $fs-small;
+  background: $c-red-bg;
+  border-radius: $radius-sm;
+  padding: $sp-2 $sp-3;
+  margin-bottom: $sp-2;
+}
+
+.state-retry {
+  width: 100%;
+  margin-top: $sp-2;
+}
+
+.state-btn {
+  width: 100%;
+  margin-top: $sp-3;
+}
+
+/* ---------- 帖子卡片 ---------- */
+
+.post-card {
+  background: $c-card;
+  border-radius: $radius-lg;
+  padding: $sp-4;
+  margin-top: $sp-3;
+  box-shadow: $shadow;
+}
+
+.post-head {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 76rpx;
+  height: 76rpx;
+  flex: none;
+  border-radius: 50%;
+  background: $c-primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 匿名：虚线灰头像 + 虚线灰昵称，形状与颜色都和实名不同 */
+.avatar-anon {
+  background: #eef1f0;
+  border: 2rpx dashed $c-muted;
+}
+
+.avatar-text {
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-primary-dark;
+}
+
+.avatar-anon .avatar-text {
+  font-size: $fs-body;
+}
+
+.post-who {
+  flex: 1;
+  margin: 0 $sp-2;
+  min-width: 0;
+}
+
+.nick {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.nick-anon {
+  display: inline-block;
+  color: $c-text-2;
+  font-weight: 500;
+  border: 2rpx dashed $c-muted;
+  border-radius: 999rpx;
+  padding: 0 $sp-2;
+  background: #f6f8f7;
+  font-size: $fs-small;
+}
+
+.post-time {
+  display: block;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.post-tap {
+  padding: $sp-2 0 $sp-1;
+}
+
+.post-body {
+  display: block;
+  font-size: $fs-body;
+  color: $c-text;
+  line-height: 1.75;
+  word-break: break-word;
+}
+
+.post-foot {
+  display: flex;
+  align-items: center;
+  margin-top: $sp-2;
+  padding-top: $sp-2;
+  border-top: 2rpx solid $c-border;
+}
+
+.act {
+  display: flex;
+  align-items: center;
+  min-height: 88rpx;
+  padding: 0 $sp-3;
+  margin-right: $sp-1;
+  border-radius: $radius-sm;
+  background: #f6f8f7;
+}
+
+.act-icon {
+  font-size: $fs-h2;
+  line-height: 1;
+}
+
+.act-num {
+  margin-left: $sp-1;
+  font-size: $fs-small;
+  font-weight: 600;
+  color: $c-text-2;
+}
+
+.act.liked {
+  background: $c-primary-light;
+}
+
+.act.liked .act-num {
+  color: $c-primary-dark;
+}
+
+.act-more {
+  flex: 1;
+  text-align: right;
+  font-size: $fs-small;
+  color: $c-primary;
+  font-weight: 600;
+}
+
+/* ---------- 评论区 ---------- */
+
+.comment-box {
+  margin-top: $sp-2;
+  background: #f7faf9;
+  border-radius: $radius;
+  padding: $sp-3;
+}
+
+.comment-hint {
+  display: block;
+  font-size: $fs-small;
+  color: $c-muted;
+  padding: $sp-1 0;
+}
+
+.comment-item {
+  padding: $sp-2 0;
+  border-bottom: 2rpx solid $c-border;
+}
+
+.comment-item:last-of-type {
+  border-bottom: none;
+}
+
+.nick-small {
+  font-size: $fs-small;
+  font-weight: 600;
+  color: $c-text-2;
+}
+
+.comment-body {
+  display: block;
+  margin-top: 6rpx;
+  font-size: $fs-small;
+  color: $c-text;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+.comment-form {
+  margin-top: $sp-3;
+  padding-top: $sp-2;
+  border-top: 2rpx solid $c-border;
+}
+
+.c-area {
+  width: 100%;
+  height: 150rpx;
+  padding: $sp-2;
+  background: $c-card;
+  border: 2rpx solid $c-border;
+  border-radius: $radius-sm;
+  font-size: $fs-small;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.c-counter {
+  display: block;
+  margin-top: 4rpx;
+  text-align: right;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.c-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $sp-2;
+}
+
+.switch-line {
+  display: flex;
+  align-items: center;
+  min-height: 88rpx;
+}
+
+.switch-label {
+  font-size: $fs-small;
+  color: $c-text-2;
+  margin-right: $sp-2;
+}
+
+.switch-line-lg {
+  justify-content: space-between;
+  margin-top: $sp-3;
+}
+
+.switch-text {
+  flex: 1;
+  padding-right: $sp-2;
+  min-width: 0;
+}
+
+.switch-hint {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  line-height: 1.6;
+}
+
+.c-send {
+  width: 200rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: $fs-body;
+}
+
+.cm-end {
+  display: block;
+  text-align: center;
+  margin-top: $sp-3;
+  margin-bottom: 140rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+/* ---------- 发帖浮动按钮 ---------- */
+
+.fab {
+  position: fixed;
+  right: $sp-4;
+  bottom: 168rpx; /* 底部导航固定高 128rpx，留 40rpx 间隙 */
+  z-index: 90;
+  height: 96rpx;
+  padding: 0 $sp-4;
+  border-radius: 999rpx;
+  background: $c-primary;
+  display: flex;
+  align-items: center;
+  box-shadow: $shadow-lg;
+}
+
+.fab-icon {
+  font-size: $fs-h2;
+  line-height: 1;
+}
+
+.fab-label {
+  margin-left: $sp-1;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* ---------- 发帖弹层 ---------- */
+
+.sheet-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+}
+
+.sheet-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(28, 43, 42, 0.45);
+}
+
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 84vh;
+  overflow-y: auto;
+  background: $c-card;
+  border-radius: $radius-lg $radius-lg 0 0;
+  padding: $sp-4;
+  padding-bottom: calc(#{$sp-4} + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  box-shadow: $shadow-lg;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $sp-2;
+}
+
+.sheet-title {
+  font-size: $fs-h1;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.sheet-close {
+  width: 88rpx;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f6f8f7;
+}
+
+.sheet-close-icon {
+  font-size: $fs-h2;
+  color: $c-text-2;
+}
+
+.sheet-label {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  color: $c-text-2;
+  font-weight: 600;
+}
+
+.pick-row {
+  display: flex;
+  margin-top: $sp-1;
+}
+
+.pick-item {
+  flex: 1;
+  min-height: 96rpx;
+  margin-right: $sp-2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid $c-border;
+  border-radius: $radius-sm;
+  background: #fafcfb;
+  color: $c-text-2;
+}
+
+.pick-item:last-child {
+  margin-right: 0;
+}
+
+.pick-item.on {
+  border-color: $c-primary;
+  background: $c-primary-light;
+  color: $c-primary-dark;
+}
+
+.pick-label {
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  font-weight: 600;
+}
+
+.post-area {
+  width: 100%;
+  height: 260rpx;
+  margin-top: 6rpx;
+  padding: $sp-2;
+  background: #f7faf9;
+  border: 2rpx solid $c-border;
+  border-radius: $radius-sm;
+  font-size: $fs-body;
+  line-height: 1.7;
+  box-sizing: border-box;
+}
+
+.sheet-actions {
+  display: flex;
+  margin-top: $sp-3;
+}
+
+.sheet-action {
+  flex: 1;
+  margin-right: $sp-2;
+}
+
+.sheet-action:last-child {
+  margin-right: 0;
+}
+
+/* ---------- 按下反馈（触屏没有 hover，用 :active 补上状态） ---------- */
+
+.seg-item:active,
+.act:active,
+.pick-item:active,
+.sheet-close:active,
+.sheet-action:active,
+.state-btn:active,
+.state-retry:active,
+.fab:active {
+  opacity: 0.75;
+}

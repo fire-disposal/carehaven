@@ -1,5 +1,5 @@
 {
-  "name": "zhihuyizhan-miniapp",
+  "name": "carehaven-miniapp",
   "version": "1.0.0",
   "private": true,
   "description": "智护忆站 —— 失智症家庭照护者压力监测与个性化支持系统（小程序端）",
@@ -12,6 +12,7 @@
   "scripts": {
     "build:weapp": "taro build --type weapp",
     "build:h5": "taro build --type h5",
+    "deploy:h5": "taro build --type h5 && rm -rf ../pb_public && cp -r dist ../pb_public",
     "dev:weapp": "npm run build:weapp -- --watch",
     "dev:h5": "npm run build:h5 -- --watch"
   },

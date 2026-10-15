@@ -129,3 +129,30 @@ routerAdd(
   },
   $apis.requireAuth()
 )
+
+// ---------------- 评论计数维护（服务端） ----------------
+// posts.comments_count 不能由客户端回写（updateRule 仅允许作者改自己的帖子），
+// 因此在评论增删时由服务端维护计数。
+
+onRecordAfterCreateSuccess(function (e) {
+  try {
+    const post = $app.findRecordById('posts', String(e.record.get('post')))
+    post.set('comments_count', (Number(post.get('comments_count')) || 0) + 1)
+    $app.save(post)
+  } catch (err) {
+    $app.logger().warn('评论计数更新失败', 'error', String(err))
+  }
+  return e.next()
+}, 'comments')
+
+onRecordAfterDeleteSuccess(function (e) {
+  try {
+    const post = $app.findRecordById('posts', String(e.record.get('post')))
+    const next = (Number(post.get('comments_count')) || 0) - 1
+    post.set('comments_count', next < 0 ? 0 : next)
+    $app.save(post)
+  } catch (err) {
+    $app.logger().warn('评论计数更新失败', 'error', String(err))
+  }
+  return e.next()
+}, 'comments')

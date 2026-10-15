@@ -47,15 +47,6 @@ export default defineConfig<'vite'>(async (merge) => {
       router: {
         mode: 'hash',
       },
-      output: {
-        filename: 'js/[name].[hash:8].js',
-        chunkFilename: 'js/[name].[chunkhash:8].js',
-      },
-      miniCssExtractPluginOption: {
-        ignoreOrder: true,
-        filename: 'css/[name].[hash].css',
-        chunkFilename: 'css/[name].[chunkhash].css',
-      },
       postcss: {
         autoprefixer: {
           enable: true,
