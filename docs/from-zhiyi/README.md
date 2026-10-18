@@ -5,7 +5,7 @@
 | 来源仓库 | [fire-disposal/zhiyi-tongxing](https://github.com/fire-disposal/zhiyi-tongxing) |
 | 来源提交 | `ea1027b`（`docs: rewrite README around essence and selection`） |
 | 迁移日期 | 2026-10-18 |
-| 来源状态 | GitHub archived（只读） |
+| 来源状态 | 迁移后计划归档为 GitHub archived（只读） |
 
 ## 为什么搬
 
