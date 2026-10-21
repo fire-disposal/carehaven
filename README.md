@@ -72,5 +72,5 @@ H5 同源托管一条命令：`bun run deploy:h5`。
 
 ## 文档索引
 
-- [docs/deploy-app-host.md](docs/deploy-app-host.md) — 单机部署
+- [docs/deploy.md](docs/deploy.md) — 单机部署
 - [docs/wechat-onboarding.md](docs/wechat-onboarding.md) — 微信接入

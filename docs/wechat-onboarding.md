@@ -57,7 +57,7 @@ project.config.json                开发者工具工程配置
 ### 3. 备案
 
 - 小程序本身需在微信侧完成备案（个人/企业均需），备案信息需与主体一致；
-- 后台服务域名 `care.example.com` 已解析到境内服务器（境内 VPS），**服务器在中国大陆需完成 ICP 备案**——
+- 后台服务域名 `<PROD_DOMAIN>` 需已解析到境内服务器；**服务器在中国大陆需完成 ICP 备案**——
   这是当前最可能卡住上线的一步，需提前走流程。
 
 ---
@@ -73,7 +73,7 @@ project.config.json                开发者工具工程配置
 小程序后台 → 开发 → 开发管理 → 开发设置 → 服务器域名：
 
 ```
-request 合法域名:  https://care.example.com
+request 合法域名:  https://<PROD_DOMAIN>
 ```
 
 （H5 与 API 同域，只需一条。小程序请求不受 CORS 限制，无需额外 CORS 配置。）
@@ -92,8 +92,8 @@ request 合法域名:  https://care.example.com
 配置方式（服务器上，密钥不进 git）：
 
 ```bash
-ssh app-host 'printf "%s\n%s\n" "WECHAT_APP_ID=wx..." "WECHAT_APP_SECRET=..." >> /srv/carehaven/.env'
-ssh app-host 'cd /srv/carehaven && docker compose up -d'   # compose 会自动读取同目录 .env 注入容器
+ssh <SSH_ALIAS> 'printf "%s\n%s\n" "WECHAT_APP_ID=wx..." "WECHAT_APP_SECRET=..." >> /srv/carehaven/.env'
+ssh <SSH_ALIAS> 'cd /srv/carehaven && docker compose up -d'   # compose 会自动读取同目录 .env 注入容器
 ```
 
 之后在小程序里点「微信一键登录」即可完成 `code → openid → 本地会话`。
@@ -114,7 +114,7 @@ ssh app-host 'cd /srv/carehaven && docker compose up -d'   # compose 会自动�
 
 - 需要在微信后台申请模板（如「测评提醒」），拿到模板 ID；
 - 每次下发都需用户**逐次授权**（`wx.requestSubscribeMessage`），配额有限、不能当推送通道用；
-- 因此原型期的提醒策略：进入小程序时弹「今日还没打卡」提示，不依赖订阅消息。
+- 因此当前版本的提醒策略：进入小程序时弹「今日还没打卡」提示，不依赖订阅消息。
 
 ### 5. 蓝牙设备（不需要资质）
 
@@ -146,4 +146,4 @@ ssh app-host 'cd /srv/carehaven && docker compose up -d'   # compose 会自动�
 | 实时推送 | SSE 可用 | **不支持 EventSource** | 小程序端改用轮询；H5 可用 SSE |
 | 本地存储 | localStorage | 小程序 storage | `Taro.getStorageSync` 统一（`api.ts` 已封装） |
 | 蓝牙 | 不可用 | 可用 | 设备接入只在小程序端实现 |
-| 域名要求 | 备案 + HTTPS | 备案 + HTTPS + 后台白名单 | 域名 `care.example.com` 同时满足两者 |
+| 域名要求 | 备案 + HTTPS | 备案 + HTTPS + 后台白名单 | 生产域名需同时满足两者 |

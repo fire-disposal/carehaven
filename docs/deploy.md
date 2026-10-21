@@ -2,23 +2,26 @@
 
 本文前半是**已落地的事实记录**（便于日后追溯与续期检查），后半是运维手册。
 
+> 具体主机地址、生产域名、SSH 别名与私钥路径属于基础设施信息，**不随仓库公开**；
+> 下文以占位符表示（`<SERVER_IP>`、`<PROD_DOMAIN>`、`<SSH_ALIAS>`、`<SERVER_OPS_DIR>`），实际值仅保留在本机未跟踪文件与服务器上。
+
 ---
 
 ## 一、已落地的事实（2026-10-15）
 
 | 项 | 值 |
 |---|---|
-| 服务器 | 境内 VPS `203.0.113.10`（2 vCPU / 3.8G），SSH 别名 `app-host` |
-| 域名 | `https://care.example.com` |
-| DNS | Cloudflare A 记录 `care` → `203.0.113.10`，**DNS-only（灰云）**，注释「智护忆站 原型（PB+Taro）」 |
-| 站点配置 | `/etc/nginx/sites-available/care.example.com.conf`（`sites-enabled/` 同名软链） |
-| 证书 | `/etc/letsencrypt/live/care.example.com/`（Let's Encrypt / webroot `/var/www/html` / ecdsa，随 `certbot.timer` 自动续期） |
+| 服务器 | 境内 VPS `<SERVER_IP>`（2 vCPU / 3.8G），SSH 别名 `<SSH_ALIAS>` |
+| 域名 | `https://<PROD_DOMAIN>` |
+| DNS | Cloudflare A 记录 → `<SERVER_IP>`，**DNS-only（灰云）**，注释「智护忆站 原型（PB+Taro）」 |
+| 站点配置 | `/etc/nginx/sites-available/<PROD_DOMAIN>.conf`（`sites-enabled/` 同名软链） |
+| 证书 | `/etc/letsencrypt/live/<PROD_DOMAIN>/`（Let's Encrypt / webroot `/var/www/html` / ecdsa，随 `certbot.timer` 自动续期） |
 | 应用端口 | **`127.0.0.1:8200`（仅回环）**；宿主 `8080`/`8090` 已被同机其他服务占用，故避开 |
 | 部署目录 | `/srv/carehaven/`（`.env` 600 root，内含备份用超级用户口令） |
 | 数据卷 | `carehaven_data` → `/pb/pb_data`（SQLite + 上传 + 备份） |
 | 容器名 | `carehaven` |
-| 仓库 | https://github.com/fire-disposal/carehaven（private） |
-| CI/CD | `.github/workflows/build-and-deploy.yml`；secrets：`SSH_HOST`/`SSH_USER`/`SSH_PRIVATE_KEY`（私钥为本机 `~/.ssh/deploy_key`） |
+| 仓库 | https://github.com/fire-disposal/carehaven |
+| CI/CD | `.github/workflows/build-and-deploy.yml`；secrets：`SSH_HOST`/`SSH_USER`/`SSH_PRIVATE_KEY`（私钥保存在本机，不进仓库） |
 | 镜像 | `ghcr.io/fire-disposal/carehaven:sha-<8位>`（服务器 `/root/.docker/config.json` 已有 GHCR 凭据，**勿用 `latest`**，历史经验是 `latest` 可能 `denied`） |
 | 上游未就绪 | nginx 返回 **503 施工中**（`error_page 502 504 = @maintenance`），不裸奔 502 |
 
@@ -26,7 +29,7 @@
 
 - 同机其他站点未受影响（均已逐一验证，不在此列出）
 - `sp.example.com` 返回 000 为**既有状态**（其上游未运行），与本次变更无关；本次仅新增本项目域名的两个文件
-  （`/etc/nginx` 下当日改动仅 `care.example.com.conf`）
+  （`/etc/nginx` 下当日改动仅 `<PROD_DOMAIN>.conf`）
 
 ---
 
@@ -34,7 +37,7 @@
 
 ```
 微信小程序 ─┐
-           ├─► https://care.example.com ─► nginx :443 ─► 127.0.0.1:8200 ─► 容器 carehaven
+           ├─► https://<PROD_DOMAIN> ─► nginx :443 ─► 127.0.0.1:8200 ─► 容器 carehaven
 浏览器 H5 ─┘                                                          └─ 卷 carehaven_data
 ```
 
@@ -66,9 +69,9 @@ Actions → Run workflow → 自动部署
 ## 四、首次部署（已完成，留档备重建）
 
 ```bash
-ssh app-host 'mkdir -p /srv/carehaven'
-ssh app-host 'docker volume create carehaven_data'
-ssh app-host 'printf "SUPERUSER_EMAIL=admin@care.example.com\nSUPERUSER_PASSWORD=<强口令>\nWECHAT_APP_ID=\nWECHAT_APP_SECRET=\n" > /srv/carehaven/.env && chmod 600 /srv/carehaven/.env'
+ssh <SSH_ALIAS> 'mkdir -p /srv/carehaven'
+ssh <SSH_ALIAS> 'docker volume create carehaven_data'
+ssh <SSH_ALIAS> 'printf "SUPERUSER_EMAIL=admin@<PROD_DOMAIN>\nSUPERUSER_PASSWORD=<强口令>\nWECHAT_APP_ID=\nWECHAT_APP_SECRET=\n" > /srv/carehaven/.env && chmod 600 /srv/carehaven/.env'
 ```
 
 `.env` 的键：
@@ -84,7 +87,7 @@ compose 会自动读取同目录 `.env` 做变量插值，**改完 `.env` 后 `d
 容器起来之后创建同口令的超级用户：
 
 ```bash
-ssh app-host 'set -a; . /srv/carehaven/.env; set +a; \
+ssh <SSH_ALIAS> 'set -a; . /srv/carehaven/.env; set +a; \
   docker exec carehaven /usr/local/bin/pocketbase superuser create "$SUPERUSER_EMAIL" "$SUPERUSER_PASSWORD" --dir /pb/pb_data'
 ```
 
@@ -103,13 +106,13 @@ ssh app-host 'set -a; . /srv/carehaven/.env; set +a; \
 
 | 项 | 值 |
 |---|---|
-| 数据集 | `carehaven-data`（声明在 `/root/server-ops/backup/datasets.toml`） |
+| 数据集 | `carehaven-data`（声明在 `<SERVER_OPS_DIR>/backup/datasets.toml`） |
 | 调度 | 受管 cron：**每日 04:30** 宿主时间（排在同机其他数据集之后，避免相互争 I/O） |
-| 命令 | `cd /opt/server-ops && /usr/bin/python3 backup/cli.py run carehaven-data --notify` |
+| 命令 | `cd <SERVER_OPS_DIR> && /usr/bin/python3 backup/cli.py run carehaven-data --notify` |
 | 产物 | `/srv/carehaven/backups/*.zip` —— `auto-*`（每日）+ `predeploy-*`（每次部署，`deploy.sh` 产出并导出） |
 | 校验 | `verify = ["unzip", "-t"]`，产物与账本由 CLI 代记 |
-| 手工跑一次 | `cd /opt/server-ops && /usr/bin/python3 backup/cli.py run carehaven-data` |
-| 查看状态 | `cd /opt/server-ops && /usr/bin/python3 backup/cli.py status` |
+| 手工跑一次 | `cd <SERVER_OPS_DIR> && /usr/bin/python3 backup/cli.py run carehaven-data` |
+| 查看状态 | `cd <SERVER_OPS_DIR> && /usr/bin/python3 backup/cli.py status` |
 
 恢复：管理后台 `/_/` → Settings → Backups；或把 zip 放回容器 `/pb/pb_data/backups` 再从后台恢复。
 （**不要在运行中直接 cp SQLite 主库文件**。）
@@ -119,8 +122,8 @@ ssh app-host 'set -a; . /srv/carehaven/.env; set +a; \
 ## 六、回滚
 
 ```bash
-ssh app-host 'cat /srv/carehaven/last_successful_version.txt'                    # 上次成功版本
-ssh app-host 'cd /srv/carehaven && IMAGE=ghcr.io/fire-disposal/carehaven:sha-<8位> bash deploy.sh'
+ssh <SSH_ALIAS> 'cat /srv/carehaven/last_successful_version.txt'                    # 上次成功版本
+ssh <SSH_ALIAS> 'cd /srv/carehaven && IMAGE=ghcr.io/fire-disposal/carehaven:sha-<8位> bash deploy.sh'
 ```
 
 ---

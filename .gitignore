@@ -2,3 +2,9 @@ pocketbase
 pb_data/
 pb_public/
 node_modules/
+
+.env
+.env.local
+
+# 本机运维记录（含真实主机/域名/IP），不随仓库公开
+docs/*.local.md
