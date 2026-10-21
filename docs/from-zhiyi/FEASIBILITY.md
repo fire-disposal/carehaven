@@ -2,7 +2,7 @@
 
 # 智忆同行 · 可行路径分析（2026-08）
 
-> 目标：复用 `emoguard_project` 小程序端经验 + 师承 `项目 B` 的 CI/CD，
+> 目标：复用 `emoguard_project` 小程序端经验 + 师承 `另一项目` 的 CI/CD，
 > 在既有 Elysia 骨架 `zhiyi-tongxing` 上继续推进：补全后端 → 微信小程序（现代 TS 方案）→ 单一服务器流水线。
 
 ## 1. 结论摘要
@@ -11,7 +11,7 @@
 | --- | --- | --- |
 | 后端框架 | **Elysia（Bun）**，维持骨架现状 | 骨架已按 Elysia + Drizzle + bun:sqlite 搭好；Bun 原生、端到端类型推导、内置 OpenAPI |
 | 小程序方案 | **微信原生 + TypeScript**（最终形态） | 复用 emoguard 原生经验；Web 端收敛为管理后台，不引入 Taro/uni-app 跨端框架 |
-| CI/CD | **单服务器**（无 staging/prod 双环境） | 课题原型规模；师承 项目 B 流程但砍掉 staging 门禁与监控栈 |
+| CI/CD | **单服务器**（无 staging/prod 双环境） | 课题原型规模；师承其流程但砍掉 staging 门禁与监控栈 |
 | 认证 | wx.login → code2session → JWT（access+refresh） | 与 emoguard 完全同构，Elysia 侧用 @elysiajs/jwt 重写 |
 
 ## 2. emoguard 小程序经验 → 复用映射
@@ -39,12 +39,12 @@ emoguard（Django + 微信原生 JS）经验沉淀为四层，全部在 `minipro
    - 用户主键即 openid，无表结构变更；`requireAuth` 派生守卫供后续业务端点接入
 3. **小程序端**：原生 TS 五页签 + 走纸图表签名组件，全部接口走类型化 `api/` 客户端；Web 端同步收敛为纯管理后台（用户端代码已从 web/ 移除）。
 
-## 4. CI/CD：师承 项目 B 的简化映射
+## 4. CI/CD：师承另一项目的简化映射
 
-项目 B 共 5 个 workflow（commit-format / ci 类 / staging / production / rollback）。
+另一项目共 5 个 workflow（commit-format / ci 类 / staging / production / rollback）。
 简化策略：**只保留「打 tag → 构建 → 单机部署」一条主干**，去掉 staging 门禁、双服务器、监控栈、nginx 配置管理。
 
-| 项目 B 步骤 | 简化后（zhiyi） |
+| 另一项目步骤 | 简化后（zhiyi） |
 | --- | --- |
 | `deploy-staging.yml`：tag 触发，校验迁移 → 构建双镜像 → 部署 staging | `deploy.yml`：tag 触发，typecheck+构建单镜像 → 直部署生产 |
 | `deploy-production.yml`：dispatch，要求版本与 staging 完全一致 | 去掉「必须先在 staging 验证」门禁，dispatch 直发（输入版本号回查对应 tag） |
