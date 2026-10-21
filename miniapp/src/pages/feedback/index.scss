@@ -1,0 +1,176 @@
+@use '@/styles/tokens.scss' as *;
+
+.fb-page {
+  min-height: 100vh;
+  padding-bottom: 48rpx;
+}
+
+.fb-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 $sp-2;
+  background: rgba(244, 248, 247, 0.96);
+  border-bottom: 2rpx solid $c-border;
+}
+
+.fb-back {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $c-text;
+}
+
+.fb-top-title {
+  flex: 1;
+  text-align: center;
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.fb-top-spacer {
+  width: 72rpx;
+}
+
+.fb-intro {
+  display: block;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.7;
+  margin-bottom: $sp-4;
+}
+
+.fb-label {
+  display: block;
+  margin: $sp-3 0 $sp-2;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.fb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
+}
+
+.fb-chip {
+  min-height: 80rpx;
+  padding: 0 $sp-3;
+  border: 2rpx solid $c-border;
+  border-radius: 999rpx;
+  background: $c-card;
+  display: flex;
+  align-items: center;
+  color: $c-text-2;
+  font-size: $fs-small;
+}
+
+.fb-chip.on {
+  border-color: $c-primary;
+  background: $c-primary-light;
+  color: $c-primary-dark;
+  font-weight: 600;
+}
+
+.fb-textarea {
+  box-sizing: border-box;
+  width: 100%;
+  height: 280rpx;
+  padding: $sp-3;
+  background: $c-card;
+  border: 2rpx solid $c-border;
+  border-radius: $radius;
+  font-size: $fs-body;
+  line-height: 1.6;
+  color: $c-text;
+}
+
+.fb-textarea textarea {
+  resize: none;
+}
+
+.fb-counter {
+  display: block;
+  margin-top: $sp-4;
+  text-align: right;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.fb-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 96rpx;
+  padding: 0 $sp-3;
+  background: $c-card;
+  border: 2rpx solid $c-border;
+  border-radius: $radius;
+  font-size: $fs-body;
+  color: $c-text;
+}
+
+.fb-legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4rpx;
+  margin-top: $sp-3;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.fb-link {
+  color: $c-primary-dark;
+  text-decoration: underline;
+}
+
+.fb-error {
+  display: block;
+  margin-top: $sp-3;
+  font-size: $fs-small;
+  color: $c-red;
+  line-height: 1.6;
+}
+
+.fb-submit {
+  margin-top: $sp-4;
+}
+
+.fb-done {
+  margin-top: $sp-4;
+  text-align: center;
+}
+
+.fb-done-icon {
+  display: flex;
+  justify-content: center;
+}
+
+.fb-done-title {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-h1;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.fb-done-text {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.8;
+  text-align: left;
+}
+
+.fb-done-btn {
+  margin-top: $sp-4;
+}

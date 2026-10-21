@@ -15,8 +15,14 @@
 }
 
 .brand-logo {
-  font-size: $icon-hero;
-  line-height: 1;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 56rpx;
+  background: $c-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(46, 139, 132, 0.24);
   margin-bottom: $sp-2;
 }
 
@@ -88,12 +94,20 @@
 }
 
 .field-input {
+  box-sizing: border-box;
+  display: block;
   width: 100%;
   height: 96rpx;
   padding: 0 $sp-3;
   background: #f7faf9;
   border: 2rpx solid $c-border;
   border-radius: $radius-sm;
+  font-size: $fs-body;
+  color: $c-text;
+}
+
+.field-input .weui-input {
+  height: 92rpx;
   font-size: $fs-body;
   color: $c-text;
 }
@@ -128,4 +142,20 @@
   color: $c-muted;
   text-align: center;
   line-height: 1.7;
+}
+
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4rpx;
+  margin-top: $sp-1;
+  padding: 0 $sp-3;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.legal-link {
+  color: $c-primary-dark;
+  text-decoration: underline;
 }

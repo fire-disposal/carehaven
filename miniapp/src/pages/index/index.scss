@@ -1,6 +1,9 @@
 @use '@/styles/tokens.scss' as *;
 
-.hello {
+.home-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: $sp-3;
 }
 
@@ -16,6 +19,17 @@
   margin-top: 4rpx;
   font-size: $fs-small;
   color: $c-muted;
+}
+
+.home-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  background: $c-primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .error-line {
@@ -55,6 +69,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.stress-title-row {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+  color: $c-text-2;
 }
 
 .stress-label {
@@ -139,78 +160,57 @@
   color: $c-text-2;
 }
 
-/* ---------- 生理面板 ---------- */
-
-.physio-grid {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 (-$sp-1) $sp-2;
-}
-
-.physio-tile {
-  width: calc(50% - #{$sp-2});
-  margin: $sp-1;
-  background: $c-card;
-  border-radius: $radius;
-  padding: $sp-3;
-  box-shadow: $shadow;
-  box-sizing: border-box;
-}
-
-.tile-name {
-  font-size: $fs-small;
-  color: $c-muted;
-}
-
-.tile-value-row {
-  display: flex;
-  align-items: baseline;
-  margin-top: 4rpx;
-}
-
-.tile-value {
-  font-size: 48rpx;
-  font-weight: 700;
-  color: $c-text;
-}
-
-.tile-unit {
-  margin-left: 6rpx;
-  font-size: $fs-tiny;
-  color: $c-muted;
-}
-
-/* ---------- 打卡 ---------- */
-
-.checkin-entry {
+.stress-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: $sp-2;
+  margin-top: $sp-3;
+  padding-top: $sp-3;
+  border-top: 2rpx solid rgba(28, 43, 42, 0.08);
 }
 
-.checkin-text {
-  flex: 1;
-  padding-right: $sp-3;
+.stress-checkin-state {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
 }
 
-.checkin-title {
-  display: block;
-  font-size: $fs-h2;
-  font-weight: 600;
-  color: $c-text;
-  margin-bottom: 4rpx;
-}
-
-.checkin-btn {
-  width: 200rpx;
+.stress-cta {
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 $sp-4;
+  font-size: $fs-body;
   flex: none;
 }
 
+/* ---------- 打卡表单 ---------- */
+
+.checkin-form {
+  margin-top: 0;
+}
+
+.form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $sp-2;
+}
+
 .form-title {
-  display: block;
   font-size: $fs-h2;
   font-weight: 600;
-  margin-bottom: $sp-2;
+  color: $c-text;
+}
+
+.form-close {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mood-row {
@@ -223,26 +223,25 @@
   flex: 1;
   margin: 0 4rpx;
   padding: $sp-2 0;
+  min-height: 128rpx;
   border-radius: $radius-sm;
   border: 2rpx solid $c-border;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   background: #fafcfb;
+  box-sizing: border-box;
 }
 
 .mood-item.picked {
   border-color: $c-primary;
   background: $c-primary-light;
-}
-
-.mood-icon {
-  font-size: $icon-sm;
-  line-height: 1.2;
+  color: $c-primary-dark;
 }
 
 .mood-label {
-  margin-top: 4rpx;
+  margin-top: 6rpx;
   font-size: $fs-tiny;
   color: $c-text-2;
 }
@@ -269,19 +268,18 @@
 
 .num-row {
   display: flex;
+  gap: $sp-2;
   margin-bottom: $sp-3;
 }
 
 .num-field {
   flex: 1;
-  margin-right: $sp-2;
-}
-
-.num-field:last-child {
-  margin-right: 0;
+  min-width: 0;
 }
 
 .num-input {
+  box-sizing: border-box;
+  width: 100%;
   margin-top: 6rpx;
   height: 88rpx;
   padding: 0 $sp-3;
@@ -292,6 +290,7 @@
 }
 
 .note-area {
+  box-sizing: border-box;
   width: 100%;
   height: 140rpx;
   margin-top: 6rpx;
@@ -299,24 +298,191 @@
   background: #f7faf9;
   border: 2rpx solid $c-border;
   border-radius: $radius-sm;
-  font-size: $fs-small;
-  box-sizing: border-box;
+  font-size: $fs-body;
 }
 
 .form-actions {
   display: flex;
-  margin-top: $sp-3;
+  gap: $sp-2;
+  margin-top: $sp-4;
 }
 
 .action {
   flex: 1;
-  margin-right: $sp-2;
 }
 
-.action:last-child {
-  margin-right: 0;
+/* ---------- 次级入口 ---------- */
+
+.quick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
+  margin: $sp-3 0 $sp-4;
 }
 
-.busy {
-  opacity: 0.6;
+.quick-tile {
+  flex: 1 1 calc(50% - #{$sp-2});
+  min-width: 0;
+  background: $c-card;
+  border-radius: $radius;
+  padding: $sp-3;
+  box-shadow: $shadow;
+  box-sizing: border-box;
+}
+
+.quick-wide {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+}
+
+.quick-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-sm;
+  background: $c-primary-light;
+  color: $c-primary-dark;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $sp-1;
+}
+
+.quick-wide .quick-icon {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.quick-icon.tint-yellow {
+  background: $c-yellow-bg;
+  color: $c-yellow;
+}
+
+.quick-icon.tint-blue {
+  background: #e8f0fb;
+  color: #2f5f9e;
+}
+
+.quick-title {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.quick-sub {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  line-height: 1.5;
+}
+
+.quick-wide .quick-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- 今日记录 ---------- */
+
+.today-list {
+  padding: $sp-1 $sp-3;
+}
+
+.today-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 0;
+  border-bottom: 2rpx solid $c-border;
+}
+
+.today-item:last-child {
+  border-bottom: none;
+}
+
+.today-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 32rpx;
+  background: $c-primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.today-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.today-title {
+  display: block;
+  font-size: $fs-small;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.today-meta {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+/* ---------- 身体状态 ---------- */
+
+.physio-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 (-$sp-1) $sp-2;
+}
+
+.physio-tile {
+  width: calc(50% - #{$sp-2});
+  margin: $sp-1;
+  background: $c-card;
+  border-radius: $radius;
+  padding: $sp-3;
+  box-shadow: $shadow;
+  box-sizing: border-box;
+}
+
+.tile-head {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.tile-name {
+  font-size: $fs-small;
+  color: $c-muted;
+}
+
+.tile-value-row {
+  display: flex;
+  align-items: baseline;
+  margin-top: 4rpx;
+}
+
+.tile-value {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.tile-unit {
+  margin-left: 6rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.source-note {
+  display: block;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  line-height: 1.6;
+  padding: 0 $sp-1 $sp-2;
 }

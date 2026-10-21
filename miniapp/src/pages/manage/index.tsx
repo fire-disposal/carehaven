@@ -2,6 +2,8 @@ import { useCallback, useState } from 'react'
 import { Input, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
+import Icon from '@/components/Icon'
+import type { IconName } from '@/lib/icons'
 import {
   api,
   isLoggedIn,
@@ -18,11 +20,11 @@ const SUCCESS_MSG = '已记录，压力指数会随干预数据更新'
 /** 工具库的四个分类（与后端 interventions.category 取值一致） */
 const CATEGORIES: Intervention['category'][] = ['呼吸放松', '冥想练习', '音乐疗法', '视频指导']
 
-const CATEGORY_EMOJI: Record<Intervention['category'], string> = {
-  呼吸放松: '🌬️',
-  冥想练习: '🧘',
-  音乐疗法: '🎵',
-  视频指导: '🎬',
+const CATEGORY_ICON: Record<Intervention['category'], IconName> = {
+  呼吸放松: 'wind',
+  冥想练习: 'spa',
+  音乐疗法: 'music',
+  视频指导: 'video',
 }
 
 const STAR_LABELS = ['没什么帮助', '帮助较小', '一般', '有帮助', '很有帮助']
@@ -210,15 +212,15 @@ export default function ManagePage() {
   const hps = score && Number.isFinite(score.hps) ? Math.min(100, Math.max(0, Math.round(score.hps))) : null
   const { t_green, t_red } = thresholds
 
-  const groups: { category: string; emoji: string; items: Intervention[] }[] = [
+  const groups: { category: string; icon: IconName; items: Intervention[] }[] = [
     ...CATEGORIES.map((category) => ({
       category,
-      emoji: CATEGORY_EMOJI[category],
+      icon: CATEGORY_ICON[category],
       items: allItems.filter((item) => item.category === category),
     })),
     {
       category: '其他',
-      emoji: '🧩',
+      icon: 'puzzle-piece' as const,
       items: allItems.filter((item) => !CATEGORIES.includes(item.category)),
     },
   ].filter((group) => group.items.length > 0)
@@ -231,7 +233,9 @@ export default function ManagePage() {
     return (
       <View className={`mg-it ${compact ? 'compact' : ''}`} key={key}>
         <View className="mg-it-head" onClick={() => toggleCard(key)}>
-          <Text className="mg-emoji">{item.cover_emoji || '🧘'}</Text>
+          <View className="mg-it-icon">
+            <Icon name={CATEGORY_ICON[item.category] || 'spa'} size={44} color="#1f6b65" />
+          </View>
           <View className="mg-it-main">
             <Text className="mg-it-title">{item.title || '未命名方案'}</Text>
             <View className="mg-it-meta">
@@ -271,7 +275,11 @@ export default function ManagePage() {
                       className={`mg-star ${stars >= n ? 'on' : ''}`}
                       onClick={() => setStars(n)}
                     >
-                      <Text className="mg-star-icon">{stars >= n ? '★' : '☆'}</Text>
+                      <Icon
+                        name="star"
+                        size={36}
+                        color={stars >= n ? '#9a6410' : '#c9d6d3'}
+                      />
                       <Text className="mg-star-label">{STAR_LABELS[n - 1]}</Text>
                     </View>
                   ))}
@@ -311,7 +319,7 @@ export default function ManagePage() {
       <View className="page-pad">
         <View className="mg-page-head">
           <Text className="mg-page-title">压力管理</Text>
-          <Text className="mg-page-sub">按您当前的压力分层，给出对应的放松方案</Text>
+          <Text className="mg-page-sub">按您当前的压力状态，给出对应的放松方案</Text>
         </View>
 
         {error ? <Text className="mg-error">{error}</Text> : null}
@@ -320,12 +328,17 @@ export default function ManagePage() {
             重新加载
           </View>
         ) : null}
-        {notice ? <Text className="mg-notice">✅ {notice}</Text> : null}
+        {notice ? (
+          <View className="mg-notice">
+            <Icon name="circle-check" size={30} color="#23795a" />
+            <Text>{notice}</Text>
+          </View>
+        ) : null}
 
-        {/* ---------- 1. 当前分层 ---------- */}
+        {/* ---------- 1. 当前状态 ---------- */}
         <View className={`mg-hero ${level ? `level-${level}` : 'level-none'}`}>
           <View className="mg-hero-head">
-            <Text className="mg-hero-label">当前分层</Text>
+            <Text className="mg-hero-label">当前状态</Text>
             <Text className={`pill ${level ? `pill-${level}` : 'pill-primary'}`}>
               {level ? LEVEL_TITLE[level] : loading ? '评估中…' : '暂无评估'}
             </Text>
@@ -333,7 +346,7 @@ export default function ManagePage() {
 
           <View className="mg-hps">
             <Text className="mg-hps-value">{hps === null ? '--' : hps}</Text>
-            <Text className="mg-hps-unit">HPS 混合压力指数</Text>
+            <Text className="mg-hps-unit">综合压力指数（HPS）</Text>
           </View>
 
           <Text className="mg-hero-desc">
@@ -341,16 +354,19 @@ export default function ManagePage() {
               ? LEVEL_DESC[level]
               : loading
                 ? '正在读取您最近的评估结果…'
-                : '还没有评估结果，先到首页完成一次打卡，就能看到自己的压力分层。'}
+                : '还没有评估结果，先到首页完成一次打卡，就能看到自己的压力状态。'}
           </Text>
 
-          {score?.advice ? <Text className="mg-advice">系统提示：{score.advice}</Text> : null}
+          {score?.advice ? <Text className="mg-advice">{score.advice}</Text> : null}
 
           {level === 'red' ? (
             <View className="mg-urgent">
-              <Text className="mg-urgent-title">🚨 现在就做一件事</Text>
+              <View className="mg-urgent-title">
+                <Icon name="triangle-exclamation" size={32} color="#a83a34" />
+                <Text>现在就做一件事</Text>
+              </View>
               <Text className="mg-urgent-text">
-                立即完成一次紧急放松（推荐下方「红区紧急放松包」），并考虑向家人或专业人员求助。
+                立即完成一次紧急放松（推荐下方「标红的紧急放松练习」），并考虑向家人或专业人员求助。
                 您先稳住，才有力气继续照护。
               </Text>
             </View>
@@ -380,14 +396,14 @@ export default function ManagePage() {
           </View>
 
           <Text className="mg-threshold-note">
-            阈值 {t_green} / {t_red}，由专家意见与临床证据设定，可在系统配置中调整。
+            参考线：{t_green} / {t_red}
           </Text>
         </View>
 
         {/* ---------- 2. 推荐方案 ---------- */}
         <View className="section-title">
           <Text>为您推荐</Text>
-          <Text className="muted">{level ? '匹配当前分层' : '等待评估'}</Text>
+          <Text className="muted">{level ? '匹配当前状态' : '等待评估'}</Text>
         </View>
 
         {loading ? (
@@ -400,8 +416,8 @@ export default function ManagePage() {
           <View className="card mg-empty">
             <Text className="muted">
               {level
-                ? '当前分层暂时没有专属方案，可以到下方「全部工具」里挑一项试试。'
-                : '还没有评估结果。先到首页完成一次打卡，这里会按您的分层推荐方案。'}
+                ? '当前状态暂时没有专属方案，可以到下方「全部工具」里挑一项试试。'
+                : '还没有评估结果。先到首页完成一次打卡，这里会按您的状态推荐方案。'}
             </Text>
           </View>
         )}
@@ -425,9 +441,10 @@ export default function ManagePage() {
             {groups.map((group) => (
               <View key={group.category}>
                 <View className="mg-group-head">
-                  <Text className="mg-group-name">
-                    {group.emoji} {group.category}
-                  </Text>
+                  <View className="mg-group-name">
+                    <Icon name={group.icon} size={30} color="#45585a" />
+                    <Text>{group.category}</Text>
+                  </View>
                   <Text className="muted">{group.items.length} 项</Text>
                 </View>
                 {group.items.map((item) => renderIntervention(item, `cat-${group.category}`, true))}
@@ -467,10 +484,16 @@ export default function ManagePage() {
                     </Text>
                   </View>
                   <View className="mg-log-stars">
-                    <Text className="mg-log-star-icons">
-                      {'★'.repeat(logStars)}
-                      {'☆'.repeat(5 - logStars)}
-                    </Text>
+                    <View className="mg-log-star-icons">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <Icon
+                          key={n}
+                          name="star"
+                          size={28}
+                          color={n <= logStars ? '#9a6410' : '#c9d6d3'}
+                        />
+                      ))}
+                    </View>
                     <Text className="mg-log-star-label">
                       {logStars > 0 ? STAR_LABELS[logStars - 1] : '未评价'}
                     </Text>

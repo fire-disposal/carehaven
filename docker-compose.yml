@@ -21,11 +21,17 @@ services:
 
     environment:
       TZ: Asia/Shanghai
-      # goja 运行时池，单机原型 5 足够（默认 15 会多占内存）
+      # goja 运行时池，单机部署 5 足够（默认 15 会多占内存）
       PB_HOOKS_POOL: '5'
       # 微信登录凭证：值写在同目录 .env（600）里，compose 会自动读取该文件用于插值
       WECHAT_APP_ID: ${WECHAT_APP_ID:-}
       WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}
+      # 豆包 Seed TTS 2.0（HTTP 单向流式）：密钥只留在服务端
+      VOLC_TTS_API_KEY: ${VOLC_TTS_API_KEY:-}
+      VOLC_TTS_RESOURCE_ID: ${VOLC_TTS_RESOURCE_ID:-seed-tts-2.0}
+      VOLC_TTS_SPEAKER: ${VOLC_TTS_SPEAKER:-zh_female_vv_uranus_bigtts}
+      VOLC_TTS_MODEL: ${VOLC_TTS_MODEL:-seed-tts-2.0-standard}
+      VOLC_TTS_SAMPLE_RATE: ${VOLC_TTS_SAMPLE_RATE:-24000}
 
     # 资源上限：留出余量但不与宿主机其他服务抢
     mem_limit: 256m

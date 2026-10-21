@@ -1,0 +1,46 @@
+@use '@/styles/tokens.scss' as *;
+
+.read-dock {
+  position: fixed;
+  left: $sp-3;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-1;
+  width: auto;
+  margin: 0;
+  min-height: 96rpx;
+  padding: 0 $sp-4;
+  border-radius: 999rpx;
+  border: 2rpx solid $c-primary;
+  background: $c-card;
+  color: $c-primary-dark;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.2;
+  box-shadow: 0 8rpx 28rpx rgba(28, 43, 42, 0.16);
+  box-sizing: border-box;
+}
+
+.read-dock::after {
+  border: none;
+}
+
+.read-dock.with-nav {
+  bottom: calc(168rpx + env(safe-area-inset-bottom));
+}
+
+.read-dock.no-nav {
+  bottom: calc(40rpx + env(safe-area-inset-bottom));
+}
+
+.read-dock.on {
+  background: $c-primary;
+  border-color: $c-primary;
+  color: #ffffff;
+}
+
+.read-dock-label {
+  white-space: nowrap;
+}

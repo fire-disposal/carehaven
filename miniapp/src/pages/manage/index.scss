@@ -31,7 +31,9 @@
 }
 
 .mg-notice {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
   color: $c-green;
   font-size: $fs-small;
   background: $c-green-bg;
@@ -135,7 +137,9 @@
 }
 
 .mg-urgent-title {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
   font-size: $fs-h2;
   font-weight: 700;
   color: $c-red;
@@ -247,17 +251,20 @@
   box-sizing: border-box;
 }
 
-.mg-emoji {
+.mg-it-icon {
   flex: none;
   width: 84rpx;
-  font-size: $icon-card;
-  line-height: 1.1;
-  text-align: center;
+  height: 84rpx;
+  border-radius: $radius-sm;
+  background: $c-primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.mg-it.compact .mg-emoji {
+.mg-it.compact .mg-it-icon {
   width: 72rpx;
-  font-size: $icon-sm;
+  height: 72rpx;
 }
 
 .mg-it-main {
@@ -386,16 +393,6 @@
   background: $c-primary-light;
 }
 
-.mg-star-icon {
-  font-size: $icon-sm;
-  line-height: 1.1;
-  color: $c-muted;
-}
-
-.mg-star.on .mg-star-icon {
-  color: $c-yellow;
-}
-
 .mg-star-label {
   margin-top: 4rpx;
   font-size: $fs-tiny;
@@ -432,6 +429,9 @@
 }
 
 .mg-group-name {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
   font-size: $fs-body;
   font-weight: 600;
   color: $c-text;
@@ -486,10 +486,9 @@
 }
 
 .mg-log-star-icons {
-  display: block;
-  font-size: 32rpx;
-  color: $c-yellow;
-  letter-spacing: 2rpx;
+  display: flex;
+  justify-content: flex-end;
+  gap: 2rpx;
   line-height: 1.3;
 }
 

@@ -1,0 +1,508 @@
+@use '@/styles/tokens.scss' as *;
+
+.as-page {
+  min-height: 100vh;
+  padding-bottom: 180rpx;
+}
+
+/* ---------- 顶部栏 ---------- */
+
+.as-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 $sp-2;
+  background: rgba(244, 248, 247, 0.96);
+  border-bottom: 2rpx solid $c-border;
+}
+
+.as-top-back {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $c-text;
+}
+
+.as-top-title {
+  flex: 1;
+  text-align: center;
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.as-top-count {
+  min-width: 72rpx;
+  text-align: right;
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.as-top-spacer {
+  width: 72rpx;
+}
+
+/* ---------- 列表页 ---------- */
+
+.as-intro {
+  background: linear-gradient(150deg, #e6f2f0 0%, #f7fbfa 100%);
+  border: 2rpx solid #d4e8e4;
+  border-radius: $radius-lg;
+  padding: $sp-4;
+  margin-bottom: $sp-3;
+}
+
+.as-intro-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: $c-primary-dark;
+  line-height: 1.4;
+}
+
+.as-intro-text {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+.as-intro-meta {
+  display: flex;
+  gap: $sp-4;
+  margin-top: $sp-3;
+}
+
+.as-intro-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+  font-size: $fs-tiny;
+  color: $c-primary-dark;
+}
+
+.as-scale {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  background: $c-card;
+  border-radius: $radius;
+  padding: $sp-3;
+  margin-bottom: $sp-3;
+  box-shadow: $shadow;
+}
+
+.as-scale-icon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: $radius;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.as-scale-icon.tint-primary {
+  background: $c-primary-light;
+  color: $c-primary-dark;
+}
+
+.as-scale-icon.tint-yellow {
+  background: $c-yellow-bg;
+  color: $c-yellow;
+}
+
+.as-scale-icon.tint-red {
+  background: $c-red-bg;
+  color: $c-red;
+}
+
+.as-scale-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.as-scale-head {
+  display: flex;
+  align-items: baseline;
+  gap: $sp-2;
+}
+
+.as-scale-name {
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.as-scale-short {
+  font-size: $fs-tiny;
+  color: $c-muted;
+  letter-spacing: 1rpx;
+}
+
+.as-scale-intro {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.5;
+}
+
+.as-scale-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $sp-1;
+  margin-top: $sp-2;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.as-dot {
+  color: $c-border;
+}
+
+.as-scale-last {
+  margin-left: $sp-1;
+}
+
+.as-empty {
+  text-align: center;
+}
+
+.as-empty-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.as-empty-text {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+.as-history {
+  padding: $sp-1 $sp-3;
+}
+
+.as-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $sp-3 0;
+  border-bottom: 2rpx solid $c-border;
+}
+
+.as-history-item:last-child {
+  border-bottom: none;
+}
+
+.as-history-name {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.as-history-date {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.as-history-score {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+}
+
+.as-history-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.as-disclaimer {
+  display: block;
+  margin-top: $sp-3;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* ---------- 答题 ---------- */
+
+.as-progress {
+  height: 8rpx;
+  background: #e3ecea;
+}
+
+.as-progress-fill {
+  height: 100%;
+  background: $c-primary;
+  border-radius: 0 8rpx 8rpx 0;
+  transition: width 180ms ease;
+}
+
+.as-quiz-scroll {
+  height: calc(100vh - 104rpx);
+}
+
+.as-quiz-body {
+  padding: $sp-5 $sp-4 $sp-4;
+}
+
+.as-quiz-index {
+  display: block;
+  font-size: $fs-tiny;
+  font-weight: 600;
+  color: $c-primary;
+  letter-spacing: 2rpx;
+}
+
+.as-quiz-question {
+  display: block;
+  margin-top: $sp-2;
+  font-size: 40rpx;
+  line-height: 1.5;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.as-quiz-hint {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  color: $c-muted;
+}
+
+.as-options {
+  margin-top: $sp-4;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.as-option {
+  min-height: 104rpx;
+  border: 2rpx solid $c-border;
+  border-radius: $radius;
+  background: $c-card;
+  padding: $sp-2 $sp-3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.as-option.picked {
+  border-color: $c-primary;
+  background: $c-primary-light;
+}
+
+.as-option-label {
+  font-size: 34rpx;
+  color: $c-text;
+}
+
+.as-option.picked .as-option-label {
+  color: $c-primary-dark;
+  font-weight: 700;
+}
+
+.as-saving {
+  display: block;
+  margin-top: $sp-3;
+  font-size: $fs-small;
+  color: $c-text-2;
+  text-align: center;
+}
+
+.as-retry {
+  margin-top: $sp-3;
+}
+
+/* ---------- 结果 ---------- */
+
+.as-result {
+  border-radius: $radius-lg;
+  padding: $sp-4;
+  border: 2rpx solid $c-border;
+}
+
+.as-result.tone-green {
+  background: linear-gradient(150deg, $c-green-bg 0%, #f7fbf9 100%);
+  border-color: $c-green-line;
+}
+
+.as-result.tone-yellow {
+  background: linear-gradient(150deg, $c-yellow-bg 0%, #fffbf4 100%);
+  border-color: $c-yellow-line;
+}
+
+.as-result.tone-red {
+  background: linear-gradient(150deg, $c-red-bg 0%, #fff8f7 100%);
+  border-color: $c-red-line;
+}
+
+.as-result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.as-result-name {
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.as-result-score {
+  display: flex;
+  align-items: baseline;
+  gap: $sp-1;
+  margin-top: $sp-2;
+}
+
+.as-result-value {
+  font-size: $fs-display;
+  line-height: 1.1;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.as-result-total {
+  font-size: $fs-body;
+  color: $c-text-2;
+}
+
+.as-result-bar {
+  height: 12rpx;
+  margin-top: $sp-3;
+  border-radius: 999rpx;
+  background: rgba(28, 43, 42, 0.08);
+  overflow: hidden;
+}
+
+.as-result-fill {
+  height: 100%;
+  border-radius: 999rpx;
+}
+
+.as-result-fill.lv-green {
+  background: $c-green;
+}
+
+.as-result-fill.lv-yellow {
+  background: $c-yellow;
+}
+
+.as-result-fill.lv-red {
+  background: $c-red;
+}
+
+.as-advice {
+  margin-top: $sp-3;
+}
+
+.as-advice-head {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+}
+
+.as-advice-title {
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.as-advice-text {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-body;
+  line-height: 1.75;
+  color: $c-text;
+}
+
+.as-advice-note {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-tiny;
+  line-height: 1.7;
+  color: $c-muted;
+}
+
+.as-safety {
+  margin-top: $sp-3;
+  background: $c-red-bg;
+  border: 2rpx solid $c-red-line;
+  border-radius: $radius;
+  padding: $sp-4;
+}
+
+.as-safety-head {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+}
+
+.as-safety-title {
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-red;
+}
+
+.as-safety-text {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  line-height: 1.8;
+  color: $c-text;
+}
+
+.as-safety-actions {
+  margin-top: $sp-3;
+}
+
+.as-safety-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-1;
+}
+
+.as-result-actions {
+  margin-top: $sp-4;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.as-result-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-1;
+}
+
+.as-error {
+  display: block;
+  margin-top: $sp-3;
+  font-size: $fs-small;
+  color: $c-red;
+  line-height: 1.6;
+}

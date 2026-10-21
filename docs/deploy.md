@@ -71,7 +71,7 @@ Actions → Run workflow → 自动部署
 ```bash
 ssh <SSH_ALIAS> 'mkdir -p /srv/carehaven'
 ssh <SSH_ALIAS> 'docker volume create carehaven_data'
-ssh <SSH_ALIAS> 'printf "SUPERUSER_EMAIL=admin@<PROD_DOMAIN>\nSUPERUSER_PASSWORD=<强口令>\nWECHAT_APP_ID=\nWECHAT_APP_SECRET=\n" > /srv/carehaven/.env && chmod 600 /srv/carehaven/.env'
+ssh <SSH_ALIAS> 'printf "SUPERUSER_EMAIL=admin@<PROD_DOMAIN>\nSUPERUSER_PASSWORD=<强口令>\nWECHAT_APP_ID=\nWECHAT_APP_SECRET=\nVOLC_TTS_API_KEY=\nVOLC_TTS_RESOURCE_ID=seed-tts-2.0\nVOLC_TTS_SPEAKER=zh_female_vv_uranus_bigtts\nVOLC_TTS_MODEL=seed-tts-2.0-standard\nVOLC_TTS_SAMPLE_RATE=24000\n" > /srv/carehaven/.env && chmod 600 /srv/carehaven/.env'
 ```
 
 `.env` 的键：

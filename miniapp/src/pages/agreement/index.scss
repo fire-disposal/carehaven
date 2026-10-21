@@ -1,0 +1,102 @@
+@use '@/styles/tokens.scss' as *;
+
+.ag-page {
+  min-height: 100vh;
+  padding-bottom: 48rpx;
+}
+
+.ag-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 $sp-2;
+  background: rgba(244, 248, 247, 0.96);
+  border-bottom: 2rpx solid $c-border;
+}
+
+.ag-back {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $c-text;
+}
+
+.ag-top-title {
+  flex: 1;
+  text-align: center;
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.ag-top-spacer {
+  width: 72rpx;
+}
+
+.ag-tabs {
+  display: flex;
+  gap: $sp-2;
+  padding: $sp-3 $sp-4 0;
+}
+
+.ag-tab {
+  flex: 1;
+  min-height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid $c-border;
+  border-radius: $radius;
+  background: $c-card;
+  color: $c-text-2;
+  font-size: $fs-body;
+}
+
+.ag-tab.on {
+  border-color: $c-primary;
+  background: $c-primary-light;
+  color: $c-primary-dark;
+  font-weight: 700;
+}
+
+.ag-updated {
+  display: block;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  margin-bottom: $sp-2;
+}
+
+.ag-section {
+  margin-bottom: $sp-4;
+}
+
+.ag-title {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 700;
+  color: $c-text;
+  margin-bottom: $sp-1;
+}
+
+.ag-text {
+  display: block;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.85;
+  margin-top: $sp-1;
+}
+
+.ag-foot {
+  display: block;
+  margin-top: $sp-4;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  line-height: 1.7;
+  text-align: center;
+}

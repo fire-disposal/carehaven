@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Input, ScrollView, Text, Textarea, View } from '@tarojs/components'
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
+import Icon from '@/components/Icon'
 import { DEVICE_PROFILES } from '@/lib/ble'
 import {
   api,
@@ -60,10 +61,9 @@ const SOURCE_PILL: Record<PhysioRecord['source'], string> = {
  * 模拟数据不得描述为设备采集，手动录入也不得说成自动采集。
  */
 const SOURCE_NOTE: Record<PhysioRecord['source'], string> = {
-  device: '由已登记的蓝牙设备同步写入。',
-  simulated:
-    '这是模拟数据（由生理学约束生成的合成数据，用于验证系统链路），不是可穿戴设备真实采集的结果，请不要当成真实测量值引用。',
-  manual: '这是您手动录入的自报数据，不是设备自动采集。',
+  device: '由已登记的蓝牙设备同步。',
+  simulated: '这些是模拟数据，用于展示系统效果，不是设备的真实测量结果。',
+  manual: '这是您手动填写的记录，不是设备测量。',
 }
 
 const DAY_MS = 86400000
@@ -110,6 +110,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showAllLogs, setShowAllLogs] = useState(false)
+  const [chartRange, setChartRange] = useState<7 | 30>(30)
+  const [selectedBar, setSelectedBar] = useState(-1)
+  const [chartScrollLeft, setChartScrollLeft] = useState(0)
 
   // 星级反馈
   const [stars, setStars] = useState(0)
@@ -177,6 +180,12 @@ export default function ProfilePage() {
     void load()
   })
 
+  // 30 天窗口默认滚到最右端：详情卡展示的是最新一天，不能让它停在屏幕外。
+  // 只在切窗口或数据量变化时改 scrollLeft，用户手动滑动不会被拉回。
+  useEffect(() => {
+    setChartScrollLeft(chartRange === 30 ? 99999 : 0)
+  }, [chartRange, scores.length])
+
   usePullDownRefresh(() => {
     void load().finally(() => Taro.stopPullDownRefresh())
   })
@@ -228,15 +237,41 @@ export default function ProfilePage() {
     ? `${peakDate.getMonth() + 1}月${peakDate.getDate()}日`
     : peak?.date || '—'
 
-  // 首 / 中 / 末三根柱子下面标日期刻度
-  const tickLabels = scores.map(() => '')
-  if (countDays) {
-    const ticks = new Set([0, Math.floor((countDays - 1) / 2), countDays - 1])
-    ticks.forEach((i) => {
-      const d = toDate(scores[i].date)
-      tickLabels[i] = d ? `${d.getMonth() + 1}/${d.getDate()}` : ''
-    })
-  }
+  // 图表只展示所选窗口；下方 30 天摘要仍用全量数据
+  const chartScores = scores.slice(-chartRange)
+  const chartValues = chartScores.map((s) =>
+    typeof s.hps === 'number' && Number.isFinite(s.hps) ? Math.max(0, Math.min(100, s.hps)) : null
+  )
+  const chartValid = chartValues.filter((v): v is number => v !== null)
+  const chartAvg = chartValid.length
+    ? chartValid.reduce((a, b) => a + b, 0) / chartValid.length
+    : null
+  let chartPeakIndex = -1
+  let chartPeakValue = -1
+  chartValues.forEach((v, i) => {
+    if (v !== null && v > chartPeakValue) {
+      chartPeakValue = v
+      chartPeakIndex = i
+    }
+  })
+  const activeIndex =
+    selectedBar >= 0 && selectedBar < chartScores.length
+      ? selectedBar
+      : chartScores.length - 1
+  const activeScore = activeIndex >= 0 ? chartScores[activeIndex] : null
+  const activeDate = activeScore ? toDate(activeScore.date) : null
+  const activeDateText = activeDate
+    ? `${activeDate.getMonth() + 1}月${activeDate.getDate()}日`
+    : ''
+
+  // 7 天显示全部日期；30 天每 5 天标一次（再加最后一天），滚动到右端也能看到近几日刻度
+  const tickLabels = chartScores.map((s, i) => {
+    const d = toDate(s.date)
+    if (!d) return ''
+    const last = chartScores.length - 1
+    const show = chartRange === 7 || i === 0 || i === last || i % 5 === 0
+    return show ? `${d.getMonth() + 1}/${d.getDate()}` : ''
+  })
 
   const visibleLogs = showAllLogs ? recentLogs : recentLogs.slice(0, LOG_PREVIEW)
 
@@ -347,17 +382,13 @@ export default function ProfilePage() {
         {/* ---------- 用户卡 ---------- */}
         <View className="card">
           <View className="pf-user-top">
-            <View className="pf-avatar">🌿</View>
+            <View className="pf-avatar">
+              <Icon name="leaf" size={40} color="#1f6b65" />
+            </View>
             <View className="pf-user-info">
               <Text className="pf-user-name">{user?.name || '照护者'}</Text>
               <Text className="pf-user-email">{user?.email || '未获取到邮箱'}</Text>
             </View>
-          </View>
-          <Text className="pf-user-hint">
-            当前为内部原型环境，数据保存在本机服务器；请勿在此填写真实身份信息。
-          </Text>
-          <View className="btn-ghost pf-logout" onClick={confirmLogout}>
-            退出登录
           </View>
         </View>
 
@@ -385,6 +416,75 @@ export default function ProfilePage() {
           </View>
         ) : null}
 
+        {/* ---------- 帮助与支持 ---------- */}
+        <View className="section-title">
+          <Text>帮助与支持</Text>
+        </View>
+        <View className="card pf-menu">
+          <View
+            className="pf-menu-item"
+            onClick={() => Taro.navigateTo({ url: '/pages/feedback/index' })}
+            ariaRole="button"
+            ariaLabel="意见反馈"
+          >
+            <View className="pf-menu-icon">
+              <Icon name="pen-to-square" size={32} color="#1f6b65" />
+            </View>
+            <View className="pf-menu-main">
+              <Text className="pf-menu-label">意见反馈</Text>
+              <Text className="pf-menu-desc">问题、建议与违规举报</Text>
+            </View>
+            <Icon name="chevron-right" size={28} color="#5b7074" />
+          </View>
+          <View
+            className="pf-menu-item"
+            onClick={() => Taro.navigateTo({ url: '/pages/about/index' })}
+            ariaRole="button"
+            ariaLabel="关于智护忆站"
+          >
+            <View className="pf-menu-icon">
+              <Icon name="circle-info" size={32} color="#1f6b65" />
+            </View>
+            <View className="pf-menu-main">
+              <Text className="pf-menu-label">关于智护忆站</Text>
+              <Text className="pf-menu-desc">版本、方法与数据说明</Text>
+            </View>
+            <Icon name="chevron-right" size={28} color="#5b7074" />
+          </View>
+          <View
+            className="pf-menu-item"
+            onClick={() =>
+              Taro.navigateTo({ url: '/pages/agreement/index?type=privacy' })
+            }
+            ariaRole="button"
+            ariaLabel="用户协议与隐私政策"
+          >
+            <View className="pf-menu-icon">
+              <Icon name="shield-heart" size={32} color="#1f6b65" />
+            </View>
+            <View className="pf-menu-main">
+              <Text className="pf-menu-label">用户协议与隐私政策</Text>
+              <Text className="pf-menu-desc">数据如何使用与保护</Text>
+            </View>
+            <Icon name="chevron-right" size={28} color="#5b7074" />
+          </View>
+          <View
+            className="pf-menu-item"
+            onClick={confirmLogout}
+            ariaRole="button"
+            ariaLabel="退出登录"
+          >
+            <View className="pf-menu-icon pf-menu-icon-danger">
+              <Icon name="lock" size={32} color="#a83a34" />
+            </View>
+            <View className="pf-menu-main">
+              <Text className="pf-menu-label pf-menu-label-danger">退出登录</Text>
+              <Text className="pf-menu-desc">退出后需要重新登录</Text>
+            </View>
+            <Icon name="chevron-right" size={28} color="#5b7074" />
+          </View>
+        </View>
+
         {error && hasAnyData ? <Text className="pf-error-line">{error}</Text> : null}
 
         {loading ? (
@@ -408,7 +508,7 @@ export default function ProfilePage() {
             {/* ---------- 30 天压力趋势（CSS 柱状图） ---------- */}
             <View className="section-title">
               <Text>压力趋势</Text>
-              <Text className="muted">{countDays ? `近 ${countDays} 天` : '暂无数据'}</Text>
+              <Text className="muted">{countDays ? `近 ${chartRange} 天` : '暂无数据'}</Text>
             </View>
 
             {countDays === 0 ? (
@@ -426,23 +526,72 @@ export default function ProfilePage() {
               </View>
             ) : (
               <View className="card pf-chart-card">
-                <ScrollView scrollX className="pf-chart-scroll">
-                  <View className="pf-chart-inner">
-                    {scores.map((s, i) => {
-                      const value =
-                        typeof s.hps === 'number' && Number.isFinite(s.hps)
-                          ? Math.max(0, Math.min(100, s.hps))
-                          : null
+                <View className="pf-chart-head">
+                  <View>
+                    <Text className="pf-chart-title">每日压力指数</Text>
+                    <Text className="pf-chart-sub">数值越高，压力越大</Text>
+                  </View>
+                  <View className="pf-range">
+                    {([7, 30] as const).map((v) => (
+                      <View
+                        key={v}
+                        className={`pf-range-item ${chartRange === v ? 'on' : ''}`}
+                        onClick={() => {
+                          setChartRange(v)
+                          setSelectedBar(-1)
+                        }}
+                        ariaRole="button"
+                        ariaLabel={`查看最近 ${v} 天`}
+                      >
+                        <Text>{v} 天</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+
+                {activeScore ? (
+                  <View className="pf-chart-active">
+                    <Text className="pf-chart-active-date">{activeDateText}</Text>
+                    <Text className="pf-chart-active-value">
+                      {chartValues[activeIndex] === null
+                        ? '--'
+                        : chartValues[activeIndex]?.toFixed(0)}
+                    </Text>
+                    <Text className={`pill pill-${activeScore.level}`}>
+                      {LEVEL_TEXT[activeScore.level] || '—'}
+                    </Text>
+                  </View>
+                ) : null}
+
+                <ScrollView scrollX scrollLeft={chartScrollLeft} className="pf-chart-scroll">
+                  <View className={`pf-chart-inner ${chartRange === 7 ? 'range-7' : ''}`}>
+                    {chartAvg !== null ? (
+                      <View
+                        className="pf-avg-line"
+                        style={{
+                          bottom: Taro.pxTransform(36 + (chartAvg / 100) * 240),
+                        }}
+                      >
+                        <Text className="pf-avg-label">平均 {chartAvg.toFixed(0)}</Text>
+                      </View>
+                    ) : null}
+                    {chartScores.map((s, i) => {
+                      const value = chartValues[i]
                       const lv: Level =
                         s.level === 'yellow' || s.level === 'red' ? s.level : 'green'
+                      const showValue =
+                        chartRange === 7 || i === chartPeakIndex || i === activeIndex
                       return (
                         <View
                           key={s.id || String(i)}
-                          className={`pf-chart-col ${i === peakIndex ? 'is-peak' : ''}`}
+                          className={`pf-chart-col ${i === chartPeakIndex ? 'is-peak' : ''} ${i === activeIndex ? 'is-active' : ''}`}
+                          onClick={() => setSelectedBar(i)}
+                          ariaRole="button"
+                          ariaLabel={`${tickLabels[i] || '当天'}，压力指数 ${value === null ? '无数据' : value}`}
                         >
-                          <Text className="pf-bar-val">
-                            {value === null ? '--' : value.toFixed(0)}
-                          </Text>
+                          <View className="pf-bar-val">
+                            {showValue ? (value === null ? '--' : value.toFixed(0)) : ''}
+                          </View>
                           <View className="pf-bar-track">
                             <View
                               className={`pf-bar-fill lv-${lv}`}
@@ -455,9 +604,7 @@ export default function ProfilePage() {
                     })}
                   </View>
                 </ScrollView>
-                <Text className="pf-chart-hint">
-                  左右滑动可看全部 {countDays} 天；柱高 = 当天 HPS ÷ 100，日期刻度标在首 / 中 / 末
-                </Text>
+                <Text className="pf-chart-hint">点柱子看数值，虚线是平均值</Text>
                 <View className="pf-legend">
                   {LEVEL_KEYS.map((k) => (
                     <View className="pf-legend-item" key={k}>
@@ -491,7 +638,7 @@ export default function ProfilePage() {
                     <Text className="pf-stat-value">
                       {avgHps === null ? '--' : avgHps.toFixed(1)}
                     </Text>
-                    <Text className="pf-stat-unit">HPS</Text>
+                    <Text className="pf-stat-unit">分</Text>
                   </View>
                   <Text className="pf-stat-hint">{hpsDays} 天的平均值</Text>
                 </View>
@@ -538,15 +685,9 @@ export default function ProfilePage() {
                       <View className="pf-stat-value-row">
                         <Text className="pf-stat-value">{peakValue.toFixed(0)}</Text>
                         <Text className="pf-stat-unit">
-                          HPS · {peakDayText}
-                          {peak.level === 'green' || peak.level === 'yellow' || peak.level === 'red'
-                            ? ` · ${LEVEL_TEXT[peak.level]}`
-                            : ''}
+                          {peakDayText} · {LEVEL_TEXT[peak.level] || '—'}
                         </Text>
                       </View>
-                      <Text className="pf-stat-hint">
-                        压力最高的一天往往也是最需要留出休息时间的一天。
-                      </Text>
                     </>
                   ) : (
                     <Text className="pf-stat-hint">暂无有效数值</Text>
@@ -562,10 +703,6 @@ export default function ProfilePage() {
                       </Text>
                     ))}
                   </View>
-                  <Text className="pf-stat-hint">
-                    绿 / 黄 / 红分别对应 HPS 的 {LEVEL_RANGE.green}、{LEVEL_RANGE.yellow}、
-                    {LEVEL_RANGE.red}
-                  </Text>
                 </View>
               </View>
             )}
@@ -593,7 +730,9 @@ export default function ProfilePage() {
               <View className="card pf-log-card">
                 {visibleLogs.map((log, i) => (
                   <View className="pf-log-item" key={log.id || String(i)}>
-                    <Text className="pf-log-icon">🧘</Text>
+                    <View className="pf-log-icon">
+                      <Icon name="spa" size={34} color="#2e8b84" />
+                    </View>
                     <View className="pf-log-main">
                       <Text className="pf-log-title">{log.title_snapshot || '减压练习'}</Text>
                       <Text className="pf-log-meta">
@@ -638,7 +777,11 @@ export default function ProfilePage() {
                       setRatingError('')
                     }}
                   >
-                    <Text className="pf-star-icon">{stars >= n ? '★' : '☆'}</Text>
+                    <Icon
+                      name="star"
+                      size={44}
+                      color={stars >= n ? '#9a6410' : '#c9d6d3'}
+                    />
                   </View>
                 ))}
               </View>
@@ -676,10 +819,16 @@ export default function ProfilePage() {
                     return (
                       <View className="pf-rating-item" key={r.id || String(i)}>
                         <View className="row-between">
-                          <Text className="pf-rating-stars">
-                            {'★'.repeat(level)}
-                            {'☆'.repeat(5 - level)}
-                          </Text>
+                          <View className="pf-rating-stars">
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <Icon
+                                key={n}
+                                name="star"
+                                size={26}
+                                color={n <= level ? '#9a6410' : '#d7e2df'}
+                              />
+                            ))}
+                          </View>
                           <Text className="pf-rating-meta">
                             {r.target === 'app' ? '应用反馈' : '方案反馈'} · {fmtDateTime(r.created)}
                           </Text>
@@ -697,7 +846,7 @@ export default function ProfilePage() {
             {/* ---------- 生理数据来源 ---------- */}
             <View className="section-title">
               <Text>生理数据来源</Text>
-              <Text className="muted">诚实标注</Text>
+              <Text className="muted">数据来源</Text>
             </View>
 
             <View className="card">
@@ -713,10 +862,8 @@ export default function ProfilePage() {
               </View>
 
               <Text className="pf-source-desc">
-                蓝牙接入的接口与数据帧协议已经写好并预留（代码位置：小程序端 src/lib/ble.ts）：
-                设备发现、连接、取值、写入数据库的通道都已具备，但当前没有配套硬件，
-                所以这条链路还没有在真机上验证过。硬件到位后，只需补上设备的 UUID 与帧格式，
-                界面和压力计算都不需要改动。
+                当前没有连接蓝牙设备。您可以在下方手动填写手环或手机健康应用里的读数；
+                接入设备后，数据会自动同步到这里。
               </Text>
 
               {physio ? (
@@ -743,12 +890,12 @@ export default function ProfilePage() {
                   <Text className={`pf-source-note note-${source ?? 'manual'}`}>
                     {source
                       ? SOURCE_NOTE[source]
-                      : '这条记录没有标注数据来源，请不要当作设备采集的数据引用。'}
+                      : '这条记录没有标注来源，请勿当作设备测量结果。'}
                   </Text>
                 </>
               ) : (
                 <Text className="pf-source-note note-manual">
-                  目前还没有任何生理数据，下面的手动录入是唯一的数据入口。
+                  还没有生理数据，可以在下方手动填写。
                 </Text>
               )}
 

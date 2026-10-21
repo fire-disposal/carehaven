@@ -7,7 +7,7 @@
   bottom: 0;
   height: 128rpx;
   display: flex;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.98);
   border-top: 2rpx solid $c-border;
   box-shadow: 0 -2rpx 16rpx rgba(28, 43, 42, 0.05);
   padding-bottom: env(safe-area-inset-bottom);
@@ -24,13 +24,22 @@
   font-size: $fs-tiny;
 }
 
-.nav-item.active {
-  color: $c-primary;
+.nav-icon-wrap {
+  width: 64rpx;
+  height: 48rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 120ms ease;
 }
 
-.nav-icon {
-  font-size: $icon-nav;
-  line-height: 1.1;
+.nav-item.active .nav-icon-wrap {
+  background: $c-primary-light;
+}
+
+.nav-item.active {
+  color: $c-primary;
 }
 
 .nav-label {

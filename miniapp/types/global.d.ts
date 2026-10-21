@@ -1,5 +1,14 @@
 /// <reference types="@tarojs/taro" />
 
+// Promise.withResolvers 是 ES2024；小程序的旧基础库没有，app.tsx 里补了等价的 polyfill。
+interface PromiseConstructor {
+  withResolvers<T>(): {
+    promise: Promise<T>
+    resolve: (value: T | PromiseLike<T>) => void
+    reject: (reason?: unknown) => void
+  }
+}
+
 declare module '*.png'
 declare module '*.gif'
 declare module '*.jpg'

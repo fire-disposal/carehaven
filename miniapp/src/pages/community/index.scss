@@ -27,11 +27,6 @@
   color: #fff;
 }
 
-.seg-icon {
-  font-size: $fs-small;
-  line-height: 1.2;
-}
-
 .seg-label {
   margin-top: 2rpx;
   font-size: $fs-small;
@@ -43,17 +38,12 @@
 .ugc-notice {
   display: flex;
   align-items: flex-start;
+  gap: 6rpx;
   background: $c-yellow-bg;
   border: 2rpx solid $c-yellow-line;
   border-radius: $radius-sm;
   padding: $sp-2 $sp-3;
   margin-top: $sp-2;
-}
-
-.ugc-notice-icon {
-  font-size: $fs-small;
-  line-height: 1.6;
-  margin-right: $sp-1;
 }
 
 .ugc-notice-text {
@@ -81,8 +71,9 @@
 }
 
 .state-icon {
-  font-size: $icon-empty;
-  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .state-text {
@@ -159,10 +150,6 @@
   color: $c-primary-dark;
 }
 
-.avatar-anon .avatar-text {
-  font-size: $fs-body;
-}
-
 .post-who {
   flex: 1;
   margin: 0 $sp-2;
@@ -221,11 +208,6 @@
   margin-right: $sp-1;
   border-radius: $radius-sm;
   background: #f6f8f7;
-}
-
-.act-icon {
-  font-size: $fs-h2;
-  line-height: 1;
 }
 
 .act-num {
@@ -387,11 +369,6 @@
   box-shadow: $shadow-lg;
 }
 
-.fab-icon {
-  font-size: $fs-h2;
-  line-height: 1;
-}
-
 .fab-label {
   margin-left: $sp-1;
   font-size: $fs-body;
@@ -455,11 +432,6 @@
   justify-content: center;
   border-radius: 50%;
   background: #f6f8f7;
-}
-
-.sheet-close-icon {
-  font-size: $fs-h2;
-  color: $c-text-2;
 }
 
 .sheet-label {

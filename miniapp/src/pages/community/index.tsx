@@ -2,14 +2,16 @@ import { useCallback, useState } from 'react'
 import { Switch, Text, Textarea, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
+import Icon from '@/components/Icon'
+import type { IconName } from '@/lib/icons'
 import { api, getUser, isLoggedIn, type Comment, type Post } from '@/lib/api'
 import './index.scss'
 
-const SECTIONS = [
-  { key: '经验分享', icon: '💡' },
-  { key: '情绪树洞', icon: '🌧️' },
-  { key: '照护技巧', icon: '🧰' },
-] as const
+const SECTIONS: { key: '经验分享' | '情绪树洞' | '照护技巧'; icon: IconName }[] = [
+  { key: '经验分享', icon: 'lightbulb' },
+  { key: '情绪树洞', icon: 'cloud-rain' },
+  { key: '照护技巧', icon: 'screwdriver-wrench' },
+]
 
 type SectionKey = (typeof SECTIONS)[number]['key']
 
@@ -35,7 +37,7 @@ function relativeTime(iso: string): string {
 
 /**
  * 署名规则：显式匿名，或历史数据把昵称直接写成「匿名」时，都按匿名展示。
- * 匿名与实名给出双重信号（🎭 图标 + 虚线标签），不只靠颜色区分。
+ * 匿名与实名给出双重信号（头像图标 + 虚线标签），不只靠颜色区分。
  */
 function personOf(item: { nickname?: string; anonymous?: boolean }): {
   name: string
@@ -230,18 +232,17 @@ export default function CommunityPage() {
               className={`seg-item ${item.key === section ? 'on' : ''}`}
               onClick={() => switchSection(item.key)}
             >
-              <Text className="seg-icon">{item.icon}</Text>
+              <Icon name={item.icon} size={30} />
               <Text className="seg-label">{item.key}</Text>
             </View>
           ))}
         </View>
 
-        {/* 合规提示：上线前必须先补齐内容审核能力（硬性要求，不可省略） */}
+        {/* 社区公约：保留合规底线，但按正式产品口吻呈现 */}
         <View className="ugc-notice">
-          <Text className="ugc-notice-icon">⚠️</Text>
+          <Icon name="circle-info" size={32} color="#9a6410" />
           <Text className="ugc-notice-text">
-            本分区为内部测试版本，内容仅项目组可见。正式上线前需完成内容审核能力（UGC
-            合规要求，见 README「合规与上线风险」）。
+            请尊重他人隐私，不发布可识别个人身份的信息。看到不当内容，可通过「我的 - 意见反馈」举报。
           </Text>
         </View>
 
@@ -256,14 +257,18 @@ export default function CommunityPage() {
 
         {loading ? (
           <View className="state-block">
-            <Text className="state-icon">⏳</Text>
+            <View className="state-icon">
+              <Icon name="clock" size={56} color="#5b7074" />
+            </View>
             <Text className="state-text">正在加载「{section}」的内容…</Text>
           </View>
         ) : null}
 
         {showEmpty ? (
           <View className="state-block">
-            <Text className="state-icon">🌱</Text>
+            <View className="state-icon">
+              <Icon name="seedling" size={56} color="#2e8b84" />
+            </View>
             <Text className="state-text">这个分区还没有人发言</Text>
             <Text className="state-hint">
               您的经验对别人就是帮助。点右下角「发帖」，写下最近照护中的一件事，或只是想说说此刻的心情。
@@ -285,7 +290,11 @@ export default function CommunityPage() {
                 <View className="post-card" key={post.id}>
                   <View className="post-head" onClick={() => void toggleComments(post)}>
                     <View className={`avatar ${who.anon ? 'avatar-anon' : ''}`}>
-                      <Text className="avatar-text">{who.anon ? '🎭' : who.name.slice(0, 1)}</Text>
+                      {who.anon ? (
+                        <Icon name="user" size={32} color="#5b7074" />
+                      ) : (
+                        <Text className="avatar-text">{who.name.slice(0, 1)}</Text>
+                      )}
                     </View>
                     <View className="post-who">
                       <Text className={`nick ${who.anon ? 'nick-anon' : ''}`}>{who.name}</Text>
@@ -303,11 +312,15 @@ export default function CommunityPage() {
                       className={`act ${liked ? 'liked' : ''} ${likingId === post.id ? 'busy' : ''}`}
                       onClick={() => void like(post)}
                     >
-                      <Text className="act-icon">{liked ? '❤️' : '🤍'}</Text>
+                      <Icon
+                        name="heart"
+                        size={30}
+                        color={liked ? '#a83a34' : '#9fb0b2'}
+                      />
                       <Text className="act-num">{post.likes ?? 0}</Text>
                     </View>
                     <View className="act" onClick={() => void toggleComments(post)}>
-                      <Text className="act-icon">💬</Text>
+                      <Icon name="comment" size={30} color="#9fb0b2" />
                       <Text className="act-num">{count}</Text>
                     </View>
                     <Text className="act-more">{opened ? '收起评论' : '写评论'}</Text>
@@ -329,7 +342,7 @@ export default function CommunityPage() {
                           <View className="comment-item" key={c.id}>
                             <View className="row-between">
                               <Text className={`nick-small ${cw.anon ? 'nick-anon' : ''}`}>
-                                {cw.anon ? `🎭 ${cw.name}` : cw.name}
+                                {cw.name}
                               </Text>
                               <Text className="post-time">{relativeTime(c.created)}</Text>
                             </View>
@@ -356,7 +369,7 @@ export default function CommunityPage() {
                             <Text className="switch-label">匿名发表</Text>
                             <Switch
                               checked={draftAnon}
-                              color="#2E8B84"
+                              color="#287a73"
                               onChange={(e) => setDraftAnon(e.detail.value)}
                             />
                           </View>
@@ -382,7 +395,7 @@ export default function CommunityPage() {
 
       {/* 发帖入口 */}
       <View className="fab" onClick={openSheet}>
-        <Text className="fab-icon">✏️</Text>
+        <Icon name="pen-to-square" size={30} color="#fff" />
         <Text className="fab-label">发帖</Text>
       </View>
 
@@ -392,8 +405,8 @@ export default function CommunityPage() {
           <View className="sheet">
             <View className="sheet-head">
               <Text className="sheet-title">发布新帖</Text>
-              <View className="sheet-close" onClick={() => setSheetOpen(false)}>
-                <Text className="sheet-close-icon">✕</Text>
+              <View className="sheet-close" onClick={() => setSheetOpen(false)} ariaRole="button" ariaLabel="关闭">
+                <Icon name="xmark" size={34} color="#45585a" />
               </View>
             </View>
 
@@ -405,7 +418,7 @@ export default function CommunityPage() {
                   className={`pick-item ${item.key === formSection ? 'on' : ''}`}
                   onClick={() => setFormSection(item.key)}
                 >
-                  <Text className="seg-icon">{item.icon}</Text>
+                  <Icon name={item.icon} size={30} />
                   <Text className="pick-label">{item.key}</Text>
                 </View>
               ))}
@@ -434,15 +447,15 @@ export default function CommunityPage() {
               </View>
               <Switch
                 checked={formAnon}
-                color="#2E8B84"
+                color="#287a73"
                 onChange={(e) => setFormAnon(e.detail.value)}
               />
             </View>
 
             <View className="ugc-notice ugc-notice-sheet">
-              <Text className="ugc-notice-icon">⚠️</Text>
+              <Icon name="circle-info" size={30} color="#9a6410" />
               <Text className="ugc-notice-text">
-                内部测试中：发布内容仅项目组可见，上线前需先完成内容审核能力。
+                发布即表示同意《用户协议》中的社区规范，请勿包含他人隐私。
               </Text>
             </View>
 

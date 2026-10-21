@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Input, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
+import Icon from '@/components/Icon'
 import { login, register, wechatLogin } from '@/lib/api'
 import './index.scss'
 
@@ -65,7 +66,9 @@ export default function LoginPage() {
   return (
     <View className="login">
       <View className="brand">
-        <View className="brand-logo">🌿</View>
+        <View className="brand-logo">
+          <Icon name="seedling" size={56} color="#ffffff" />
+        </View>
         <Text className="brand-name">智护忆站</Text>
         <Text className="brand-slogan">照护者的压力监测与支持系统</Text>
       </View>
@@ -130,7 +133,23 @@ export default function LoginPage() {
         </View>
       </View>
 
-      <Text className="tip">我们只收集与照护压力评估相关的信息，用于生成您的压力报告。</Text>
+      <Text className="tip">我们只收集与压力评估相关的信息，不会用于其他用途。</Text>
+      <View className="legal">
+        <Text>登录即表示同意</Text>
+        <Text
+          className="legal-link"
+          onClick={() => Taro.navigateTo({ url: '/pages/agreement/index?type=terms' })}
+        >
+          《用户协议》
+        </Text>
+        <Text>与</Text>
+        <Text
+          className="legal-link"
+          onClick={() => Taro.navigateTo({ url: '/pages/agreement/index?type=privacy' })}
+        >
+          《隐私政策》
+        </Text>
+      </View>
     </View>
   )
 }

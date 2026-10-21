@@ -212,6 +212,21 @@ export interface StressScore {
   advice: string
 }
 
+/** 一次量表自评；分数与分级由服务端返回，客户端不自行计算后覆盖 */
+export interface AssessmentRecord {
+  id?: string
+  scale: 'zbi12' | 'phq9' | 'gad7'
+  scaleName?: string
+  score: number
+  maxScore?: number
+  severity: string
+  level: Level
+  advice?: string
+  flag?: boolean
+  answers?: number[]
+  created: string
+}
+
 export interface PhysioRecord {
   id: string
   date: string
@@ -232,6 +247,7 @@ export interface Checkin {
   sleep_hours: number
   care_hours: number
   note: string
+  created?: string
 }
 
 export interface Intervention {
@@ -302,6 +318,21 @@ export interface QaSession {
   question: string
   answer: string
   created: string
+}
+
+export type FeedbackCategory = '功能建议' | '使用困难' | '内容问题' | '违规举报' | '其他'
+
+export interface FeedbackInput {
+  category: FeedbackCategory
+  content: string
+  contact?: string
+  page?: string
+}
+
+export interface TtsResult {
+  chunks: string[]
+  contentType: string
+  chars: number
 }
 
 // ---------------- 领域方法 ----------------
@@ -438,6 +469,46 @@ export const api = {
 
   ask(question: string): Promise<AskResult> {
     return request<AskResult>('/api/zz/ask', { method: 'POST', data: { question } })
+  },
+
+  // 量表自评（服务端计分）
+  submitAssessment(
+    scale: AssessmentRecord['scale'],
+    answers: number[]
+  ): Promise<AssessmentRecord> {
+    return request<AssessmentRecord>('/api/zz/assessments', {
+      method: 'POST',
+      data: { scale, answers },
+    })
+  },
+
+  async assessments(limit = 20): Promise<AssessmentRecord[]> {
+    const res = await list<AssessmentRecord>('assessments', {
+      sort: '-created',
+      perPage: limit,
+    })
+    return res.items
+  },
+
+  submitFeedback(data: FeedbackInput): Promise<{ id: string; created: string }> {
+    return request<{ id: string; created: string }>('/api/zz/feedback', {
+      method: 'POST',
+      data: {
+        category: data.category,
+        content: data.content,
+        contact: data.contact || '',
+        page: data.page || '',
+      },
+    })
+  },
+
+  // 语音合成（服务端代理，密钥不下发客户端）
+  ttsStatus(): Promise<{ available: boolean }> {
+    return request<{ available: boolean }>('/api/zz/tts/status')
+  },
+
+  tts(text: string): Promise<TtsResult> {
+    return request<TtsResult>('/api/zz/tts', { method: 'POST', data: { text } })
   },
 
   async qaHistory(limit = 20): Promise<QaSession[]> {

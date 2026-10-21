@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { Input, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
+import Icon from '@/components/Icon'
 import { api, isLoggedIn, type KbEntry, type QaSession } from '@/lib/api'
 import './index.scss'
 
@@ -303,7 +304,10 @@ export default function QaPage() {
       <View className="qa-thread">
         {chatError ? (
           <View className="err-card">
-            <Text className="err-card-text">⚠️ {chatError}</Text>
+            <View className="err-card-text inline-alert">
+              <Icon name="triangle-exclamation" size={30} color="#a83a34" />
+              <Text>{chatError}</Text>
+            </View>
             <View className="err-card-btn" ariaRole="button" ariaLabel="重新加载" onClick={() => void load()}>
               <Text className="err-card-btn-text">重新加载</Text>
             </View>
@@ -312,7 +316,9 @@ export default function QaPage() {
 
         {turns.length === 0 ? (
           <View className="welcome">
-            <Text className="welcome-emoji">💬</Text>
+            <View className="welcome-emoji">
+              <Icon name="comment-dots" size={64} color="#2e8b84" />
+            </View>
             <Text className="welcome-title">有困扰，随时问</Text>
             <Text className="welcome-desc">
               用平常说话的方式描述您遇到的问题，我会从照护知识库里帮您找办法。
@@ -367,7 +373,10 @@ export default function QaPage() {
 
                 {turn.status === 'error' ? (
                   <View className="bubble bubble-ai bubble-error">
-                    <Text className="bubble-error-text">⚠️ {turn.error || '没能取到回答'}</Text>
+                    <View className="bubble-error-text inline-alert">
+                      <Icon name="triangle-exclamation" size={28} color="#a83a34" />
+                      <Text>{turn.error || '没能取到回答'}</Text>
+                    </View>
                     <View
                       className="retry-btn"
                       ariaRole="button"
@@ -408,7 +417,9 @@ export default function QaPage() {
     if (booting) {
       return (
         <View className="qa-state">
-          <Text className="state-emoji">📚</Text>
+          <View className="state-emoji">
+            <Icon name="book-open" size={56} color="#5b7074" />
+          </View>
           <Text className="state-title">正在读取知识库…</Text>
         </View>
       )
@@ -417,7 +428,10 @@ export default function QaPage() {
       return (
         <View className="kb-wrap">
           <View className="err-card">
-            <Text className="err-card-text">⚠️ {kbError}</Text>
+            <View className="err-card-text inline-alert">
+              <Icon name="triangle-exclamation" size={30} color="#a83a34" />
+              <Text>{kbError}</Text>
+            </View>
             <View className="err-card-btn" ariaRole="button" ariaLabel="重新加载知识库" onClick={() => void load()}>
               <Text className="err-card-btn-text">重新加载</Text>
             </View>
@@ -428,7 +442,9 @@ export default function QaPage() {
     if (!kbReady) {
       return (
         <View className="qa-state">
-          <Text className="state-emoji">📭</Text>
+          <View className="state-emoji">
+            <Icon name="circle-info" size={56} color="#5b7074" />
+          </View>
           <Text className="state-title">知识库暂时没有内容</Text>
           <Text className="state-desc">内容补充后会显示在这里，您也可以切回问答直接提问。</Text>
         </View>
@@ -439,7 +455,10 @@ export default function QaPage() {
         <View className="qa-anchor" id={`kb-anchor-${anchorTick}`} />
         {kbError ? (
           <View className="err-card">
-            <Text className="err-card-text">⚠️ {kbError}</Text>
+            <View className="err-card-text inline-alert">
+              <Icon name="triangle-exclamation" size={30} color="#a83a34" />
+              <Text>{kbError}</Text>
+            </View>
             <View className="err-card-btn" ariaRole="button" ariaLabel="重新加载知识库" onClick={() => void load()}>
               <Text className="err-card-btn-text">重新加载</Text>
             </View>
@@ -511,7 +530,8 @@ export default function QaPage() {
           ariaLabel="切换到问答"
           onClick={() => switchMode('chat')}
         >
-          <Text className="qa-tab-text">💬 问答</Text>
+          <Icon name="comment-dots" size={32} />
+          <Text className="qa-tab-text">问答</Text>
         </View>
         <View
           className={`qa-tab${mode === 'kb' ? ' on' : ''}`}
@@ -519,7 +539,8 @@ export default function QaPage() {
           ariaLabel="切换到知识库"
           onClick={() => switchMode('kb')}
         >
-          <Text className="qa-tab-text">📚 知识库</Text>
+          <Icon name="book-open" size={32} />
+          <Text className="qa-tab-text">知识库</Text>
         </View>
       </View>
 
@@ -528,7 +549,7 @@ export default function QaPage() {
       </ScrollView>
 
       <View className="qa-composer">
-        <Text className="qa-disclaimer">回答来自项目知识库检索，不能替代专业医疗建议</Text>
+        <Text className="qa-disclaimer">回答来自照护知识库，不能替代医生的建议</Text>
         {mode === 'chat' ? (
           <View className="qa-input-row">
             <Input
@@ -547,6 +568,7 @@ export default function QaPage() {
               ariaLabel="发送问题"
               onClick={() => send(draft)}
             >
+              <Icon name="paper-plane" size={30} color={draft.trim() ? '#fff' : '#1f6b65'} />
               <Text className="qa-send-text">发送</Text>
             </View>
           </View>

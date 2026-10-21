@@ -45,23 +45,58 @@
   word-break: break-all;
 }
 
-.pf-user-hint {
-  display: block;
-  margin-top: $sp-3;
-  padding: $sp-2;
-  background: #f7faf9;
-  border-radius: $radius-sm;
-  font-size: $fs-body;
-  color: $c-text-2;
-  line-height: 1.6;
+.pf-menu {
+  padding: $sp-1 $sp-3;
 }
 
-.btn-ghost.pf-logout {
-  margin-top: $sp-3;
+.pf-menu-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  min-height: 112rpx;
+  border-bottom: 2rpx solid $c-border;
+}
+
+.pf-menu-item:last-child {
+  border-bottom: none;
+}
+
+.pf-menu-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-sm;
+  background: $c-primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.pf-menu-icon-danger {
+  background: $c-red-bg;
+}
+
+.pf-menu-label-danger {
   color: $c-red;
-  border-color: $c-red-line;
-  height: 96rpx;
-  line-height: 92rpx;
+}
+
+.pf-menu-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-menu-label {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.pf-menu-desc {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
 }
 
 /* ---------- 状态提示 ---------- */
@@ -162,6 +197,80 @@
   padding: $sp-3 $sp-2;
 }
 
+.pf-chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $sp-2;
+  padding: 0 $sp-2;
+  margin-bottom: $sp-2;
+}
+
+.pf-chart-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.pf-chart-sub {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.pf-range {
+  display: flex;
+  background: #eef4f2;
+  border-radius: 999rpx;
+  padding: 4rpx;
+  flex: none;
+}
+
+.pf-range-item {
+  min-height: 56rpx;
+  padding: 0 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  font-size: $fs-tiny;
+  color: $c-text-2;
+}
+
+.pf-range-item.on {
+  background: $c-card;
+  color: $c-primary-dark;
+  font-weight: 700;
+  box-shadow: 0 2rpx 8rpx rgba(28, 43, 42, 0.08);
+}
+
+.pf-chart-active {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+  padding: 0 $sp-2;
+  margin-bottom: $sp-2;
+}
+
+.pf-chart-active-date {
+  font-size: $fs-small;
+  color: $c-text-2;
+}
+
+.pf-chart-active-value {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.pf-chart-active-hint {
+  margin-left: auto;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
 .pf-chart-scroll {
   width: 100%;
   height: 360rpx;
@@ -171,6 +280,13 @@
 .pf-chart-inner {
   display: inline-block;
   padding: 0 4rpx;
+  position: relative;
+}
+
+.pf-chart-inner.range-7 {
+  display: flex;
+  width: 100%;
+  padding: 0;
 }
 
 .pf-chart-col {
@@ -179,6 +295,14 @@
   margin-right: 8rpx;
   text-align: center;
   vertical-align: top;
+  position: relative;
+  z-index: 1;
+}
+
+.range-7 .pf-chart-col {
+  flex: 1;
+  width: auto;
+  margin-right: 0;
 }
 
 .pf-chart-col:last-child {
@@ -187,6 +311,8 @@
 
 .pf-bar-val {
   display: block;
+  height: 36rpx;
+  line-height: 36rpx;
   font-size: $fs-tiny;
   color: $c-text-2;
 }
@@ -221,7 +347,9 @@
 
 .pf-bar-date {
   display: block;
-  margin-top: 6rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  margin-top: 0;
   font-size: $fs-tiny;
   color: $c-text-2;
 }
@@ -233,6 +361,40 @@
 
 .pf-chart-col.is-peak .pf-bar-track {
   border: 2rpx solid $c-red-line;
+}
+
+.pf-chart-col.is-active .pf-bar-val {
+  color: $c-primary-dark;
+  font-weight: 700;
+}
+
+.pf-chart-col.is-active .pf-bar-track {
+  border: 2rpx solid $c-primary;
+}
+
+.pf-chart-col.is-active .pf-bar-date {
+  color: $c-primary-dark;
+  font-weight: 600;
+}
+
+.pf-avg-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 2rpx dashed rgba(28, 43, 42, 0.35);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pf-avg-label {
+  position: absolute;
+  right: 0;
+  top: -30rpx;
+  padding: 0 6rpx;
+  background: $c-card;
+  font-size: 20rpx;
+  color: $c-text-2;
+  line-height: 28rpx;
 }
 
 .pf-chart-hint {
@@ -368,9 +530,12 @@
 
 .pf-log-icon {
   width: 64rpx;
-  font-size: $icon-sm;
-  line-height: 1.2;
-  text-align: center;
+  height: 64rpx;
+  border-radius: 32rpx;
+  background: $c-primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: none;
 }
 
@@ -450,16 +615,6 @@
   border-color: $c-primary;
 }
 
-.pf-star-icon {
-  font-size: $icon-sm;
-  line-height: 1;
-  color: #cfdad8;
-}
-
-.pf-star-item.picked .pf-star-icon {
-  color: $c-yellow;
-}
-
 .pf-star-note {
   display: block;
   margin-top: $sp-2;
@@ -505,10 +660,8 @@
 }
 
 .pf-rating-stars {
-  font-size: $fs-small;
-  font-weight: 700;
-  color: $c-yellow;
-  letter-spacing: 4rpx;
+  display: flex;
+  gap: 2rpx;
 }
 
 .pf-rating-meta {

@@ -26,6 +26,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6rpx;
+  color: $c-text-2;
   border-radius: $radius;
   background: $c-bg;
   border: 2rpx solid $c-border;
@@ -39,6 +41,7 @@
 .qa-tab.on {
   background: $c-primary-light;
   border-color: $c-primary;
+  color: $c-primary-dark;
 }
 
 .qa-tab.on .qa-tab-text {
@@ -297,8 +300,9 @@
 }
 
 .welcome-emoji {
-  font-size: $icon-empty;
-  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .welcome-title {
@@ -364,8 +368,9 @@
 }
 
 .state-emoji {
-  font-size: $icon-empty;
-  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .state-title {
@@ -393,10 +398,18 @@
 }
 
 .err-card-text {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: 6rpx;
   font-size: $fs-small;
   line-height: 1.7;
   color: $c-red;
+}
+
+.inline-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 6rpx;
 }
 
 .err-card-btn {
@@ -569,6 +582,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6rpx;
   background: $c-primary;
   border-radius: $radius;
 }

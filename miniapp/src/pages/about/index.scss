@@ -1,0 +1,176 @@
+@use '@/styles/tokens.scss' as *;
+
+.ab-page {
+  min-height: 100vh;
+  padding-bottom: 48rpx;
+}
+
+.ab-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 $sp-2;
+  background: rgba(244, 248, 247, 0.96);
+  border-bottom: 2rpx solid $c-border;
+}
+
+.ab-back {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $c-text;
+}
+
+.ab-top-title {
+  flex: 1;
+  text-align: center;
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-text;
+}
+
+.ab-top-spacer {
+  width: 72rpx;
+}
+
+.ab-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: $sp-4 0 $sp-5;
+}
+
+.ab-logo {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 56rpx;
+  background: $c-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(40, 122, 115, 0.24);
+}
+
+.ab-name {
+  margin-top: $sp-2;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: $c-text;
+  letter-spacing: 2rpx;
+}
+
+.ab-version {
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.ab-slogan {
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.7;
+}
+
+.ab-block {
+  margin-bottom: $sp-3;
+}
+
+.ab-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 700;
+  color: $c-text;
+  margin-bottom: $sp-2;
+}
+
+.ab-text {
+  display: block;
+  font-size: $fs-small;
+  color: $c-text-2;
+  line-height: 1.8;
+  margin-top: $sp-1;
+}
+
+.ab-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-2;
+  padding: $sp-2 0;
+  border-bottom: 2rpx solid $c-border;
+}
+
+.ab-feature:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.ab-feature-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-sm;
+  background: $c-primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.ab-feature-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.ab-feature-title {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.ab-feature-desc {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  line-height: 1.6;
+}
+
+.ab-safety {
+  background: $c-red-bg;
+  border: 2rpx solid $c-red-line;
+}
+
+.ab-safety .ab-title {
+  color: $c-red;
+}
+
+.ab-actions {
+  margin-top: $sp-4;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.ab-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-1;
+}
+
+.ab-footer {
+  display: block;
+  margin-top: $sp-4;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  line-height: 1.7;
+  text-align: center;
+}

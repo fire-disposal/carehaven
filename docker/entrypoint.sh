@@ -8,7 +8,7 @@ PB_MIGRATIONS_DIR="${PB_MIGRATIONS_DIR:-/pb/pb_migrations}"
 PB_HOOKS_DIR="${PB_HOOKS_DIR:-/pb/pb_hooks}"
 PB_PUBLIC_DIR="${PB_PUBLIC_DIR:-/pb/pb_public}"
 PB_HTTP="${PB_HTTP:-0.0.0.0:8090}"
-# 容器内无法热改 hooks，关闭文件监听；并调小 goja 运行时池（默认 15 对单机原型偏大）
+# 容器内无法热改 hooks，关闭文件监听；并调小 goja 运行时池（默认 15 对单机部署偏大）
 PB_HOOKS_POOL="${PB_HOOKS_POOL:-5}"
 
 echo "[entrypoint] applying migrations ..."
