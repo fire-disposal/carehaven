@@ -2,11 +2,18 @@
 
 失智症家庭照护者的压力是慢慢累积的：打卡、按等级找应对办法、临时问一句“这算正常吗”，需要一个地方一次做完。
 
-**状态**：原型，链路已跑通并做过单机部署；未对外开放注册；**入口**：`miniapp` 的 H5 构建或微信开发者工具；**仓库**：`fire-disposal/carehaven`
+**状态**：原型，链路已跑通并做过单机部署；未对外开放注册。视觉基座 v1 已落地；UGC 计划归档到独立分支；HPS 未校准；AI 问答仍为检索式。**入口**：`miniapp` 的 H5 构建或微信开发者工具；**仓库**：`fire-disposal/carehaven`
 
 ## 本质
 
 把打卡与生理记录合成 HPS、按三层给干预的失智症家庭照护者支持原型。
+
+## 当前阶段（2026-10）
+
+- **已落地**：打卡/生理→HPS→分层干预→量表/问答/TTS；单机部署与备份；「纸本 · 松烟」视觉基座与组件库。
+- **下一步**：后端 P0（写入收口、评分快照、配置治理、角色/审计、数据权利）；UGC 归档；HPS 专家赋权与 pilot。
+- **未做**：HPS 校准、AI agent、公开注册、UGC 审核闭环。
+- 详细路线与依赖：[docs/roadmap.md](docs/roadmap.md)。
 
 ## 选型
 
@@ -33,13 +40,13 @@
 ## 功能
 
 - 压力监测：打卡（心情 1–5、焦虑 0–10、疲劳 0–10、睡眠、照护时长）与生理记录（HRV、GSR、睡眠质量、步数，`source` 区分 device / simulated / manual）
-- HPS：生理分按 `physio_normal_range` 归一化，心理分 `0.45·心情 + 0.35·焦虑 + 0.2·疲劳`，上下文分按照护时长、干预记录、问答次数加权；缺生理数据时按实际权重和重新归一
+- HPS：生理分按 `physio_normal_range` 归一化，心理分 `0.45·心情 + 0.35·焦虑 + 0.2·疲劳`，上下文分按照护时长、干预记录、问答次数加权；缺生理数据时按实际权重和重新归一。**参数未校准，测量学缺口见 [docs/hps-method.md](docs/hps-method.md)**
 - 分层阈值：默认 `0.4 / 0.4 / 0.2` 与 `40 / 70`，存在 `app_config`，改行记录即可调整
 - 分层干预：8 个种子方案、四个分类，按等级推荐，记录完成与 1–5 星反馈
 - 量表自评：ZBI-12 照护负担 / PHQ-9 情绪 / GAD-7 焦虑；分数、分级与自伤念头安全提示全部由服务端算，客户端只提交答案
-- 知识库问答：14 条 WHO iSupport 本土化条目 + 36 条迁入的照护图谱节点，关键词命中 + 2-gram 检索取前 3 条拼接回答，历史落 `qa_sessions`
+- 知识库问答：14 条 WHO iSupport 本土化条目 + 36 条迁入的照护图谱节点，关键词命中 + 2-gram 检索取前 3 条拼接回答，历史落 `qa_sessions`。**未接 LLM；DeepSeek 接入评估见 [docs/ai-agent.md](docs/ai-agent.md)**
 - 语音朗读：豆包 Seed TTS 2.0（HTTP 单向流式）由 `/api/zz/tts` 代理，密钥只在服务端；全局朗读层统一播放入口
-- 社群：经验分享 / 情绪树洞 / 照护技巧三分区，发帖、评论、点赞、匿名发布
+- 社群：经验分享 / 情绪树洞 / 照护技巧三分区，发帖、评论、点赞、匿名发布。**计划归档到分支并从主线移除，见 [docs/ugc-archive.md](docs/ugc-archive.md)**
 - 我的：30 天趋势、干预记录、评分记录、生理数据补录
 - 反馈与协议：意见反馈（分类 + 联系方式）、关于、用户协议与隐私政策
 - 登录：邮箱密码；微信 `code` 换 openid 并绑定账号（需配置 AppID / Secret）
@@ -104,10 +111,12 @@ Actions 手动触发   → 自动部署：备份 → 切换 → 健康检查 →
 ## 边界与已知问题
 
 - `physio_records.source = "simulated"` 是合成数据，用于演示链路，不是设备采集；汇报与论文必须如实标注。
-- 知识问答不是 LLM：只做关键词与 2-gram 检索后拼接原文，检索不到会明确说没找到；接模型的换点在 `pb_hooks/lib/kb.js` 注释里。
+- HPS 参数未校准：缺生理会写 0、context 永远入模、客户端可写来源/日期、评分无参数快照；测量学缺口与权重计划见 [docs/hps-method.md](docs/hps-method.md)。
+- 知识问答不是 LLM：只做关键词与 2-gram 检索后拼接原文，检索不到会明确说没找到；DeepSeek 接入评估见 [docs/ai-agent.md](docs/ai-agent.md)。
 - 量表计分与分级阈值（ZBI-12 / PHQ-9 / GAD-7）需经专业确认后才可用于对外结论。
-- 没有审核、举报与处置留痕能力，社群一开放就触发 UGC 合规义务；短期只能不开放注册。
+- 没有审核、举报与处置留痕能力，社群一开放就触发 UGC 合规义务；已计划归档到独立分支并从主线移除，见 [docs/ugc-archive.md](docs/ugc-archive.md)。
 - 收集的是情绪、睡眠、照护负担等敏感个人信息：上线前需单独同意、最小必要、境内存储与查询/导出/删除入口。
+- 后端 P0 未完成：写入收口、评分快照、配置治理、角色/审计、数据导出/删除、限流与后端测试均待补；见 [docs/backend-roadmap.md](docs/backend-roadmap.md)。
 - README 拿 PocketBase cron 与 Celery Beat 对比，但仓库里没有 `cronAdd`，定时提醒并未实现。
 - 数据删除只有接口能力（`remove`），界面没有入口；导出更没有。
 - 多副本会重复执行进程内任务，只能单容器；扩容需要先把定时任务挪出进程。
@@ -116,8 +125,13 @@ Actions 手动触发   → 自动部署：备份 → 切换 → 健康检查 →
 
 ## 文档索引
 
-- [docs/deploy.md](docs/deploy.md) — 单机部署与运维
+- [docs/roadmap.md](docs/roadmap.md) — 里程碑、依赖与当前状态
+- [docs/hps-method.md](docs/hps-method.md) — HPS 公式、测量学缺口、权重/阈值研究计划
+- [docs/backend-roadmap.md](docs/backend-roadmap.md) — 后端 P0/P1、数据治理与接口轮廓
+- [docs/ai-agent.md](docs/ai-agent.md) — DeepSeek 智能体接入评估与分阶段路线
+- [docs/ugc-archive.md](docs/ugc-archive.md) — UGC 归档分支与主线剥离清单
 - [docs/design-direction.md](docs/design-direction.md) — 视觉方向「纸本 · 松烟」与组件规则
+- [docs/deploy.md](docs/deploy.md) — 单机部署与运维
 - [docs/wechat-onboarding.md](docs/wechat-onboarding.md) — 小程序接入与备案
 - [docs/tts-feasibility.md](docs/tts-feasibility.md) — 小程序集成豆包 TTS 的可行性（已验证）
 - [docs/emoguard-vs-carehaven.md](docs/emoguard-vs-carehaven.md) — 与前作 EmoGuard 的设计取舍
