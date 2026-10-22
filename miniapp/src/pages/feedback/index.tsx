@@ -69,7 +69,7 @@ export default function FeedbackPage() {
         <View className="page-pad">
           <View className="fb-done card-lg">
             <View className="fb-done-icon">
-              <Icon name="circle-check" size={56} color="#23795a" />
+              <Icon name="circle-check" size={56} color="#2c6a4e" />
             </View>
             <Text className="fb-done-title">已收到您的反馈</Text>
             <Text className="fb-done-text">

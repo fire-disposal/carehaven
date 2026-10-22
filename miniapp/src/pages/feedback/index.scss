@@ -13,8 +13,8 @@
   display: flex;
   align-items: center;
   padding: 0 $sp-2;
-  background: rgba(244, 248, 247, 0.96);
-  border-bottom: 2rpx solid $c-border;
+  background: rgba(244, 239, 229, 0.96);
+  border-bottom: 1rpx solid $c-line;
 }
 
 .fb-back {
@@ -64,8 +64,8 @@
 .fb-chip {
   min-height: 80rpx;
   padding: 0 $sp-3;
-  border: 2rpx solid $c-border;
-  border-radius: 999rpx;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-xs;
   background: $c-card;
   display: flex;
   align-items: center;
@@ -86,7 +86,7 @@
   height: 280rpx;
   padding: $sp-3;
   background: $c-card;
-  border: 2rpx solid $c-border;
+  border: 1rpx solid $c-line;
   border-radius: $radius;
   font-size: $fs-body;
   line-height: 1.6;
@@ -111,7 +111,7 @@
   height: 96rpx;
   padding: 0 $sp-3;
   background: $c-card;
-  border: 2rpx solid $c-border;
+  border: 1rpx solid $c-line;
   border-radius: $radius;
   font-size: $fs-body;
   color: $c-text;

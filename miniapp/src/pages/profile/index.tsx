@@ -286,7 +286,7 @@ export default function ProfilePage() {
       content: '退出后需要重新输入邮箱和密码才能进入，已记录的数据不会丢失。',
       confirmText: '退出登录',
       cancelText: '再想想',
-      confirmColor: '#A83A34',
+      confirmColor: '#963b33',
     })
       .then((res) => {
         if (res.confirm) logout()
@@ -383,7 +383,7 @@ export default function ProfilePage() {
         <View className="card">
           <View className="pf-user-top">
             <View className="pf-avatar">
-              <Icon name="leaf" size={40} color="#1f6b65" />
+              <Text className="pf-avatar-char">{(user?.name || '照').slice(0, 1)}</Text>
             </View>
             <View className="pf-user-info">
               <Text className="pf-user-name">{user?.name || '照护者'}</Text>
@@ -428,13 +428,13 @@ export default function ProfilePage() {
             ariaLabel="意见反馈"
           >
             <View className="pf-menu-icon">
-              <Icon name="pen-to-square" size={32} color="#1f6b65" />
+              <Icon name="pen-to-square" size={32} color="#16443c" />
             </View>
             <View className="pf-menu-main">
               <Text className="pf-menu-label">意见反馈</Text>
               <Text className="pf-menu-desc">问题、建议与违规举报</Text>
             </View>
-            <Icon name="chevron-right" size={28} color="#5b7074" />
+            <Icon name="chevron-right" size={28} color="#626b65" />
           </View>
           <View
             className="pf-menu-item"
@@ -443,13 +443,13 @@ export default function ProfilePage() {
             ariaLabel="关于智护忆站"
           >
             <View className="pf-menu-icon">
-              <Icon name="circle-info" size={32} color="#1f6b65" />
+              <Icon name="circle-info" size={32} color="#16443c" />
             </View>
             <View className="pf-menu-main">
               <Text className="pf-menu-label">关于智护忆站</Text>
               <Text className="pf-menu-desc">版本、方法与数据说明</Text>
             </View>
-            <Icon name="chevron-right" size={28} color="#5b7074" />
+            <Icon name="chevron-right" size={28} color="#626b65" />
           </View>
           <View
             className="pf-menu-item"
@@ -460,13 +460,13 @@ export default function ProfilePage() {
             ariaLabel="用户协议与隐私政策"
           >
             <View className="pf-menu-icon">
-              <Icon name="shield-heart" size={32} color="#1f6b65" />
+              <Icon name="shield-heart" size={32} color="#16443c" />
             </View>
             <View className="pf-menu-main">
               <Text className="pf-menu-label">用户协议与隐私政策</Text>
               <Text className="pf-menu-desc">数据如何使用与保护</Text>
             </View>
-            <Icon name="chevron-right" size={28} color="#5b7074" />
+            <Icon name="chevron-right" size={28} color="#626b65" />
           </View>
           <View
             className="pf-menu-item"
@@ -475,13 +475,13 @@ export default function ProfilePage() {
             ariaLabel="退出登录"
           >
             <View className="pf-menu-icon pf-menu-icon-danger">
-              <Icon name="lock" size={32} color="#a83a34" />
+              <Icon name="lock" size={32} color="#963b33" />
             </View>
             <View className="pf-menu-main">
               <Text className="pf-menu-label pf-menu-label-danger">退出登录</Text>
               <Text className="pf-menu-desc">退出后需要重新登录</Text>
             </View>
-            <Icon name="chevron-right" size={28} color="#5b7074" />
+            <Icon name="chevron-right" size={28} color="#626b65" />
           </View>
         </View>
 
@@ -731,7 +731,7 @@ export default function ProfilePage() {
                 {visibleLogs.map((log, i) => (
                   <View className="pf-log-item" key={log.id || String(i)}>
                     <View className="pf-log-icon">
-                      <Icon name="spa" size={34} color="#2e8b84" />
+                      <Icon name="spa" size={34} color="#1f5a50" />
                     </View>
                     <View className="pf-log-main">
                       <Text className="pf-log-title">{log.title_snapshot || '减压练习'}</Text>
@@ -780,7 +780,7 @@ export default function ProfilePage() {
                     <Icon
                       name="star"
                       size={44}
-                      color={stars >= n ? '#9a6410' : '#c9d6d3'}
+                      color={stars >= n ? '#7a5310' : '#cfc6b6'}
                     />
                   </View>
                 ))}
@@ -825,7 +825,7 @@ export default function ProfilePage() {
                                 key={n}
                                 name="star"
                                 size={26}
-                                color={n <= level ? '#9a6410' : '#d7e2df'}
+                                color={n <= level ? '#7a5310' : '#d8cebf'}
                               />
                             ))}
                           </View>

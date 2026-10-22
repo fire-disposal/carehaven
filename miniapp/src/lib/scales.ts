@@ -55,7 +55,7 @@ export const SCALES: ScaleDef[] = [
     icon: 'hand-holding-heart',
     tint: 'primary',
     duration: '约 3 分钟',
-    intro: '了解照护工作对您生活、情绪与关系的影响，共 12 题。',
+    intro: '了解照护工作对您生活、情绪与关系的影响。',
     items: [
       '因为照顾家人，您是否觉得没有足够的时间做自己的事？',
       '因为照顾家人，您是否觉得不得不放弃自己的生活？',
@@ -85,7 +85,7 @@ export const SCALES: ScaleDef[] = [
     icon: 'heart-pulse',
     tint: 'red',
     duration: '约 3 分钟',
-    intro: '回顾过去两周的情绪与兴趣变化，共 9 题。',
+    intro: '回顾过去两周的情绪与兴趣变化。',
     items: [
       '做事时提不起劲或没有兴趣',
       '感到心情低落、沮丧或绝望',
@@ -114,7 +114,7 @@ export const SCALES: ScaleDef[] = [
     icon: 'cloud-rain',
     tint: 'yellow',
     duration: '约 2 分钟',
-    intro: '回顾过去两周的紧张与担忧程度，共 7 题。',
+    intro: '回顾过去两周的紧张与担忧程度。',
     items: [
       '感觉紧张、焦虑或急切',
       '不能停止或控制担忧',

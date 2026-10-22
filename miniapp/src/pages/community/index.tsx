@@ -240,7 +240,7 @@ export default function CommunityPage() {
 
         {/* 社区公约：保留合规底线，但按正式产品口吻呈现 */}
         <View className="ugc-notice">
-          <Icon name="circle-info" size={32} color="#9a6410" />
+          <Icon name="circle-info" size={32} color="#7a5310" />
           <Text className="ugc-notice-text">
             请尊重他人隐私，不发布可识别个人身份的信息。看到不当内容，可通过「我的 - 意见反馈」举报。
           </Text>
@@ -258,7 +258,7 @@ export default function CommunityPage() {
         {loading ? (
           <View className="state-block">
             <View className="state-icon">
-              <Icon name="clock" size={56} color="#5b7074" />
+              <Icon name="clock" size={56} color="#626b65" />
             </View>
             <Text className="state-text">正在加载「{section}」的内容…</Text>
           </View>
@@ -267,7 +267,7 @@ export default function CommunityPage() {
         {showEmpty ? (
           <View className="state-block">
             <View className="state-icon">
-              <Icon name="seedling" size={56} color="#2e8b84" />
+              <Icon name="seedling" size={56} color="#1f5a50" />
             </View>
             <Text className="state-text">这个分区还没有人发言</Text>
             <Text className="state-hint">
@@ -291,7 +291,7 @@ export default function CommunityPage() {
                   <View className="post-head" onClick={() => void toggleComments(post)}>
                     <View className={`avatar ${who.anon ? 'avatar-anon' : ''}`}>
                       {who.anon ? (
-                        <Icon name="user" size={32} color="#5b7074" />
+                        <Icon name="user" size={32} color="#626b65" />
                       ) : (
                         <Text className="avatar-text">{who.name.slice(0, 1)}</Text>
                       )}
@@ -315,12 +315,12 @@ export default function CommunityPage() {
                       <Icon
                         name="heart"
                         size={30}
-                        color={liked ? '#a83a34' : '#9fb0b2'}
+                        color={liked ? '#963b33' : '#9aa39d'}
                       />
                       <Text className="act-num">{post.likes ?? 0}</Text>
                     </View>
                     <View className="act" onClick={() => void toggleComments(post)}>
-                      <Icon name="comment" size={30} color="#9fb0b2" />
+                      <Icon name="comment" size={30} color="#9aa39d" />
                       <Text className="act-num">{count}</Text>
                     </View>
                     <Text className="act-more">{opened ? '收起评论' : '写评论'}</Text>
@@ -369,7 +369,7 @@ export default function CommunityPage() {
                             <Text className="switch-label">匿名发表</Text>
                             <Switch
                               checked={draftAnon}
-                              color="#287a73"
+                              color="#1f5a50"
                               onChange={(e) => setDraftAnon(e.detail.value)}
                             />
                           </View>
@@ -406,7 +406,7 @@ export default function CommunityPage() {
             <View className="sheet-head">
               <Text className="sheet-title">发布新帖</Text>
               <View className="sheet-close" onClick={() => setSheetOpen(false)} ariaRole="button" ariaLabel="关闭">
-                <Icon name="xmark" size={34} color="#45585a" />
+                <Icon name="xmark" size={34} color="#44504a" />
               </View>
             </View>
 
@@ -447,13 +447,13 @@ export default function CommunityPage() {
               </View>
               <Switch
                 checked={formAnon}
-                color="#287a73"
+                color="#1f5a50"
                 onChange={(e) => setFormAnon(e.detail.value)}
               />
             </View>
 
             <View className="ugc-notice ugc-notice-sheet">
-              <Icon name="circle-info" size={30} color="#9a6410" />
+              <Icon name="circle-info" size={30} color="#7a5310" />
               <Text className="ugc-notice-text">
                 发布即表示同意《用户协议》中的社区规范，请勿包含他人隐私。
               </Text>

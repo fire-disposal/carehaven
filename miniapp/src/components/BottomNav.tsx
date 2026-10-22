@@ -31,9 +31,10 @@ export default function BottomNav({ active }: { active: string }) {
             ariaLabel={`${tab.label}${current ? '，当前页面' : ''}`}
           >
             <View className="nav-icon-wrap">
-              <Icon name={tab.icon} size={44} />
+              <Icon name={tab.icon} size={38} />
             </View>
             <Text className="nav-label">{tab.label}</Text>
+            <View className="nav-dot" />
           </View>
         )
       })}

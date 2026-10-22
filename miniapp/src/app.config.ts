@@ -13,9 +13,9 @@ export default defineAppConfig({
   ],
   window: {
     backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#287a73',
+    navigationBarBackgroundColor: '#1F5A50',
     navigationBarTitleText: '智护忆站',
     navigationBarTextStyle: 'white',
-    backgroundColor: '#F4F8F7',
+    backgroundColor: '#F4EFE5',
   },
 })

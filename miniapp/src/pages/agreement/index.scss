@@ -13,8 +13,8 @@
   display: flex;
   align-items: center;
   padding: 0 $sp-2;
-  background: rgba(244, 248, 247, 0.96);
-  border-bottom: 2rpx solid $c-border;
+  background: rgba(244, 239, 229, 0.96);
+  border-bottom: 1rpx solid $c-line;
 }
 
 .ag-back {
@@ -51,7 +51,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2rpx solid $c-border;
+  border: 1rpx solid $c-line;
   border-radius: $radius;
   background: $c-card;
   color: $c-text-2;

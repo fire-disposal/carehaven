@@ -13,8 +13,8 @@
   display: flex;
   align-items: center;
   padding: 0 $sp-2;
-  background: rgba(244, 248, 247, 0.96);
-  border-bottom: 2rpx solid $c-border;
+  background: rgba(244, 239, 229, 0.96);
+  border-bottom: 1rpx solid $c-line;
 }
 
 .ab-back {
@@ -48,20 +48,28 @@
 }
 
 .ab-logo {
-  width: 112rpx;
-  height: 112rpx;
-  border-radius: 56rpx;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius;
+  border: 1rpx solid $c-primary-dark;
   background: $c-primary;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(40, 122, 115, 0.24);
+}
+
+.ab-seal {
+  font-family: $font-serif;
+  font-size: 52rpx;
+  line-height: 1;
+  color: $c-surface;
 }
 
 .ab-name {
   margin-top: $sp-2;
-  font-size: 44rpx;
-  font-weight: 700;
+  font-family: $font-serif;
+  font-size: 48rpx;
+  font-weight: 600;
   color: $c-text;
   letter-spacing: 2rpx;
 }
@@ -104,7 +112,7 @@
   align-items: flex-start;
   gap: $sp-2;
   padding: $sp-2 0;
-  border-bottom: 2rpx solid $c-border;
+  border-bottom: 1rpx solid $c-line;
 }
 
 .ab-feature:last-child {
@@ -145,7 +153,7 @@
 
 .ab-safety {
   background: $c-red-bg;
-  border: 2rpx solid $c-red-line;
+  border: 1rpx solid $c-red-line;
 }
 
 .ab-safety .ab-title {

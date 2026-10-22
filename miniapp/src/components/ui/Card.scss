@@ -1,0 +1,23 @@
+@use '@/styles/tokens.scss' as *;
+
+.ui-card {
+  background: $c-surface;
+  border: 1rpx solid $c-line;
+  border-radius: $radius;
+  padding: $sp-4;
+  box-sizing: border-box;
+}
+
+.ui-card--quiet {
+  background: transparent;
+  border-color: $c-line;
+}
+
+.ui-card--tint {
+  background: $c-primary-light;
+  border-color: $c-primary-light;
+}
+
+.ui-card--flush {
+  padding: 0;
+}

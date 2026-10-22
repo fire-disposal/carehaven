@@ -305,7 +305,7 @@ export default function QaPage() {
         {chatError ? (
           <View className="err-card">
             <View className="err-card-text inline-alert">
-              <Icon name="triangle-exclamation" size={30} color="#a83a34" />
+              <Icon name="triangle-exclamation" size={30} color="#963b33" />
               <Text>{chatError}</Text>
             </View>
             <View className="err-card-btn" ariaRole="button" ariaLabel="重新加载" onClick={() => void load()}>
@@ -317,7 +317,7 @@ export default function QaPage() {
         {turns.length === 0 ? (
           <View className="welcome">
             <View className="welcome-emoji">
-              <Icon name="comment-dots" size={64} color="#2e8b84" />
+              <Icon name="comment-dots" size={64} color="#1f5a50" />
             </View>
             <Text className="welcome-title">有困扰，随时问</Text>
             <Text className="welcome-desc">
@@ -326,18 +326,18 @@ export default function QaPage() {
           </View>
         ) : null}
 
-        <View className="quick-block">
-          <Text className="quick-title">{turns.length === 0 ? '试试这样问' : '快捷提问'}</Text>
-          <View className="quick-chips">
+        <View className="qa-suggest-block">
+          <Text className="qa-suggest-title">{turns.length === 0 ? '试试这样问' : '快捷提问'}</Text>
+          <View className="qa-suggest-chips">
             {QUICK_QUESTIONS.map((item) => (
               <View
-                className="quick-chip"
+                className="qa-suggest-chip"
                 key={item}
                 ariaRole="button"
                 ariaLabel={`提问：${item}`}
                 onClick={() => send(item)}
               >
-                <Text className="quick-chip-text">{item}</Text>
+                <Text className="qa-suggest-chip-text">{item}</Text>
               </View>
             ))}
           </View>
@@ -374,7 +374,7 @@ export default function QaPage() {
                 {turn.status === 'error' ? (
                   <View className="bubble bubble-ai bubble-error">
                     <View className="bubble-error-text inline-alert">
-                      <Icon name="triangle-exclamation" size={28} color="#a83a34" />
+                      <Icon name="triangle-exclamation" size={28} color="#963b33" />
                       <Text>{turn.error || '没能取到回答'}</Text>
                     </View>
                     <View
@@ -418,7 +418,7 @@ export default function QaPage() {
       return (
         <View className="qa-state">
           <View className="state-emoji">
-            <Icon name="book-open" size={56} color="#5b7074" />
+            <Icon name="book-open" size={56} color="#626b65" />
           </View>
           <Text className="state-title">正在读取知识库…</Text>
         </View>
@@ -429,7 +429,7 @@ export default function QaPage() {
         <View className="kb-wrap">
           <View className="err-card">
             <View className="err-card-text inline-alert">
-              <Icon name="triangle-exclamation" size={30} color="#a83a34" />
+              <Icon name="triangle-exclamation" size={30} color="#963b33" />
               <Text>{kbError}</Text>
             </View>
             <View className="err-card-btn" ariaRole="button" ariaLabel="重新加载知识库" onClick={() => void load()}>
@@ -443,7 +443,7 @@ export default function QaPage() {
       return (
         <View className="qa-state">
           <View className="state-emoji">
-            <Icon name="circle-info" size={56} color="#5b7074" />
+            <Icon name="circle-info" size={56} color="#626b65" />
           </View>
           <Text className="state-title">知识库暂时没有内容</Text>
           <Text className="state-desc">内容补充后会显示在这里，您也可以切回问答直接提问。</Text>
@@ -456,7 +456,7 @@ export default function QaPage() {
         {kbError ? (
           <View className="err-card">
             <View className="err-card-text inline-alert">
-              <Icon name="triangle-exclamation" size={30} color="#a83a34" />
+              <Icon name="triangle-exclamation" size={30} color="#963b33" />
               <Text>{kbError}</Text>
             </View>
             <View className="err-card-btn" ariaRole="button" ariaLabel="重新加载知识库" onClick={() => void load()}>
@@ -558,7 +558,7 @@ export default function QaPage() {
               maxlength={MAX_QUESTION}
               confirmType="send"
               placeholder="说说遇到的困扰，例如：晚上不睡觉"
-              placeholderStyle="color:#45585a"
+              placeholderStyle="color:#44504a"
               onInput={(e) => setDraft(e.detail.value)}
               onConfirm={() => send(draft)}
             />
@@ -568,7 +568,7 @@ export default function QaPage() {
               ariaLabel="发送问题"
               onClick={() => send(draft)}
             >
-              <Icon name="paper-plane" size={30} color={draft.trim() ? '#fff' : '#1f6b65'} />
+              <Icon name="paper-plane" size={30} color={draft.trim() ? '#fff' : '#16443c'} />
               <Text className="qa-send-text">发送</Text>
             </View>
           </View>

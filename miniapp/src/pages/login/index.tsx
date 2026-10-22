@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Input, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import Icon from '@/components/Icon'
 import { login, register, wechatLogin } from '@/lib/api'
 import './index.scss'
 
@@ -67,10 +66,11 @@ export default function LoginPage() {
     <View className="login">
       <View className="brand">
         <View className="brand-logo">
-          <Icon name="seedling" size={56} color="#ffffff" />
+          <Text className="brand-seal">忆</Text>
         </View>
+        <Text className="brand-kicker">CAREHAVEN · 照护者支持</Text>
         <Text className="brand-name">智护忆站</Text>
-        <Text className="brand-slogan">照护者的压力监测与支持系统</Text>
+        <Text className="brand-slogan">把压力说出来，把照护分一点给自己。</Text>
       </View>
 
       {IS_WEAPP && (

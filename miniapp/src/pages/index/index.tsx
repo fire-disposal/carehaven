@@ -3,7 +3,9 @@ import { Input, Slider, Text, Textarea, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
 import Icon from '@/components/Icon'
+import { Button, Card, Pill, SectionHeader, Stat } from '@/components/ui'
 import type { IconName } from '@/lib/icons'
+import { THEME } from '@/lib/theme'
 import {
   api,
   getUser,
@@ -154,13 +156,13 @@ export default function HomePage() {
       <View className="page-pad">
         <View className="home-head">
           <View className="home-hello">
+            <Text className="eyebrow">今日 · {todayText}</Text>
             <Text className="hello-name">
               {greeting}，{user?.name || '照护者'}
             </Text>
-            <Text className="hello-date">{todayText}</Text>
           </View>
           <View className="home-avatar" ariaHidden>
-            <Icon name="leaf" size={40} color="#1f6b65" />
+            <Text className="home-avatar-char">{(user?.name || '照').slice(0, 1)}</Text>
           </View>
         </View>
 
@@ -169,54 +171,55 @@ export default function HomePage() {
         {/* 压力状态 + 打卡主入口 */}
         <View className={`stress-card level-${level}`}>
           <View className="stress-head">
-            <View className="stress-title-row">
-              <Icon name="heart-pulse" size={36} color="currentColor" />
-              <Text className="stress-label">今日压力状态</Text>
-            </View>
-            <Text className={`pill pill-${level}`}>{LEVEL_TEXT[level]}</Text>
+            <Text className="eyebrow">今日压力状态</Text>
+            <Pill tone={level}>{LEVEL_TEXT[level]}</Pill>
           </View>
           <View className="stress-body">
             <Text className="stress-value">{score ? score.hps.toFixed(0) : '--'}</Text>
-            <Text className="stress-unit">综合压力指数（HPS）</Text>
+            <View className="stress-unit-wrap">
+              <Text className="stress-unit">综合压力指数</Text>
+              <Text className="stress-scale">HPS · 0–100</Text>
+            </View>
           </View>
           <Text className="stress-advice">
             {loading ? '正在评估…' : score?.advice || '暂无评估结果，完成一次打卡即可生成。'}
           </Text>
-          <View className="stress-bar">
-            {(['score_physio', 'score_psycho', 'score_context'] as const).map((key) => (
-              <View className="stress-bar-item" key={key}>
-                <Text className="bar-name">
-                  {key === 'score_physio' ? '生理' : key === 'score_psycho' ? '心理' : '生活'}
-                </Text>
-                <View className="bar-track">
-                  <View className="bar-fill" style={{ width: `${score ? score[key] : 0}%` }} />
+          <View className="stress-bars">
+            {(['score_physio', 'score_psycho', 'score_context'] as const).map((key) => {
+              const label = key === 'score_physio' ? '生理' : key === 'score_psycho' ? '心理' : '生活'
+              const value = score ? score[key] : 0
+              return (
+                <View className="stress-bar-item" key={key}>
+                  <Stat label={label} value={score ? value.toFixed(0) : '--'} />
+                  <View className="bar-track">
+                    <View className="bar-fill" style={{ width: `${value}%` }} />
+                  </View>
                 </View>
-                <Text className="bar-value">{score ? score[key].toFixed(0) : '--'}</Text>
-              </View>
-            ))}
+              )
+            })}
           </View>
 
           <View className="stress-foot">
             <View className="stress-checkin-state">
-              <Icon name="calendar-days" size={28} color="#45585a" />
+              <Icon name="calendar-days" size={26} color={THEME.muted} />
               <Text>
                 今日{checkins.length ? `已记录 ${checkins.length} 次` : '还没有记录'}
               </Text>
             </View>
-            <View
-              className="btn-primary stress-cta"
+            <Button
+              variant="primary"
+              className="stress-cta"
               onClick={() => setShowForm(!showForm)}
-              ariaRole="button"
               ariaLabel={todayChecked ? '再记录一次感受' : '记录此刻感受'}
             >
               {todayChecked ? '再记一次' : '记录此刻'}
-            </View>
+            </Button>
           </View>
         </View>
 
         {/* 打卡表单 */}
         {showForm ? (
-          <View className="card-lg checkin-form">
+          <Card className="checkin-form">
             <View className="form-head">
               <Text className="form-title">此刻的心情</Text>
               <View
@@ -225,7 +228,7 @@ export default function HomePage() {
                 ariaRole="button"
                 ariaLabel="收起打卡表单"
               >
-                <Icon name="xmark" size={32} color="#5b7074" />
+                <Icon name="xmark" size={30} color={THEME.muted} />
               </View>
             </View>
             <View className="mood-row">
@@ -253,7 +256,9 @@ export default function HomePage() {
                 max={10}
                 step={1}
                 value={anxiety}
-                activeColor="#287a73"
+                activeColor={THEME.primary}
+                backgroundColor={THEME.line}
+                blockColor={THEME.surface}
                 blockSize={22}
                 onChanging={(e) => setAnxiety(e.detail.value)}
                 onChange={(e) => setAnxiety(e.detail.value)}
@@ -270,7 +275,9 @@ export default function HomePage() {
                 max={10}
                 step={1}
                 value={fatigue}
-                activeColor="#287a73"
+                activeColor={THEME.primary}
+                backgroundColor={THEME.line}
+                blockColor={THEME.surface}
                 blockSize={22}
                 onChanging={(e) => setFatigue(e.detail.value)}
                 onChange={(e) => setFatigue(e.detail.value)}
@@ -308,73 +315,78 @@ export default function HomePage() {
             />
 
             <View className="form-actions">
-              <View className="btn-ghost action" onClick={() => setShowForm(false)}>
+              <Button variant="ghost" className="action" onClick={() => setShowForm(false)}>
                 取消
-              </View>
-              <View className={`btn-primary action ${saving ? 'busy' : ''}`} onClick={submitCheckin}>
-                {saving ? '提交中…' : '提交打卡'}
-              </View>
+              </Button>
+              <Button variant="primary" className="action" loading={saving} onClick={submitCheckin}>
+                提交打卡
+              </Button>
             </View>
-          </View>
+          </Card>
         ) : null}
 
         {/* 次级入口 */}
-        <View className="quick-grid">
+        <SectionHeader
+          eyebrow="继续"
+          title="支持工具"
+          action={<Text className="muted">按当前状态</Text>}
+        />
+        <View className="tool-grid">
           <View
-            className="quick-tile quick-wide"
+            className="tool-tile tool-wide"
             onClick={() => Taro.navigateTo({ url: '/pages/assessment/index' })}
             ariaRole="button"
             ariaLabel={`量表自评，${checkinSubtitle}`}
           >
-            <View className="quick-icon">
-              <Icon name="clipboard-list" size={40} />
+            <View className="tool-icon">
+              <Icon name="clipboard-list" size={36} />
             </View>
-            <View className="quick-main">
-              <Text className="quick-title">量表自评</Text>
-              <Text className="quick-sub">{checkinSubtitle}</Text>
+            <View className="tool-main">
+              <Text className="tool-title">量表自评</Text>
+              <Text className="tool-sub">{checkinSubtitle}</Text>
             </View>
-            <Icon name="chevron-right" size={32} color="#5b7074" />
+            <Icon name="chevron-right" size={28} color={THEME.muted} />
           </View>
           <View
-            className="quick-tile"
+            className="tool-tile"
             onClick={() => Taro.redirectTo({ url: '/pages/manage/index' })}
             ariaRole="button"
             ariaLabel="减压练习"
           >
-            <View className="quick-icon tint-yellow">
-              <Icon name="spa" size={40} />
+            <View className="tool-icon tint-warm">
+              <Icon name="spa" size={36} />
             </View>
-            <Text className="quick-title">减压练习</Text>
-            <Text className="quick-sub">按当前状态推荐</Text>
+            <Text className="tool-title">减压练习</Text>
+            <Text className="tool-sub">按当前状态推荐</Text>
           </View>
           <View
-            className="quick-tile"
+            className="tool-tile"
             onClick={() => Taro.redirectTo({ url: '/pages/qa/index' })}
             ariaRole="button"
             ariaLabel="知识问答"
           >
-            <View className="quick-icon tint-blue">
-              <Icon name="comment-dots" size={40} />
+            <View className="tool-icon tint-info">
+              <Icon name="comment-dots" size={36} />
             </View>
-            <Text className="quick-title">知识问答</Text>
-            <Text className="quick-sub">照护问题即时查</Text>
+            <Text className="tool-title">知识问答</Text>
+            <Text className="tool-sub">照护问题即时查</Text>
           </View>
         </View>
 
         {/* 今日记录 */}
         {checkins.length > 0 ? (
           <>
-            <View className="section-title">
-              <Text>今日记录</Text>
-              <Text className="muted">{checkins.length} 次打卡</Text>
-            </View>
-            <View className="card today-list">
+            <SectionHeader
+              title="今日记录"
+              action={<Text className="muted">{checkins.length} 次打卡</Text>}
+            />
+            <Card flush className="today-list">
               {checkins.map((item) => {
                 const m = MOODS.find((x) => x.value === item.mood) || MOODS[2]
                 return (
                   <View className="today-item" key={item.id}>
                     <View className="today-icon">
-                      <Icon name={m.icon} size={36} color="#2e8b84" />
+                      <Icon name={m.icon} size={32} color={THEME.primary} />
                     </View>
                     <View className="today-main">
                       <Text className="today-title">
@@ -384,19 +396,19 @@ export default function HomePage() {
                         {checkinTime(item)} · 睡眠 {item.sleep_hours} 小时 · 照护 {item.care_hours} 小时
                       </Text>
                     </View>
-                    <Text className="pill pill-primary">{item.period === 'morning' ? '日间' : '晚间'}</Text>
+                    <Pill tone="primary">{item.period === 'morning' ? '日间' : '晚间'}</Pill>
                   </View>
                 )
               })}
-            </View>
+            </Card>
           </>
         ) : null}
 
         {/* 身体状态 */}
-        <View className="section-title">
-          <Text>身体状态</Text>
-          <Text className="muted">{physio ? SOURCE_TEXT[physio.source] : '暂无记录'}</Text>
-        </View>
+        <SectionHeader
+          title="身体状态"
+          action={<Text className="muted">{physio ? SOURCE_TEXT[physio.source] : '暂无记录'}</Text>}
+        />
         <View className="physio-grid">
           {[
             { name: 'HRV', icon: 'heart-pulse' as IconName, value: physio ? `${physio.hrv}` : '--', unit: 'ms' },
@@ -406,7 +418,7 @@ export default function HomePage() {
           ].map((item) => (
             <View className="physio-tile" key={item.name}>
               <View className="tile-head">
-                <Icon name={item.icon} size={28} color="#5b7074" />
+                <Icon name={item.icon} size={26} color={THEME.muted} />
                 <Text className="tile-name">{item.name}</Text>
               </View>
               <View className="tile-value-row">

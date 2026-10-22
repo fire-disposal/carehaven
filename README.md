@@ -117,6 +117,7 @@ Actions 手动触发   → 自动部署：备份 → 切换 → 健康检查 →
 ## 文档索引
 
 - [docs/deploy.md](docs/deploy.md) — 单机部署与运维
+- [docs/design-direction.md](docs/design-direction.md) — 视觉方向「纸本 · 松烟」与组件规则
 - [docs/wechat-onboarding.md](docs/wechat-onboarding.md) — 小程序接入与备案
 - [docs/tts-feasibility.md](docs/tts-feasibility.md) — 小程序集成豆包 TTS 的可行性（已验证）
 - [docs/emoguard-vs-carehaven.md](docs/emoguard-vs-carehaven.md) — 与前作 EmoGuard 的设计取舍

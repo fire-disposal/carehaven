@@ -1,0 +1,68 @@
+@use '@/styles/tokens.scss' as *;
+
+.ui-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88rpx;
+  padding: 0 $sp-4;
+  border: 1rpx solid transparent;
+  border-radius: $radius-sm;
+  box-sizing: border-box;
+  transition:
+    background-color $dur-fast $ease,
+    border-color $dur-fast $ease,
+    opacity $dur-fast $ease;
+}
+
+.ui-btn__label {
+  font-family: $font-sans;
+  font-size: $fs-body;
+  font-weight: 600;
+  letter-spacing: 0.5rpx;
+  line-height: 1.3;
+}
+
+.ui-btn--primary {
+  background: $c-primary;
+  border-color: $c-primary;
+
+  .ui-btn__label {
+    color: $c-surface;
+  }
+}
+
+.ui-btn--secondary {
+  background: $c-surface;
+  border-color: $c-line-strong;
+
+  .ui-btn__label {
+    color: $c-ink;
+  }
+}
+
+.ui-btn--ghost {
+  background: transparent;
+  border-color: $c-primary;
+
+  .ui-btn__label {
+    color: $c-primary;
+  }
+}
+
+.ui-btn--danger {
+  background: $c-red;
+  border-color: $c-red;
+
+  .ui-btn__label {
+    color: $c-surface;
+  }
+}
+
+.ui-btn--block {
+  width: 100%;
+}
+
+.ui-btn.is-disabled {
+  opacity: 0.45;
+}

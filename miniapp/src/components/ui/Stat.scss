@@ -1,0 +1,34 @@
+@use '@/styles/tokens.scss' as *;
+
+.ui-stat {
+  min-width: 0;
+}
+
+.ui-stat__label {
+  display: block;
+  font-size: $fs-label;
+  line-height: 1.4;
+  letter-spacing: 1rpx;
+  color: $c-muted;
+}
+
+.ui-stat__value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4rpx;
+  margin-top: 2rpx;
+}
+
+.ui-stat__value {
+  font-family: $font-num;
+  font-variant-numeric: tabular-nums;
+  font-size: 40rpx;
+  font-weight: 600;
+  line-height: 1.2;
+  color: $c-ink;
+}
+
+.ui-stat__unit {
+  font-size: $fs-tiny;
+  color: $c-muted;
+}

@@ -1,0 +1,51 @@
+@use '@/styles/tokens.scss' as *;
+
+.ui-section {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: $sp-2;
+  margin: $sp-5 0 $sp-2;
+}
+
+.ui-section__main {
+  display: flex;
+  align-items: stretch;
+  gap: $sp-2;
+  min-width: 0;
+}
+
+.ui-section__rule {
+  width: 6rpx;
+  min-height: 32rpx;
+  background: $c-primary;
+  flex: none;
+}
+
+.ui-section__text {
+  min-width: 0;
+}
+
+.ui-section__eyebrow {
+  display: block;
+  font-size: $fs-label;
+  line-height: 1.4;
+  letter-spacing: 2rpx;
+  font-weight: 600;
+  color: $c-muted;
+  margin-bottom: 2rpx;
+}
+
+.ui-section__title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 600;
+  line-height: 1.35;
+  color: $c-ink;
+  letter-spacing: 0.5rpx;
+}
+
+.ui-section__action {
+  flex: none;
+  padding-bottom: 2rpx;
+}

@@ -31,7 +31,7 @@ export default function AboutPage() {
       <View className="page-pad">
         <View className="ab-hero">
           <View className="ab-logo">
-            <Icon name="seedling" size={52} color="#ffffff" />
+            <Text className="ab-seal">忆</Text>
           </View>
           <Text className="ab-name">{APP_NAME}</Text>
           <Text className="ab-version">版本 {APP_VERSION}</Text>
@@ -51,7 +51,7 @@ export default function AboutPage() {
           {FEATURES.map((item) => (
             <View className="ab-feature" key={item.title}>
               <View className="ab-feature-icon">
-                <Icon name={item.icon} size={34} color="#1f6b65" />
+                <Icon name={item.icon} size={34} color="#16443c" />
               </View>
               <View className="ab-feature-main">
                 <Text className="ab-feature-title">{item.title}</Text>

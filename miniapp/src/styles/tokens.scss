@@ -1,57 +1,98 @@
-// 设计令牌（Design Tokens）—— 只放变量，不放任何选择器。
-// 面向中老年照护者：正文 ≥32rpx、关键数字超大、对比度符合 WCAG AA、
-// 主色取提案要求的「柔和蓝绿色调」。
+// 设计令牌 —— 「纸本 · 松烟」
+//
+// 方向：暖纸、墨绿、发丝线、近直角。舒适感来自留白、字重、行高与暖色，
+// 不来自大圆角和阴影。面向中老年照护者：正文 ≥32rpx、关键数字超大、
+// 浅底文字对比度 ≥ WCAG AA。
+//
+// 只放变量，不放选择器。
+
+// ---- 纸与墨 ----
+$c-paper: #f4efe5; // 页面底色（暖纸）
+$c-surface: #fffcf6; // 卡片/浮层（比纸更亮一档）
+$c-ink: #1e2421; // 主文字（近黑墨绿）
+$c-ink-2: #44504a; // 次级文字
+$c-muted: #626b65; // 辅助文字（纸底 4.8:1）
+$c-line: #ded5c5; // 发丝线
+$c-line-strong: #c9bda9;
 
 // ---- 主色 ----
-$c-primary: #287a73;
-$c-primary-light: #e6f2f0;
-$c-primary-dark: #1f6b65;
+$c-primary: #1f5a50; // 松烟绿（纸底 6.9:1）
+$c-primary-light: #e4ede7;
+$c-primary-dark: #16443c;
 
-// ---- 三色压力分层（文字色均按浅底上的对比度挑选）----
-$c-green: #23795a;
-$c-green-bg: #e7f5ee;
-$c-green-line: #9fd6bd;
+// ---- 三色压力分层 ----
+$c-green: #2c6a4e;
+$c-green-bg: #e6efe7;
+$c-green-line: #b9d2c0;
 
-$c-yellow: #9a6410;
-$c-yellow-bg: #fdf3e0;
-$c-yellow-line: #ecc98a;
+$c-yellow: #7a5310;
+$c-yellow-bg: #f6ead3;
+$c-yellow-line: #e3c894;
 
-$c-red: #a83a34;
-$c-red-bg: #fbebea;
-$c-red-line: #e6a9a5;
+$c-red: #963b33;
+$c-red-bg: #f5e3df;
+$c-red-line: #ddb3ac;
 
-// ---- 中性色 ----
-$c-bg: #f4f8f7;
-$c-card: #ffffff;
-$c-text: #1c2b2a;
-$c-text-2: #45585a;
-$c-muted: #5b7074;
-$c-border: #e3ecea;
+// ---- 辅助色 ----
+$c-accent: #9c4833; // 柿红，用于极少数强调
+$c-accent-soft: #f2e2da;
+$c-info: #3d5a6c;
+$c-info-bg: #e8eef1;
+
+// ---- 兼容旧变量名（页面逐步迁移，避免一次性改动全部选择器）----
+$c-bg: $c-paper;
+$c-card: $c-surface;
+$c-text: $c-ink;
+$c-text-2: $c-ink-2;
+$c-border: $c-line;
+
+// ---- 字体 ----
+// 正文用系统黑体；品牌字与关键数字用衬线，形成「纸本」气质。
+// 不下载网络字体：小程序包体与首屏都不适合塞中文字库。
+$font-sans:
+  -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC',
+  'Source Han Sans SC', 'Microsoft YaHei', sans-serif;
+$font-serif: 'Songti SC', 'STSong', 'Noto Serif CJK SC', 'Source Han Serif SC', 'SimSun', serif;
+$font-num: Georgia, 'Times New Roman', 'Songti SC', 'Noto Serif CJK SC', serif;
 
 // ---- 字号 ----
-$fs-display: 96rpx; // 关键数值（HPS 等）
-$fs-h1: 44rpx;
+$fs-display: 112rpx; // 关键数值（HPS 等）
+$fs-h1: 48rpx;
 $fs-h2: 36rpx;
+$fs-h3: 32rpx;
 $fs-body: 32rpx;
 $fs-small: 28rpx;
 $fs-tiny: 24rpx;
+$fs-label: 22rpx; // 小标签 / eyebrow
 
-// ---- 图标尺寸（emoji 的视觉重量按此统一；emoji 与汉字字重不同，需单独一档）----
-$icon-nav: 36rpx; // 底部导航
-$icon-sm: 40rpx; // 列表项 / 紧凑场景 / 星级
-$icon-card: 48rpx; // 卡片封面
-$icon-empty: 56rpx; // 空态与欢迎插画
-$icon-hero: 80rpx; // 首屏品牌主视觉
+// ---- 图标尺寸 ----
+$icon-nav: 36rpx;
+$icon-sm: 36rpx;
+$icon-card: 44rpx;
+$icon-empty: 56rpx;
+$icon-hero: 72rpx;
 
-// ---- 间距 / 圆角 / 阴影 ----
+// ---- 间距 ----
 $sp-1: 8rpx;
 $sp-2: 16rpx;
 $sp-3: 24rpx;
 $sp-4: 32rpx;
 $sp-5: 48rpx;
+$sp-6: 64rpx;
+$sp-7: 80rpx;
 
-$radius-sm: 16rpx;
-$radius: 24rpx;
-$radius-lg: 32rpx;
-$shadow: 0 4rpx 16rpx rgba(28, 43, 42, 0.06);
-$shadow-lg: 0 8rpx 28rpx rgba(28, 43, 42, 0.1);
+// ---- 圆角：近直角，只保留一点点柔化 ----
+$radius-xs: 2rpx;
+$radius-sm: 4rpx;
+$radius: 6rpx;
+$radius-lg: 8rpx;
+$radius-pill: 4rpx; // 状态标签也走小圆角，不再用胶囊
+
+// ---- 阴影：纸本不用投影，层级靠线与底色 ----
+$shadow: none;
+$shadow-lg: none;
+
+// ---- 动效 ----
+$ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+$dur-fast: 120ms;
+$dur: 180ms;

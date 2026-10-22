@@ -15,8 +15,8 @@
   display: flex;
   align-items: center;
   padding: 0 $sp-2;
-  background: rgba(244, 248, 247, 0.96);
-  border-bottom: 2rpx solid $c-border;
+  background: rgba(244, 239, 229, 0.96);
+  border-bottom: 1rpx solid $c-line;
 }
 
 .as-top-back {
@@ -51,8 +51,8 @@
 /* ---------- 列表页 ---------- */
 
 .as-intro {
-  background: linear-gradient(150deg, #e6f2f0 0%, #f7fbfa 100%);
-  border: 2rpx solid #d4e8e4;
+  background: $c-primary-light;
+  border: 1rpx solid $c-line;
   border-radius: $radius-lg;
   padding: $sp-4;
   margin-bottom: $sp-3;
@@ -201,7 +201,7 @@
   align-items: center;
   justify-content: space-between;
   padding: $sp-3 0;
-  border-bottom: 2rpx solid $c-border;
+  border-bottom: 1rpx solid $c-line;
 }
 
 .as-history-item:last-child {
@@ -247,7 +247,7 @@
 
 .as-progress {
   height: 8rpx;
-  background: #e3ecea;
+  background: $c-line;
 }
 
 .as-progress-fill {
@@ -298,7 +298,7 @@
 
 .as-option {
   min-height: 104rpx;
-  border: 2rpx solid $c-border;
+  border: 1rpx solid $c-line;
   border-radius: $radius;
   background: $c-card;
   padding: $sp-2 $sp-3;
@@ -340,21 +340,21 @@
 .as-result {
   border-radius: $radius-lg;
   padding: $sp-4;
-  border: 2rpx solid $c-border;
+  border: 1rpx solid $c-line;
 }
 
 .as-result.tone-green {
-  background: linear-gradient(150deg, $c-green-bg 0%, #f7fbf9 100%);
+  background: $c-green-bg;
   border-color: $c-green-line;
 }
 
 .as-result.tone-yellow {
-  background: linear-gradient(150deg, $c-yellow-bg 0%, #fffbf4 100%);
+  background: $c-yellow-bg;
   border-color: $c-yellow-line;
 }
 
 .as-result.tone-red {
-  background: linear-gradient(150deg, $c-red-bg 0%, #fff8f7 100%);
+  background: $c-red-bg;
   border-color: $c-red-line;
 }
 
@@ -392,14 +392,14 @@
 .as-result-bar {
   height: 12rpx;
   margin-top: $sp-3;
-  border-radius: 999rpx;
-  background: rgba(28, 43, 42, 0.08);
+  border-radius: $radius-xs;
+  background: rgba(30, 36, 33, 0.08);
   overflow: hidden;
 }
 
 .as-result-fill {
   height: 100%;
-  border-radius: 999rpx;
+  border-radius: $radius-xs;
 }
 
 .as-result-fill.lv-green {
@@ -449,7 +449,7 @@
 .as-safety {
   margin-top: $sp-3;
   background: $c-red-bg;
-  border: 2rpx solid $c-red-line;
+  border: 1rpx solid $c-red-line;
   border-radius: $radius;
   padding: $sp-4;
 }

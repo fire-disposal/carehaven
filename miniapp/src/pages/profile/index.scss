@@ -13,15 +13,23 @@
 }
 
 .pf-avatar {
-  width: 112rpx;
-  height: 112rpx;
-  border-radius: 50%;
+  width: 96rpx;
+  height: 96rpx;
+  border: 1rpx solid $c-line;
+  border-radius: $radius;
   background: $c-primary-light;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: $icon-card;
   flex: none;
+}
+
+.pf-avatar-char {
+  font-family: $font-serif;
+  font-size: 40rpx;
+  line-height: 1;
+  color: $c-primary-dark;
 }
 
 .pf-user-info {
@@ -54,7 +62,7 @@
   align-items: center;
   gap: $sp-2;
   min-height: 112rpx;
-  border-bottom: 2rpx solid $c-border;
+  border-bottom: 1rpx solid $c-line;
 }
 
 .pf-menu-item:last-child {
@@ -62,10 +70,11 @@
 }
 
 .pf-menu-icon {
-  width: 64rpx;
-  height: 64rpx;
+  width: 56rpx;
+  height: 56rpx;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
-  background: $c-primary-light;
+  background: $c-paper;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,7 +159,7 @@
 }
 
 .pf-error-card {
-  border: 2rpx solid $c-red-line;
+  border: 1rpx solid $c-red-line;
 }
 
 .pf-error-title {
@@ -222,8 +231,8 @@
 
 .pf-range {
   display: flex;
-  background: #eef4f2;
-  border-radius: 999rpx;
+  background: $c-paper;
+  border-radius: $radius-xs;
   padding: 4rpx;
   flex: none;
 }
@@ -234,16 +243,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999rpx;
+  border-radius: $radius-xs;
   font-size: $fs-tiny;
   color: $c-text-2;
 }
 
 .pf-range-item.on {
-  background: $c-card;
+  background: $c-surface;
+  border: 1rpx solid $c-line;
   color: $c-primary-dark;
   font-weight: 700;
-  box-shadow: 0 2rpx 8rpx rgba(28, 43, 42, 0.08);
 }
 
 .pf-chart-active {
@@ -320,8 +329,8 @@
 .pf-bar-track {
   height: 240rpx;
   margin-top: 6rpx;
-  background: #eef4f2;
-  border-radius: 12rpx;
+  background: $c-paper;
+  border-radius: $radius-xs;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -330,7 +339,7 @@
 
 .pf-bar-fill {
   width: 100%;
-  border-radius: 12rpx 12rpx 0 0;
+  border-radius: 0;
 }
 
 .pf-bar-fill.lv-green {
@@ -360,7 +369,7 @@
 }
 
 .pf-chart-col.is-peak .pf-bar-track {
-  border: 2rpx solid $c-red-line;
+  border: 1rpx solid $c-red-line;
 }
 
 .pf-chart-col.is-active .pf-bar-val {
@@ -369,7 +378,7 @@
 }
 
 .pf-chart-col.is-active .pf-bar-track {
-  border: 2rpx solid $c-primary;
+  border: 1rpx solid $c-primary;
 }
 
 .pf-chart-col.is-active .pf-bar-date {
@@ -381,7 +390,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  border-top: 2rpx dashed rgba(28, 43, 42, 0.35);
+  border-top: 1rpx dashed $c-line-strong;
   z-index: 2;
   pointer-events: none;
 }
@@ -412,7 +421,7 @@
   justify-content: center;
   margin-top: $sp-2;
   padding-top: $sp-2;
-  border-top: 2rpx solid $c-border;
+  border-top: 1rpx solid $c-line;
 }
 
 .pf-legend-item {
@@ -525,7 +534,7 @@
 }
 
 .pf-log-item + .pf-log-item {
-  border-top: 2rpx solid $c-border;
+  border-top: 1rpx solid $c-line;
 }
 
 .pf-log-icon {
@@ -565,7 +574,7 @@
   padding: 6rpx 16rpx;
   background: $c-primary-light;
   color: $c-primary-dark;
-  border-radius: 999rpx;
+  border-radius: $radius-xs;
   font-size: $fs-tiny;
 }
 
@@ -600,8 +609,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fafcfb;
-  border: 2rpx solid $c-border;
+  background: $c-paper;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
   box-sizing: border-box;
 }
@@ -634,8 +643,8 @@
   height: 150rpx;
   margin-top: 6rpx;
   padding: $sp-2;
-  background: #f7faf9;
-  border: 2rpx solid $c-border;
+  background: $c-paper;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
   font-size: $fs-small;
   box-sizing: border-box;
@@ -648,7 +657,7 @@
 .pf-rating-list {
   margin-top: $sp-3;
   padding-top: $sp-1;
-  border-top: 2rpx solid $c-border;
+  border-top: 1rpx solid $c-line;
 }
 
 .pf-rating-item {
@@ -656,7 +665,7 @@
 }
 
 .pf-rating-item + .pf-rating-item {
-  border-top: 2rpx solid $c-border;
+  border-top: 1rpx solid $c-line;
 }
 
 .pf-rating-stars {
@@ -726,7 +735,7 @@
 .pf-physio-tile {
   width: calc(50% - #{$sp-2});
   margin: $sp-1;
-  background: #f7faf9;
+  background: $c-paper;
   border-radius: $radius-sm;
   padding: $sp-2 $sp-3;
   box-sizing: border-box;
@@ -744,8 +753,10 @@
 }
 
 .pf-physio-value {
+  font-family: $font-num;
+  font-variant-numeric: tabular-nums;
   font-size: $fs-h2;
-  font-weight: 700;
+  font-weight: 600;
   color: $c-text;
 }
 
@@ -758,7 +769,7 @@
 .pf-form-block {
   margin-top: $sp-3;
   padding-top: $sp-3;
-  border-top: 2rpx solid $c-border;
+  border-top: 1rpx solid $c-line;
 }
 
 .pf-form-desc {
@@ -788,8 +799,8 @@
   margin-top: 6rpx;
   height: 88rpx;
   padding: 0 $sp-3;
-  background: #f7faf9;
-  border: 2rpx solid $c-border;
+  background: $c-paper;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
   font-size: $fs-body;
 }

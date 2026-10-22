@@ -1,0 +1,39 @@
+@use '@/styles/tokens.scss' as *;
+
+.ui-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: $fs-label;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 1rpx;
+  white-space: nowrap;
+}
+
+.ui-pill--green {
+  background: $c-green-bg;
+  color: $c-green;
+}
+
+.ui-pill--yellow {
+  background: $c-yellow-bg;
+  color: $c-yellow;
+}
+
+.ui-pill--red {
+  background: $c-red-bg;
+  color: $c-red;
+}
+
+.ui-pill--primary {
+  background: $c-primary-light;
+  color: $c-primary-dark;
+}
+
+.ui-pill--quiet {
+  background: transparent;
+  border: 1rpx solid $c-line;
+  color: $c-muted;
+}

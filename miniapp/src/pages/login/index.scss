@@ -1,46 +1,65 @@
 @use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
 
 .login {
   min-height: 100vh;
-  background: linear-gradient(180deg, #e6f2f0 0%, #f4f8f7 46%);
-  padding: 120rpx $sp-4 $sp-5;
+  background:
+    radial-gradient(120% 72% at 50% 0%, #efe7d9 0%, $c-paper 58%),
+    $c-paper;
+  padding: 112rpx $sp-4 $sp-5;
   box-sizing: border-box;
 }
 
 .brand {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: $sp-5;
+  padding: 0 $sp-1;
 }
 
 .brand-logo {
-  width: 112rpx;
-  height: 112rpx;
-  border-radius: 56rpx;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius;
   background: $c-primary;
+  border: 1rpx solid $c-primary-dark;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(46, 139, 132, 0.24);
-  margin-bottom: $sp-2;
+  margin-bottom: $sp-3;
+}
+
+.brand-seal {
+  font-family: $font-serif;
+  font-size: 52rpx;
+  line-height: 1;
+  color: $c-surface;
+}
+
+.brand-kicker {
+  @include label;
+  margin-bottom: 6rpx;
 }
 
 .brand-name {
-  font-size: 48rpx;
-  font-weight: 700;
-  color: $c-primary-dark;
-  letter-spacing: 4rpx;
+  font-family: $font-serif;
+  font-size: 56rpx;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 2rpx;
+  color: $c-ink;
 }
 
 .brand-slogan {
   margin-top: $sp-1;
   font-size: $fs-small;
-  color: $c-text-2;
+  line-height: 1.7;
+  color: $c-ink-2;
 }
 
 .form {
-  padding: $sp-4 $sp-4 $sp-5;
+  padding: $sp-4;
 }
 
 /* ---------- 微信一键登录（仅小程序端渲染）---------- */
@@ -53,15 +72,16 @@
   height: 96rpx;
   line-height: 96rpx;
   text-align: center;
-  border-radius: $radius;
+  border-radius: $radius-sm;
   background: #07c160; // 微信品牌绿
   color: #fff;
-  font-size: $fs-h2;
+  font-size: $fs-body;
   font-weight: 600;
+  letter-spacing: 0.5rpx;
 }
 
 .btn-wechat.busy {
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .divider {
@@ -72,13 +92,14 @@
 
 .divider-line {
   flex: 1;
-  height: 2rpx;
-  background: $c-border;
+  height: 1rpx;
+  background: $c-line;
 }
 
 .divider-text {
   margin: 0 $sp-2;
-  font-size: $fs-tiny;
+  font-size: $fs-label;
+  letter-spacing: 1rpx;
   color: $c-muted;
 }
 
@@ -89,7 +110,7 @@
 .field-label {
   display: block;
   font-size: $fs-small;
-  color: $c-text-2;
+  color: $c-ink-2;
   margin-bottom: $sp-1;
 }
 
@@ -99,8 +120,8 @@
   width: 100%;
   height: 96rpx;
   padding: 0 $sp-3;
-  background: #f7faf9;
-  border: 2rpx solid $c-border;
+  background: $c-paper;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
   font-size: $fs-body;
   color: $c-text;
@@ -124,7 +145,7 @@
 }
 
 .submit.busy {
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .switch {
@@ -138,10 +159,10 @@
   display: block;
   margin-top: $sp-4;
   padding: 0 $sp-3;
-  font-size: $fs-tiny;
+  font-size: $fs-label;
+  line-height: 1.7;
   color: $c-muted;
   text-align: center;
-  line-height: 1.7;
 }
 
 .legal {
@@ -151,7 +172,7 @@
   gap: 4rpx;
   margin-top: $sp-1;
   padding: 0 $sp-3;
-  font-size: $fs-tiny;
+  font-size: $fs-label;
   color: $c-muted;
 }
 

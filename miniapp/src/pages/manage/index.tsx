@@ -234,7 +234,7 @@ export default function ManagePage() {
       <View className={`mg-it ${compact ? 'compact' : ''}`} key={key}>
         <View className="mg-it-head" onClick={() => toggleCard(key)}>
           <View className="mg-it-icon">
-            <Icon name={CATEGORY_ICON[item.category] || 'spa'} size={44} color="#1f6b65" />
+            <Icon name={CATEGORY_ICON[item.category] || 'spa'} size={44} color="#16443c" />
           </View>
           <View className="mg-it-main">
             <Text className="mg-it-title">{item.title || '未命名方案'}</Text>
@@ -278,7 +278,7 @@ export default function ManagePage() {
                       <Icon
                         name="star"
                         size={36}
-                        color={stars >= n ? '#9a6410' : '#c9d6d3'}
+                        color={stars >= n ? '#7a5310' : '#cfc6b6'}
                       />
                       <Text className="mg-star-label">{STAR_LABELS[n - 1]}</Text>
                     </View>
@@ -330,7 +330,7 @@ export default function ManagePage() {
         ) : null}
         {notice ? (
           <View className="mg-notice">
-            <Icon name="circle-check" size={30} color="#23795a" />
+            <Icon name="circle-check" size={30} color="#2c6a4e" />
             <Text>{notice}</Text>
           </View>
         ) : null}
@@ -357,12 +357,10 @@ export default function ManagePage() {
                 : '还没有评估结果，先到首页完成一次打卡，就能看到自己的压力状态。'}
           </Text>
 
-          {score?.advice ? <Text className="mg-advice">{score.advice}</Text> : null}
-
           {level === 'red' ? (
             <View className="mg-urgent">
               <View className="mg-urgent-title">
-                <Icon name="triangle-exclamation" size={32} color="#a83a34" />
+                <Icon name="triangle-exclamation" size={32} color="#963b33" />
                 <Text>现在就做一件事</Text>
               </View>
               <Text className="mg-urgent-text">
@@ -442,7 +440,7 @@ export default function ManagePage() {
               <View key={group.category}>
                 <View className="mg-group-head">
                   <View className="mg-group-name">
-                    <Icon name={group.icon} size={30} color="#45585a" />
+                    <Icon name={group.icon} size={30} color="#44504a" />
                     <Text>{group.category}</Text>
                   </View>
                   <Text className="muted">{group.items.length} 项</Text>
@@ -490,7 +488,7 @@ export default function ManagePage() {
                           key={n}
                           name="star"
                           size={28}
-                          color={n <= logStars ? '#9a6410' : '#c9d6d3'}
+                          color={n <= logStars ? '#7a5310' : '#cfc6b6'}
                         />
                       ))}
                     </View>

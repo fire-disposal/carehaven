@@ -1,0 +1,36 @@
+@use './tokens.scss' as *;
+
+// 发丝线：统一 1rpx，避免各页 2rpx/3rpx 混用。
+@mixin hairline($color: $c-line) {
+  border: 1rpx solid $color;
+}
+
+// 小标签 / eyebrow：小字号、加字距，像印刷品的页眉。
+@mixin label {
+  font-size: $fs-label;
+  line-height: 1.4;
+  letter-spacing: 2rpx;
+  font-weight: 600;
+  color: $c-muted;
+}
+
+// 衬线数字：等宽数字，避免数值跳动。
+@mixin num {
+  font-family: $font-num;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+// 多行截断
+@mixin clamp($lines) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+  overflow: hidden;
+}
+
+// 可点区域：至少 88rpx，适配中老年用户。
+@mixin tap {
+  min-height: 88rpx;
+  box-sizing: border-box;
+}

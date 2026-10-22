@@ -177,11 +177,11 @@ export default function AssessmentPage() {
             </Text>
             <View className="as-intro-meta">
               <View className="as-intro-item">
-                <Icon name="clock" size={28} color="#1f6b65" />
+                <Icon name="clock" size={28} color="#16443c" />
                 <Text>每份 2–3 分钟</Text>
               </View>
               <View className="as-intro-item">
-                <Icon name="lock" size={28} color="#1f6b65" />
+                <Icon name="lock" size={28} color="#16443c" />
                 <Text>仅自己可见</Text>
               </View>
             </View>
@@ -219,7 +219,7 @@ export default function AssessmentPage() {
                     ) : null}
                   </View>
                 </View>
-                <Icon name="chevron-right" size={32} color="#5b7074" />
+                <Icon name="chevron-right" size={32} color="#626b65" />
               </View>
             )
           })}
@@ -316,7 +316,7 @@ export default function AssessmentPage() {
                 >
                   <Text className="as-option-label">{opt.label}</Text>
                   {selected === opt.value ? (
-                    <Icon name="check" size={32} color="#2e8b84" />
+                    <Icon name="check" size={32} color="#1f5a50" />
                   ) : null}
                 </View>
               ))}
@@ -371,7 +371,7 @@ export default function AssessmentPage() {
 
         <View className="card as-advice">
           <View className="as-advice-head">
-            <Icon name="circle-info" size={32} color="#1f6b65" />
+            <Icon name="circle-info" size={32} color="#16443c" />
             <Text className="as-advice-title">结果说明</Text>
           </View>
           <Text className="as-advice-text">{adviceText}</Text>
@@ -383,7 +383,7 @@ export default function AssessmentPage() {
         {result.flag ? (
           <View className="as-safety" ariaRole="alert">
             <View className="as-safety-head">
-              <Icon name="triangle-exclamation" size={36} color="#a83a34" />
+              <Icon name="triangle-exclamation" size={36} color="#963b33" />
               <Text className="as-safety-title">请优先照顾自己的安全</Text>
             </View>
             <Text className="as-safety-text">

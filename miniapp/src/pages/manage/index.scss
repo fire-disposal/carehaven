@@ -37,7 +37,7 @@
   color: $c-green;
   font-size: $fs-small;
   background: $c-green-bg;
-  border: 2rpx solid $c-green-line;
+  border: 1rpx solid $c-green-line;
   border-radius: $radius-sm;
   padding: $sp-2 $sp-3;
   margin-bottom: $sp-2;
@@ -49,24 +49,22 @@
   border-radius: $radius-lg;
   padding: $sp-4;
   margin-bottom: $sp-3;
-  border: 2rpx solid $c-border;
-  background: $c-card;
-  box-shadow: $shadow-lg;
+  border: 1rpx solid $c-line;
+  border-top: 6rpx solid $c-line;
+  background: $c-surface;
+  box-sizing: border-box;
 }
 
 .mg-hero.level-green {
-  background: $c-green-bg;
-  border-color: $c-green-line;
+  border-top-color: $c-green;
 }
 
 .mg-hero.level-yellow {
-  background: $c-yellow-bg;
-  border-color: $c-yellow-line;
+  border-top-color: $c-yellow;
 }
 
 .mg-hero.level-red {
-  background: $c-red-bg;
-  border-color: $c-red-line;
+  border-top-color: $c-red;
 }
 
 .mg-hero-head {
@@ -88,9 +86,11 @@
 }
 
 .mg-hps-value {
+  font-family: $font-num;
+  font-variant-numeric: tabular-nums;
   font-size: $fs-display;
-  font-weight: 700;
-  line-height: 1.1;
+  font-weight: 600;
+  line-height: 1;
   color: $c-text;
 }
 
@@ -117,22 +117,11 @@
   line-height: 1.7;
 }
 
-.mg-advice {
-  display: block;
-  margin-top: $sp-2;
-  padding: $sp-2 $sp-3;
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: $radius-sm;
-  font-size: $fs-body;
-  color: $c-text-2;
-  line-height: 1.7;
-}
-
 .mg-urgent {
   margin-top: $sp-3;
   padding: $sp-3;
   background: $c-card;
-  border: 2rpx solid $c-red-line;
+  border: 1rpx solid $c-red-line;
   border-radius: $radius;
 }
 
@@ -158,13 +147,13 @@
 .mg-scale {
   margin-top: $sp-3;
   padding-top: $sp-3;
-  border-top: 2rpx solid rgba(28, 43, 42, 0.08);
+  border-top: 2rpx solid rgba(30, 36, 33, 0.08);
 }
 
 .mg-scale-bar {
   position: relative;
   display: flex;
-  height: 24rpx;
+  height: 10rpx;
 }
 
 .mg-seg {
@@ -173,25 +162,24 @@
 
 .seg-green {
   background: $c-green;
-  border-radius: 999rpx 0 0 999rpx;
+  border-radius: $radius-xs 0 0 $radius-xs;
 }
 .seg-yellow {
   background: $c-yellow;
 }
 .seg-red {
   background: $c-red;
-  border-radius: 0 999rpx 999rpx 0;
+  border-radius: 0 $radius-xs $radius-xs 0;
 }
 
 .mg-pointer {
   position: absolute;
-  top: -12rpx;
-  width: 8rpx;
-  height: 48rpx;
-  margin-left: -4rpx;
-  border-radius: 4rpx;
-  background: $c-text;
-  border: 2rpx solid $c-card;
+  top: -10rpx;
+  width: 6rpx;
+  height: 30rpx;
+  margin-left: -3rpx;
+  background: $c-ink;
+  border: 1rpx solid $c-surface;
 }
 
 .mg-legend {
@@ -209,9 +197,9 @@
 }
 
 .mg-dot {
-  width: 18rpx;
-  height: 18rpx;
-  border-radius: 999rpx;
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
   margin-right: 8rpx;
 }
 
@@ -236,10 +224,9 @@
 /* ---------- 2/3. 方案卡片 ---------- */
 
 .mg-it {
-  background: $c-card;
-  border: 2rpx solid $c-border;
+  background: $c-surface;
+  border: 1rpx solid $c-line;
   border-radius: $radius;
-  box-shadow: $shadow;
   margin-bottom: $sp-3;
 }
 
@@ -253,10 +240,11 @@
 
 .mg-it-icon {
   flex: none;
-  width: 84rpx;
-  height: 84rpx;
+  width: 72rpx;
+  height: 72rpx;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
-  background: $c-primary-light;
+  background: $c-paper;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -315,7 +303,7 @@
 
 .mg-it-body {
   padding: 0 $sp-3 $sp-3;
-  border-top: 2rpx solid $c-border;
+  border-top: 1rpx solid $c-line;
 }
 
 .mg-desc {
@@ -334,7 +322,7 @@
 
 .mg-form {
   padding-top: $sp-3;
-  border-top: 2rpx solid $c-border;
+  border-top: 1rpx solid $c-line;
 }
 
 .mg-hint {
@@ -360,8 +348,8 @@
   height: 88rpx;
   margin-top: 6rpx;
   padding: 0 $sp-3;
-  background: #f7faf9;
-  border: 2rpx solid $c-border;
+  background: $c-paper;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
   font-size: $fs-body;
   color: $c-text;
@@ -378,9 +366,9 @@
   min-height: 104rpx;
   margin: 0 4rpx;
   padding: $sp-2 0;
-  border: 2rpx solid $c-border;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
-  background: #fafcfb;
+  background: $c-paper;
   display: flex;
   flex-direction: column;
   align-items: center;

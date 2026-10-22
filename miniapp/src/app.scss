@@ -5,13 +5,13 @@
 // 全局基础样式：会被编译进 app 级样式表。
 page,
 body {
-  background: $c-bg;
-  color: $c-text;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
-    sans-serif;
+  background: $c-paper;
+  color: $c-ink;
+  font-family: $font-sans;
   font-size: $fs-body;
-  line-height: 1.6;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 view,
@@ -20,28 +20,25 @@ text {
 }
 
 /* ---------------------------------------------------------------------------
-   H5 宽屏适配（横屏手机 / 平板 / 桌面浏览器）
-   字号放大问题由 Taro 官方配置解决（config/index.ts 的 pxtransform.maxRootSize
-   把根字号钉在手机档位 20.8px），这里只处理「内容宽度」：
-
-   超过手机宽度后给左右边距，但**边距要随屏幕分级**：
-   固定 560px 在 1440 宽屏上会留下 440px×2 的空白，看起来像一条长条；
-   改为 720 / 880 两档，宽屏下边距收敛到 ~200–280px，是常见网页版式的观感。
-
-   这几处宽度必须是**固定 CSS 像素**：写大写的 PX 让 Taro 的 pxtransform
-   跳过换算（Taro 官方约定），否则会被转成 rem 而随根字号变化。
+   H5 宽屏适配
+   内容列不再是「一条手机长条」：720 / 880 / 1040 三档，
+   两侧用更深的纸色与发丝线形成书页感。
    --------------------------------------------------------------------------- */
 @media screen and (min-width: 700px) {
   body {
-    background: #e6eeec;
+    background: #e8e1d4;
   }
 
+  /* 固定阅读栏宽：手机版式在桌面不拉伸成稀疏长条。
+     两侧保留纸色留白，像一页放在桌面上的纸。 */
   #app {
     max-width: 720PX;
     min-height: 100vh;
     margin: 0 auto;
-    background: #f4f8f7;
-    box-shadow: 0 0 48px rgba(28, 43, 42, 0.1);
+    background: $c-paper;
+    border-left: 1rpx solid rgba(30, 36, 33, 0.08);
+    border-right: 1rpx solid rgba(30, 36, 33, 0.08);
+    box-shadow: 0 0 64px rgba(30, 36, 33, 0.08);
   }
 
   /* 底部导航是 fixed 定位（相对视口），需与内容列同宽同轴 */
@@ -50,27 +47,5 @@ text {
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%);
-  }
-}
-
-/* 大屏再放宽一档，避免两侧留白过当 */
-@media screen and (min-width: 1280px) {
-  #app {
-    max-width: 880PX;
-  }
-
-  .bottom-nav {
-    width: 880PX;
-  }
-}
-
-/* 超宽屏（1920+）再放宽一档 */
-@media screen and (min-width: 1800px) {
-  #app {
-    max-width: 1040PX;
-  }
-
-  .bottom-nav {
-    width: 1040PX;
   }
 }

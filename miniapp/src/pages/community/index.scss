@@ -5,7 +5,7 @@
 .seg {
   display: flex;
   background: $c-card;
-  border: 2rpx solid $c-border;
+  border: 1rpx solid $c-line;
   border-radius: $radius;
   padding: 6rpx;
   box-shadow: $shadow;
@@ -40,7 +40,7 @@
   align-items: flex-start;
   gap: 6rpx;
   background: $c-yellow-bg;
-  border: 2rpx solid $c-yellow-line;
+  border: 1rpx solid $c-yellow-line;
   border-radius: $radius-sm;
   padding: $sp-2 $sp-3;
   margin-top: $sp-2;
@@ -131,7 +131,8 @@
   width: 76rpx;
   height: 76rpx;
   flex: none;
-  border-radius: 50%;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
   background: $c-primary-light;
   display: flex;
   align-items: center;
@@ -140,8 +141,8 @@
 
 /* 匿名：虚线灰头像 + 虚线灰昵称，形状与颜色都和实名不同 */
 .avatar-anon {
-  background: #eef1f0;
-  border: 2rpx dashed $c-muted;
+  background: $c-paper;
+  border: 1rpx dashed $c-line-strong;
 }
 
 .avatar-text {
@@ -167,10 +168,10 @@
   display: inline-block;
   color: $c-text-2;
   font-weight: 500;
-  border: 2rpx dashed $c-muted;
-  border-radius: 999rpx;
+  border: 1rpx dashed $c-line-strong;
+  border-radius: $radius-xs;
   padding: 0 $sp-2;
-  background: #f6f8f7;
+  background: $c-paper;
   font-size: $fs-small;
 }
 
@@ -197,7 +198,7 @@
   align-items: center;
   margin-top: $sp-2;
   padding-top: $sp-2;
-  border-top: 2rpx solid $c-border;
+  border-top: 1rpx solid $c-line;
 }
 
 .act {
@@ -207,7 +208,7 @@
   padding: 0 $sp-3;
   margin-right: $sp-1;
   border-radius: $radius-sm;
-  background: #f6f8f7;
+  background: $c-paper;
 }
 
 .act-num {
@@ -237,7 +238,7 @@
 
 .comment-box {
   margin-top: $sp-2;
-  background: #f7faf9;
+  background: $c-paper;
   border-radius: $radius;
   padding: $sp-3;
 }
@@ -251,7 +252,7 @@
 
 .comment-item {
   padding: $sp-2 0;
-  border-bottom: 2rpx solid $c-border;
+  border-bottom: 1rpx solid $c-line;
 }
 
 .comment-item:last-of-type {
@@ -276,7 +277,7 @@
 .comment-form {
   margin-top: $sp-3;
   padding-top: $sp-2;
-  border-top: 2rpx solid $c-border;
+  border-top: 1rpx solid $c-line;
 }
 
 .c-area {
@@ -284,7 +285,7 @@
   height: 150rpx;
   padding: $sp-2;
   background: $c-card;
-  border: 2rpx solid $c-border;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
   font-size: $fs-small;
   line-height: 1.6;
@@ -362,7 +363,7 @@
   z-index: 90;
   height: 96rpx;
   padding: 0 $sp-4;
-  border-radius: 999rpx;
+  border-radius: $radius-sm;
   background: $c-primary;
   display: flex;
   align-items: center;
@@ -393,7 +394,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(28, 43, 42, 0.45);
+  background: rgba(30, 36, 33, 0.45);
 }
 
 .sheet {
@@ -431,7 +432,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #f6f8f7;
+  background: $c-paper;
 }
 
 .sheet-label {
@@ -455,9 +456,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 2rpx solid $c-border;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
-  background: #fafcfb;
+  background: $c-paper;
   color: $c-text-2;
 }
 
@@ -482,8 +483,8 @@
   height: 260rpx;
   margin-top: 6rpx;
   padding: $sp-2;
-  background: #f7faf9;
-  border: 2rpx solid $c-border;
+  background: $c-paper;
+  border: 1rpx solid $c-line;
   border-radius: $radius-sm;
   font-size: $fs-body;
   line-height: 1.7;
