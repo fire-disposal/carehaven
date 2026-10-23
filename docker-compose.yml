@@ -9,13 +9,6 @@ services:
     image: __IMAGE__ # 由 CI 渲染为 ghcr.io/<owner>/<repo>:sha-<commit>
     container_name: carehaven
     restart: unless-stopped
-    # Caddy 侧声明（caddy-docker-proxy）：容器端口 8090，不是宿主发布端口 8200。
-    labels:
-      caddy: care.205716.xyz
-      caddy.reverse_proxy: "{{upstreams 8090}}"
-    networks:
-      - default
-      - caddy
 
     volumes:
       # 全部应用状态都在这里（SQLite + 上传文件 + 备份）
@@ -66,8 +59,3 @@ volumes:
     external: true
     name: carehaven_data
 
-# 共享 ingress 网络：由宿主手工创建一次（docker network create caddy），
-# Caddy 容器与所有声明了 caddy 标签的项目共同接入。
-networks:
-  caddy:
-    external: true
