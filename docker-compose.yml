@@ -42,6 +42,7 @@ services:
 
     # 资源上限：留出余量但不与宿主机其他服务抢
     mem_limit: 256m
+    memswap_limit: 256m
     cpus: 1.0
 
     healthcheck:
