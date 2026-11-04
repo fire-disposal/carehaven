@@ -44,6 +44,12 @@ const SCALES = {
   },
 }
 
+// 自伤念头条目命中时，不走分级建议：先给出可执行的求助路径
+const SAFETY_ADVICE =
+  '您提到过「不如离开」这类念头。这需要优先被认真对待：请现在联系一位信任的人陪同，' +
+  '必要时拨打 120 或前往最近的急诊；也可以拨打全国心理援助热线 12356。' +
+  '这不是诊断，但值得现在就去获得支持。'
+
 const ADVICE = {
   green: '当前结果在一般范围内。继续保持规律作息、给自己留出休息时间；如果最近压力变大，可以每周再测一次。',
   yellow: '结果提示近期有一定负担或情绪波动。建议本周安排一次放松练习，并把照护任务分担给家人；持续两周以上可考虑咨询专业人员。',
@@ -83,14 +89,18 @@ function score(scaleKey, answers) {
   const flag =
     typeof def.safetyItem === 'number' && Number(answers[def.safetyItem]) > 0 ? true : false
 
+  // 安全项命中时强制升级：绿色 + 「在一般范围内」的建议与自伤念头自相矛盾
+  const level = flag ? 'red' : band.level
+  const advice = flag ? SAFETY_ADVICE : ADVICE[level]
+
   return {
     scale: scaleKey,
     scaleName: def.name,
     score: total,
     maxScore: def.maxScore,
     severity: band.severity,
-    level: band.level,
-    advice: ADVICE[band.level],
+    level: level,
+    advice: advice,
     flag: flag,
   }
 }
