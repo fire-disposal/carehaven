@@ -1,4 +1,5 @@
 @use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
 
 /* ---------- 页面骨架：顶部切换 + 可滚动正文 + 底部固定输入 ---------- */
 
@@ -11,42 +12,39 @@
   overflow: hidden;
 }
 
+/* 顶部切换：与互助页一致的下划线标签，不再用好几个大边框盒子 */
 .qa-top {
-  flex: none;
   display: flex;
-  background: $c-card;
-  padding: $sp-1 $sp-2;
+  gap: $sp-4;
+  padding: 0 $sp-3;
+  background: $c-bg;
   border-bottom: 1rpx solid $c-line;
 }
 
 .qa-tab {
-  flex: 1;
-  height: 88rpx;
-  margin: 0 $sp-1;
+  @include tap;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6rpx;
-  color: $c-text-2;
-  border-radius: $radius;
-  background: $c-bg;
-  border: 1rpx solid $c-line;
+  gap: $sp-1;
+  padding: 0 $sp-1;
+  color: $c-muted;
+  border-bottom: 4rpx solid transparent;
+  margin-bottom: -1rpx;
+  transition: color $dur-fast $ease, border-color $dur-fast $ease;
+
+  &.on {
+    color: $c-primary-dark;
+    border-bottom-color: $c-primary;
+  }
 }
 
 .qa-tab-text {
-  font-size: $fs-h2;
-  color: $c-text-2;
-}
-
-.qa-tab.on {
-  background: $c-primary-light;
-  border-color: $c-primary;
-  color: $c-primary-dark;
+  font-size: $fs-body;
+  color: currentColor;
 }
 
 .qa-tab.on .qa-tab-text {
-  color: $c-primary-dark;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .qa-scroll {
@@ -294,33 +292,6 @@
 
 /* ---------- 首屏引导 ---------- */
 
-.welcome {
-  text-align: center;
-  padding: $sp-4 $sp-2 $sp-1;
-}
-
-.welcome-emoji {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.welcome-title {
-  display: block;
-  margin-top: $sp-2;
-  font-size: $fs-h2;
-  font-weight: 700;
-  color: $c-text;
-}
-
-.welcome-desc {
-  display: block;
-  margin-top: $sp-1;
-  font-size: $fs-body;
-  line-height: 1.7;
-  color: $c-text-2;
-}
-
 .qa-suggest-block {
   margin-bottom: $sp-3;
 }
@@ -359,73 +330,10 @@
 
 /* ---------- 加载 / 空 / 失败 ---------- */
 
-.qa-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 96rpx $sp-4;
-  text-align: center;
-}
-
-.state-emoji {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.state-title {
-  display: block;
-  margin-top: $sp-2;
-  font-size: $fs-h2;
-  font-weight: 600;
-  color: $c-text;
-}
-
-.state-desc {
-  display: block;
-  margin-top: $sp-1;
-  font-size: $fs-small;
-  line-height: 1.7;
-  color: $c-text-2;
-}
-
-.err-card {
-  background: $c-red-bg;
-  border: 1rpx solid $c-red-line;
-  border-radius: $radius;
-  padding: $sp-3;
-  margin-bottom: $sp-3;
-}
-
-.err-card-text {
-  display: flex;
-  align-items: flex-start;
-  gap: 6rpx;
-  font-size: $fs-small;
-  line-height: 1.7;
-  color: $c-red;
-}
-
 .inline-alert {
   display: flex;
   align-items: flex-start;
   gap: 6rpx;
-}
-
-.err-card-btn {
-  margin-top: $sp-2;
-  height: 88rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: $c-red;
-  border-radius: $radius-sm;
-}
-
-.err-card-btn-text {
-  font-size: $fs-body;
-  font-weight: 600;
-  color: #ffffff;
 }
 
 /* ---------- 知识库 ---------- */
@@ -575,29 +483,47 @@
   color: $c-text;
 }
 
+/* 发送沿用 ui-btn 的外观，这里只控制它在输入行里的宽度 */
 .qa-send {
   flex: none;
   width: 168rpx;
-  height: 88rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6rpx;
-  background: $c-primary;
-  border-radius: $radius;
-}
-
-.qa-send-text {
-  font-size: $fs-h2;
-  font-weight: 700;
-  color: #ffffff;
 }
 
 /* 输入为空时弱化，但仍可点击（点击会提示先输入） */
-.qa-send.quiet {
-  background: $c-primary-light;
+
+/* 回答的有用性反馈：轻量、成对、命中后只有一处高亮 */
+.qa-helpful {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $sp-2;
+  margin-top: $sp-2;
+  padding-top: $sp-2;
+  border-top: 1rpx solid $c-line;
 }
 
-.qa-send.quiet .qa-send-text {
-  color: $c-primary-dark;
+.qa-helpful-label {
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.qa-helpful-btn {
+  @include tap;
+  display: flex;
+  align-items: center;
+  gap: $sp-0;
+  padding: 0 $sp-3;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+  color: $c-ink-2;
+
+  &.on {
+    border-color: $c-primary;
+    background: $c-primary-light;
+    color: $c-primary-dark;
+  }
+}
+
+.qa-helpful-text {
+  font-size: $fs-tiny;
 }

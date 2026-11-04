@@ -1,0 +1,108 @@
+@use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
+
+.ui-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-6 $sp-4;
+  text-align: center;
+}
+
+.ui-state--compact {
+  align-items: flex-start;
+  text-align: left;
+  padding: $sp-4;
+}
+
+.ui-state__title {
+  font-size: $fs-body;
+  line-height: $lh-tight;
+  color: $c-ink-2;
+}
+
+.ui-state__desc {
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-muted;
+  max-width: 30em;
+}
+
+.ui-state__action {
+  @include tap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: $sp-1;
+  padding: 0 $sp-4;
+  min-width: 260rpx;
+  border: 1rpx solid $c-primary;
+  border-radius: $radius-sm;
+  color: $c-primary;
+}
+
+.ui-state__action:active {
+  background: $c-primary-light;
+}
+
+.ui-state__action-label {
+  font-size: $fs-small;
+  font-weight: 600;
+  letter-spacing: 0.5rpx;
+}
+
+.ui-state--error .ui-state__action {
+  border-color: $c-red;
+  color: $c-red;
+}
+
+// 加载骨架：三条线，形状接近列表内容
+.ui-state__skeleton {
+  width: 100%;
+  max-width: 520rpx;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.ui-state__bar {
+  height: 28rpx;
+  border-radius: $radius-xs;
+  background: $c-line;
+  opacity: 0.7;
+  width: 100%;
+}
+
+.ui-state__bar--lg {
+  height: 40rpx;
+  width: 72%;
+}
+
+.ui-state__bar--sm {
+  width: 54%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ui-state__bar {
+    animation: ui-state-pulse 1.4s $ease infinite;
+  }
+
+  .ui-state__bar:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  .ui-state__bar:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+}
+
+@keyframes ui-state-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}

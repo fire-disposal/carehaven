@@ -1,56 +1,17 @@
 @use '@/styles/tokens.scss' as *;
-
-.ab-page {
-  min-height: 100vh;
-  padding-bottom: 48rpx;
-}
-
-.ab-top {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  height: 96rpx;
-  display: flex;
-  align-items: center;
-  padding: 0 $sp-2;
-  background: rgba(244, 239, 229, 0.96);
-  border-bottom: 1rpx solid $c-line;
-}
-
-.ab-back {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 36rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: $c-text;
-}
-
-.ab-top-title {
-  flex: 1;
-  text-align: center;
-  font-size: $fs-h2;
-  font-weight: 700;
-  color: $c-text;
-}
-
-.ab-top-spacer {
-  width: 72rpx;
-}
+@use '@/styles/mixins.scss' as *;
 
 .ab-hero {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: $sp-4 0 $sp-5;
+  align-items: flex-start;
+  padding: $sp-2 0 $sp-4;
 }
 
 .ab-logo {
   width: 96rpx;
   height: 96rpx;
-  border-radius: $radius;
+  border-radius: $radius-sm;
   border: 1rpx solid $c-primary-dark;
   background: $c-primary;
   display: flex;
@@ -60,31 +21,20 @@
 
 .ab-seal {
   font-family: $font-serif;
-  font-size: 52rpx;
+  font-size: $fs-h1;
   line-height: 1;
   color: $c-surface;
 }
 
-.ab-name {
-  margin-top: $sp-2;
-  font-family: $font-serif;
-  font-size: 48rpx;
-  font-weight: 600;
-  color: $c-text;
-  letter-spacing: 2rpx;
-}
-
 .ab-version {
-  margin-top: 2rpx;
+  display: block;
   font-size: $fs-tiny;
   color: $c-muted;
 }
 
-.ab-slogan {
-  margin-top: $sp-2;
-  font-size: $fs-small;
-  color: $c-text-2;
-  line-height: 1.7;
+/* PageHead 在居左的品牌区里要占满宽度，避免说明文字被挤成窄条 */
+.ab-head {
+  width: 100%;
 }
 
 .ab-block {
@@ -95,15 +45,15 @@
   display: block;
   font-size: $fs-h2;
   font-weight: 700;
-  color: $c-text;
+  color: $c-ink;
   margin-bottom: $sp-2;
 }
 
 .ab-text {
   display: block;
-  font-size: $fs-small;
-  color: $c-text-2;
-  line-height: 1.8;
+  font-size: $fs-body;
+  color: $c-ink-2;
+  line-height: $lh-body;
   margin-top: $sp-1;
 }
 
@@ -140,20 +90,20 @@
   display: block;
   font-size: $fs-body;
   font-weight: 600;
-  color: $c-text;
+  color: $c-ink;
 }
 
 .ab-feature-desc {
   display: block;
-  margin-top: 2rpx;
+  margin-top: $sp-0;
   font-size: $fs-tiny;
   color: $c-muted;
-  line-height: 1.6;
+  line-height: $lh-body;
 }
 
 .ab-safety {
   background: $c-red-bg;
-  border: 1rpx solid $c-red-line;
+  border-color: $c-red-line;
 }
 
 .ab-safety .ab-title {
@@ -167,18 +117,11 @@
   gap: $sp-2;
 }
 
-.ab-action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $sp-1;
-}
-
 .ab-footer {
   display: block;
   margin-top: $sp-4;
   font-size: $fs-tiny;
   color: $c-muted;
-  line-height: 1.7;
+  line-height: $lh-body;
   text-align: center;
 }

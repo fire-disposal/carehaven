@@ -8,3 +8,6 @@ node_modules/
 
 # 本机运维记录（含真实主机/域名/IP），不随仓库公开
 docs/*.local.md
+
+# 科研数据集产物（含去标识数据），只保留 manifest 快照时再单独提交
+research/out/

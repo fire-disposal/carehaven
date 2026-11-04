@@ -144,21 +144,49 @@
   color: $c-primary-dark;
 }
 
-// 图标框：方形、发丝线，替代彩色圆底。
-.icon-frame {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64rpx;
-  height: 64rpx;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-surface;
-  color: $c-primary;
-  flex: none;
-  box-sizing: border-box;
+// 键盘焦点：H5 下可见，小程序忽略。统一 2rpx 松烟绿，不用浏览器默认蓝。
+:focus-visible {
+  outline: 2rpx solid $c-primary;
+  outline-offset: 2rpx;
+}
+
+// 尊重系统「减少动态效果」：只保留必要的状态切换
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .busy {
-  opacity: 0.55;
+  opacity: 0.5;
+}
+
+// ---------------- 交互反馈 ----------------
+// 触屏/鼠标按下都有一次轻微下压；只动 1rpx，不做位移动画。
+.ui-btn:active,
+.btn-primary:active,
+.btn-ghost:active {
+  transform: translateY(1rpx);
+}
+
+.w-react:active,
+.chip:active,
+.ch-filter-item:active,
+.qa-tab:active,
+.nav-item:active,
+.info-row:active {
+  background: rgba(31, 90, 80, 0.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-btn:active,
+  .btn-primary:active,
+  .btn-ghost:active {
+    transform: none;
+  }
 }

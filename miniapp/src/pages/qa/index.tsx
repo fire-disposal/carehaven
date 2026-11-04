@@ -2,7 +2,9 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { Input, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
+import { Button, Pill, SectionHeader, StateBlock } from '@/components/ui'
 import Icon from '@/components/Icon'
+import { THEME } from '@/lib/theme'
 import { api, isLoggedIn, type KbEntry, type QaSession } from '@/lib/api'
 import './index.scss'
 
@@ -31,6 +33,9 @@ interface Turn {
   status: 'pending' | 'ok' | 'error'
   error: string
   created: string
+  /** 服务端问答记录 id（拿到才允许提交有用性反馈） */
+  sessionId?: string
+  helpful?: 'up' | 'down'
 }
 
 interface KbGroup {
@@ -123,6 +128,9 @@ function toTurn(item: QaSession, index: number, entries: KbEntry[]): Turn {
     status: answer.trim() ? 'ok' : 'error',
     error: '这条历史记录没有保存下回答内容，可以重新提问。',
     created: String(item.created ?? ''),
+    // 历史记录同样可以补反馈
+    sessionId: item.id,
+    helpful: item.helpful === 'up' || item.helpful === 'down' ? item.helpful : undefined,
   }
 }
 
@@ -223,7 +231,16 @@ export default function QaPage() {
       if (!answer) throw new Error('没有取到回答内容，请重试')
       setTurns((prev) =>
         prev.map((turn) =>
-          turn.id === turnId ? { ...turn, status: 'ok', answer, sources: normalizeSources(result?.sources) } : turn
+          turn.id === turnId
+            ? {
+                ...turn,
+                status: 'ok',
+                answer,
+                sources: normalizeSources(result?.sources),
+                sessionId: result?.id,
+                helpful: undefined,
+              }
+            : turn
         )
       )
     } catch (e) {
@@ -233,6 +250,19 @@ export default function QaPage() {
       )
     } finally {
       setAnchorTick((tick) => tick + 1)
+    }
+  }, [])
+
+  const markHelpful = useCallback(async (turn: Turn, value: 'up' | 'down') => {
+    if (!turn.sessionId) return
+    try {
+      await api.markAnswerHelpful(turn.sessionId, value)
+      setTurns((prev) =>
+        prev.map((item) => (item.id === turn.id ? { ...item, helpful: value } : item))
+      )
+      Taro.showToast({ title: value === 'up' ? '已记下，谢谢' : '已记下，我们会改进', icon: 'none' })
+    } catch (e) {
+      Taro.showToast({ title: e instanceof Error ? e.message : '反馈没能提交', icon: 'none' })
     }
   }, [])
 
@@ -273,7 +303,11 @@ export default function QaPage() {
     return (
       <View className="src-item" key={key} ariaRole="button" ariaLabel={`${source.title}，展开或收起全文`} onClick={() => setOpenSource(open ? '' : key)}>
         <View className="src-head">
-          {source.category ? <Text className="pill pill-primary src-cat">{source.category}</Text> : null}
+          {source.category ? (
+            <Pill tone="primary" className="src-cat">
+              {source.category}
+            </Pill>
+          ) : null}
           <Text className="src-title">{source.title}</Text>
           <Text className="src-toggle">{open ? '收起' : '全文'}</Text>
         </View>
@@ -293,37 +327,26 @@ export default function QaPage() {
 
   function renderChat() {
     if (booting) {
-      return (
-        <View className="qa-state">
-          <Text className="state-emoji">⏳</Text>
-          <Text className="state-title">正在读取问答记录…</Text>
-        </View>
-      )
+      return <StateBlock variant="loading" title="正在读取问答记录…" />
     }
     return (
       <View className="qa-thread">
         {chatError ? (
-          <View className="err-card">
-            <View className="err-card-text inline-alert">
-              <Icon name="triangle-exclamation" size={30} color="#963b33" />
-              <Text>{chatError}</Text>
-            </View>
-            <View className="err-card-btn" ariaRole="button" ariaLabel="重新加载" onClick={() => void load()}>
-              <Text className="err-card-btn-text">重新加载</Text>
-            </View>
-          </View>
+          <StateBlock
+            variant="error"
+            title={chatError}
+            actionLabel="重新加载"
+            onAction={() => void load()}
+          />
         ) : null}
 
         {turns.length === 0 ? (
-          <View className="welcome">
-            <View className="welcome-emoji">
-              <Icon name="comment-dots" size={64} color="#1f5a50" />
-            </View>
-            <Text className="welcome-title">有困扰，随时问</Text>
-            <Text className="welcome-desc">
-              用平常说话的方式描述您遇到的问题，我会从照护知识库里帮您找办法。
-            </Text>
-          </View>
+          <StateBlock
+            variant="empty"
+            icon="comment-dots"
+            title="有困扰，随时问"
+            desc="用平常说话的方式描述您遇到的问题，我会从照护知识库里帮您找办法。"
+          />
         ) : null}
 
         <View className="qa-suggest-block">
@@ -374,7 +397,7 @@ export default function QaPage() {
                 {turn.status === 'error' ? (
                   <View className="bubble bubble-ai bubble-error">
                     <View className="bubble-error-text inline-alert">
-                      <Icon name="triangle-exclamation" size={28} color="#963b33" />
+                      <Icon name="triangle-exclamation" size={28} color={THEME.red} />
                       <Text>{turn.error || '没能取到回答'}</Text>
                     </View>
                     <View
@@ -401,6 +424,31 @@ export default function QaPage() {
                         这次没有匹配到知识库条目。可以换个说法再问，或到「知识库」里逐条浏览。
                       </Text>
                     ) : null}
+
+                    {turn.sessionId ? (
+                      <View className="qa-helpful">
+                        <Text className="qa-helpful-label">
+                          {turn.helpful ? '已记录这条反馈' : '这个回答对您有帮助吗'}
+                        </Text>
+                        <View
+                          className={`qa-helpful-btn${turn.helpful === 'up' ? ' on' : ''}`}
+                          ariaRole="button"
+                          ariaLabel="这个回答有帮助"
+                          onClick={() => void markHelpful(turn, 'up')}
+                        >
+                          <Icon name="thumbs-up" size={26} />
+                          <Text className="qa-helpful-text">有用</Text>
+                        </View>
+                        <View
+                          className={`qa-helpful-btn${turn.helpful === 'down' ? ' on' : ''}`}
+                          ariaRole="button"
+                          ariaLabel="这个回答没帮助"
+                          onClick={() => void markHelpful(turn, 'down')}
+                        >
+                          <Text className="qa-helpful-text">没用</Text>
+                        </View>
+                      </View>
+                    ) : null}
                   </View>
                 ) : null}
               </View>
@@ -415,54 +463,39 @@ export default function QaPage() {
 
   function renderKnowledge() {
     if (booting) {
-      return (
-        <View className="qa-state">
-          <View className="state-emoji">
-            <Icon name="book-open" size={56} color="#626b65" />
-          </View>
-          <Text className="state-title">正在读取知识库…</Text>
-        </View>
-      )
+      return <StateBlock variant="loading" title="正在读取知识库…" />
     }
     if (kbError && !kbReady) {
       return (
-        <View className="kb-wrap">
-          <View className="err-card">
-            <View className="err-card-text inline-alert">
-              <Icon name="triangle-exclamation" size={30} color="#963b33" />
-              <Text>{kbError}</Text>
-            </View>
-            <View className="err-card-btn" ariaRole="button" ariaLabel="重新加载知识库" onClick={() => void load()}>
-              <Text className="err-card-btn-text">重新加载</Text>
-            </View>
-          </View>
-        </View>
+        <StateBlock
+          variant="error"
+          title={kbError}
+          actionLabel="重新加载知识库"
+          onAction={() => void load()}
+        />
       )
     }
     if (!kbReady) {
       return (
-        <View className="qa-state">
-          <View className="state-emoji">
-            <Icon name="circle-info" size={56} color="#626b65" />
-          </View>
-          <Text className="state-title">知识库暂时没有内容</Text>
-          <Text className="state-desc">内容补充后会显示在这里，您也可以切回问答直接提问。</Text>
-        </View>
+        <StateBlock
+          variant="empty"
+          icon="book-open"
+          title="知识库暂时没有内容"
+          desc="内容补充后会显示在这里，您也可以切回问答直接提问。"
+        />
       )
     }
     return (
       <View className="kb-wrap">
         <View className="qa-anchor" id={`kb-anchor-${anchorTick}`} />
         {kbError ? (
-          <View className="err-card">
-            <View className="err-card-text inline-alert">
-              <Icon name="triangle-exclamation" size={30} color="#963b33" />
-              <Text>{kbError}</Text>
-            </View>
-            <View className="err-card-btn" ariaRole="button" ariaLabel="重新加载知识库" onClick={() => void load()}>
-              <Text className="err-card-btn-text">重新加载</Text>
-            </View>
-          </View>
+          <StateBlock
+            variant="error"
+            compact
+            title={kbError}
+            actionLabel="重新加载"
+            onAction={() => void load()}
+          />
         ) : null}
         <View className="kb-filter">
           {[ALL_CATEGORY, ...categories].map((name) => (
@@ -486,10 +519,10 @@ export default function QaPage() {
         ) : (
           groups.map((group) => (
             <View key={group.category}>
-              <View className="section-title">
-                <Text>{group.category}</Text>
-                <Text className="muted">{group.items.length} 条</Text>
-              </View>
+              <SectionHeader
+                title={group.category}
+                action={<Text className="muted">{group.items.length} 条</Text>}
+              />
               {group.items.map((entry) => {
                 const open = openEntry === entry.id
                 return (
@@ -554,23 +587,23 @@ export default function QaPage() {
           <View className="qa-input-row">
             <Input
               className="qa-input"
+              ariaLabel="输入照护问题"
               value={draft}
               maxlength={MAX_QUESTION}
               confirmType="send"
               placeholder="说说遇到的困扰，例如：晚上不睡觉"
-              placeholderStyle="color:#44504a"
+              placeholderStyle={`color:${THEME.ink2}`}
               onInput={(e) => setDraft(e.detail.value)}
               onConfirm={() => send(draft)}
             />
-            <View
-              className={`qa-send${draft.trim() ? '' : ' quiet'}`}
-              ariaRole="button"
-              ariaLabel="发送问题"
+            <Button
+              className="qa-send"
               onClick={() => send(draft)}
+              disabled={!draft.trim()}
+              ariaLabel="发送问题"
             >
-              <Icon name="paper-plane" size={30} color={draft.trim() ? '#fff' : '#16443c'} />
-              <Text className="qa-send-text">发送</Text>
-            </View>
+              发送
+            </Button>
           </View>
         ) : null}
       </View>

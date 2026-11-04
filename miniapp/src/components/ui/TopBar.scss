@@ -1,0 +1,42 @@
+@use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
+
+.ui-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 96rpx;
+  padding: 0 $sp-2;
+  background: rgba(244, 239, 229, 0.96);
+  border-bottom: 1rpx solid $c-line;
+  backdrop-filter: blur(6px);
+}
+
+.ui-topbar__back {
+  @include tap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88rpx;
+  color: $c-ink-2;
+  border-radius: $radius-sm;
+}
+
+.ui-topbar__back:active {
+  background: $c-primary-light;
+}
+
+.ui-topbar__title {
+  font-size: $fs-small;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  color: $c-ink;
+}
+
+.ui-topbar__spacer {
+  width: 88rpx;
+  height: 88rpx;
+}

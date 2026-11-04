@@ -1,5 +1,14 @@
 // HPS（混合压力指数）计算模块
+//
+// 设计约束（见 docs/hps-method.md）：
+//   1. 分数必须可回放：每次计算都落 append-only 事件，并携带算法版本与参数快照。
+//   2. 缺失 ≠ 0：未采集的分量为 null 并计入 coverage，不写 0。
+//   3. 数据不足时不给绿色：缺分量且落在绿区时分级为 unknown。
+//   4. 生理数据只取当日，不再回退到「最近一条」——跨期数据会污染当天判断。
+//
 // 注意：本文件由 pb_hooks 通过 require() 加载，不能依赖 hook 文件顶层作用域。
+
+const ALGORITHM_VERSION = 'hps-2'
 
 function toPbDate(d) {
   return d.toISOString().replace('T', ' ')
@@ -27,7 +36,7 @@ function rangeScore(value, lo, hi) {
 }
 
 function round1(x) {
-  return Math.round(x * 10) / 10
+  return x === null || x === undefined ? null : Math.round(x * 10) / 10
 }
 
 /** JSON 字段在 JSVM 中以 UTF-8 字节数组返回，需先解码再解析 */
@@ -83,25 +92,11 @@ function config(key, fallback) {
 }
 
 /**
- * 重算某用户当日压力得分（缺失分量按剩余权重归一化，避免把「未采集」当成「低压力」）。
- * 结果 upsert 进 stress_scores，同一用户同一天只有一行。
+ * 三个分量：每个要么是 0-100 的数，要么是 null（未采集）。
+ * 返回 {physio, psycho, context, coverage}
  */
-function recomputeScore(userId) {
-  if (!userId) return
-
-  const weights = config('hps_weights', { w1: 0.4, w2: 0.4, w3: 0.2 })
-  const thresholds = config('level_thresholds', { t_green: 40, t_red: 70 })
-  const ranges = config('physio_normal_range', {
-    hrv: [20, 60],
-    gsr: [2, 8],
-    sleep_quality: [40, 90],
-  })
-
-  const bounds = dayBounds()
-  const dayStart = bounds[0]
-  const dayEnd = bounds[1]
-
-  // 1) 生理得分：优先今日记录，缺失回退到最近一条
+function components(userId, dayStart, dayEnd, ranges) {
+  // 1) 生理：只认当日；多条取最新一条
   const todayPhysio = $app.findRecordsByFilter(
     'physio_records',
     'user = {:user} && date >= {:start} && date < {:end}',
@@ -110,22 +105,32 @@ function recomputeScore(userId) {
     0,
     { user: userId, start: dayStart, end: dayEnd }
   )
-  const physioList =
-    todayPhysio.length > 0
-      ? todayPhysio
-      : $app.findRecordsByFilter('physio_records', 'user = {:user}', '-date', 1, 0, { user: userId })
 
-  let physioScore = null
-  if (physioList.length > 0) {
-    const p = physioList[0]
-    const hrvScore = 100 - rangeScore(Number(p.get('hrv')), ranges.hrv[0], ranges.hrv[1])
-    const gsrScore = rangeScore(Number(p.get('gsr')), ranges.gsr[0], ranges.gsr[1])
-    const sleepScore =
-      100 - rangeScore(Number(p.get('sleep_quality')), ranges.sleep_quality[0], ranges.sleep_quality[1])
-    physioScore = (hrvScore + gsrScore + sleepScore) / 3
+  let physio = null
+  let physioParts = 0
+  if (todayPhysio.length > 0) {
+    const p = todayPhysio[0]
+    const hrv = Number(p.get('hrv'))
+    const gsr = Number(p.get('gsr'))
+    const sleep = Number(p.get('sleep_quality'))
+    let sum = 0
+    if (Number.isFinite(hrv)) {
+      sum += 100 - rangeScore(hrv, ranges.hrv[0], ranges.hrv[1])
+      physioParts += 1
+    }
+    if (Number.isFinite(gsr)) {
+      sum += rangeScore(gsr, ranges.gsr[0], ranges.gsr[1])
+      physioParts += 1
+    }
+    if (Number.isFinite(sleep)) {
+      sum += 100 - rangeScore(sleep, ranges.sleep_quality[0], ranges.sleep_quality[1])
+      physioParts += 1
+    }
+    // 三项全空视为未采集，而不是 0 分
+    physio = physioParts > 0 ? sum / physioParts : null
   }
 
-  // 2) 心理得分：当日全部 EMA 打卡的平均
+  // 2) 心理：当日全部 EMA 打卡的平均
   const checkins = $app.findRecordsByFilter(
     'checkins',
     'user = {:user} && date >= {:start} && date < {:end}',
@@ -135,7 +140,7 @@ function recomputeScore(userId) {
     { user: userId, start: dayStart, end: dayEnd }
   )
 
-  let psychoScore = null
+  let psycho = null
   let careHoursTotal = 0
   if (checkins.length > 0) {
     let sum = 0
@@ -147,78 +152,202 @@ function recomputeScore(userId) {
       sum += 0.45 * moodScore + 0.35 * anxietyScore + 0.2 * fatigueScore
       careHoursTotal += Number(c.get('care_hours')) || 0
     }
-    psychoScore = sum / checkins.length
+    psycho = sum / checkins.length
   }
 
-  // 3) 情境得分：照护时长 60% + 近 7 天干预次数 25% + 近 7 天求助次数 15%
-  const avgCareHours = checkins.length > 0 ? careHoursTotal / checkins.length : 0
-  const weekStart = daysAgo(7)
-  const logs = $app.findRecordsByFilter('intervention_logs', 'user = {:user} && completed_at >= {:start}', '', 100, 0, {
-    user: userId,
-    start: weekStart,
-  })
-  const asks = $app.findRecordsByFilter('qa_sessions', 'user = {:user} && created >= {:start}', '', 100, 0, {
-    user: userId,
-    start: weekStart,
-  })
-  const contextScore =
-    0.6 * (clamp01(avgCareHours / 16) * 100) +
-    0.25 * (clamp01(logs.length / 5) * 100) +
-    0.15 * (clamp01(asks.length / 5) * 100)
+  // 3) 情境：需要当日打卡才有「照护时长」，否则视为未采集
+  let context = null
+  if (checkins.length > 0) {
+    const avgCareHours = careHoursTotal / checkins.length
+    const weekStart = daysAgo(7)
+    const logs = $app.findRecordsByFilter(
+      'intervention_logs',
+      'user = {:user} && completed_at >= {:start}',
+      '',
+      100,
+      0,
+      { user: userId, start: weekStart }
+    )
+    const asks = $app.findRecordsByFilter(
+      'qa_sessions',
+      'user = {:user} && created >= {:start}',
+      '',
+      100,
+      0,
+      { user: userId, start: weekStart }
+    )
+    context =
+      0.6 * (clamp01(avgCareHours / 16) * 100) +
+      0.25 * (clamp01(logs.length / 5) * 100) +
+      0.15 * (clamp01(asks.length / 5) * 100)
+  }
 
-  // 4) 加权求和
-  const parts = []
-  if (physioScore !== null) parts.push({ w: Number(weights.w1), v: physioScore })
-  if (psychoScore !== null) parts.push({ w: Number(weights.w2), v: psychoScore })
-  parts.push({ w: Number(weights.w3), v: contextScore })
+  const missing = []
+  if (physio === null) missing.push('physio')
+  if (psycho === null) missing.push('psycho')
+  if (context === null) missing.push('context')
+
+  return {
+    physio: physio,
+    psycho: psycho,
+    context: context,
+    coverage: {
+      physio: physio !== null,
+      psycho: psycho !== null,
+      context: context !== null,
+      physio_fields: physioParts,
+      missing: missing,
+      checkins: checkins.length,
+    },
+  }
+}
+
+function adviceOf(level, missing) {
+  if (level === 'unknown') {
+    return '今天的数据还不够给出分层判断。补一次打卡或生理记录，结果会在几分钟内更新。'
+  }
+  if (level === 'green') {
+    return '压力处于安全区间，保持规律作息与日常放松练习即可。'
+  }
+  if (level === 'yellow') {
+    return '压力已进入预警区间，建议今天完成一次呼吸放松或冥想练习，并留意睡眠。'
+  }
+  return '压力水平显著超标，建议立即进行一次紧急放松，并考虑向家人或专业人员寻求支持。'
+}
+
+/**
+ * 重算某用户当日压力得分。
+ * 结果 upsert 进 stress_scores（当日展示用），同时 append 一条 stress_score_events（研究/回放用）。
+ * 返回写入的快照字段；数据完全不足时返回 null 且不写库。
+ */
+function recomputeScore(userId, trigger) {
+  if (!userId) return null
+
+  const weights = config('hps_weights', { w1: 0.4, w2: 0.4, w3: 0.2 })
+  const thresholds = config('level_thresholds', { t_green: 40, t_red: 70 })
+  const ranges = config('physio_normal_range', {
+    hrv: [20, 60],
+    gsr: [2, 8],
+    sleep_quality: [40, 90],
+  })
+
+  const bounds = dayBounds()
+  const parts = components(userId, bounds[0], bounds[1], ranges)
+
+  const weighted = []
+  if (parts.physio !== null) weighted.push({ w: Number(weights.w1), v: parts.physio })
+  if (parts.psycho !== null) weighted.push({ w: Number(weights.w2), v: parts.psycho })
+  if (parts.context !== null) weighted.push({ w: Number(weights.w3), v: parts.context })
 
   let weightSum = 0
-  let weighted = 0
-  for (let i = 0; i < parts.length; i++) {
-    weightSum += parts[i].w
-    weighted += parts[i].w * parts[i].v
+  let sum = 0
+  for (let i = 0; i < weighted.length; i++) {
+    weightSum += weighted[i].w
+    sum += weighted[i].w * weighted[i].v
   }
-  const hps = weightSum > 0 ? weighted / weightSum : 0
 
-  const level = hps < Number(thresholds.t_green) ? 'green' : hps < Number(thresholds.t_red) ? 'yellow' : 'red'
-  const advice =
-    level === 'green'
-      ? '压力处于安全区间，保持规律作息与日常放松练习即可。'
-      : level === 'yellow'
-        ? '压力已进入预警区间，建议今天完成一次呼吸放松或冥想练习，并留意睡眠。'
-        : '压力水平显著超标，建议立即进行一次紧急放松，并考虑向家人或专业人员寻求支持。'
+  const coverage = {
+    physio: parts.coverage.physio,
+    psycho: parts.coverage.psycho,
+    context: parts.coverage.context,
+    physio_fields: parts.coverage.physio_fields,
+    missing: parts.coverage.missing,
+    checkins: parts.coverage.checkins,
+    weight_sum: Math.round(weightSum * 1000) / 1000,
+  }
 
-  // 5) upsert 当日得分
+  if (weightSum <= 0) {
+    // 完全没有任何分量：不写分数，避免造出一个「绿色的空值」
+    $app.logger().info('HPS 数据不足，跳过写入', 'user', userId, 'missing', coverage.missing.join(','))
+    return null
+  }
+
+  const hps = sum / weightSum
+  let level
+  if (hps < Number(thresholds.t_green)) {
+    level = coverage.missing.length > 0 ? 'unknown' : 'green'
+  } else if (hps < Number(thresholds.t_red)) {
+    level = 'yellow'
+  } else {
+    level = 'red'
+  }
+
+  const params = {
+    weights: { w1: Number(weights.w1), w2: Number(weights.w2), w3: Number(weights.w3) },
+    thresholds: { t_green: Number(thresholds.t_green), t_red: Number(thresholds.t_red) },
+    ranges: ranges,
+  }
+  const computedAt = new Date().toISOString().replace('T', ' ')
+  // 分量列是 number（PocketBase 里为 NOT NULL），缺失一律写 0；
+  // 「是否真的采集到」由 coverage 承担，读数据的人必须同时看 coverage。
+  const fields = {
+    hps: round1(hps),
+    score_physio: parts.physio === null ? 0 : round1(parts.physio),
+    score_psycho: parts.psycho === null ? 0 : round1(parts.psycho),
+    score_context: parts.context === null ? 0 : round1(parts.context),
+    level: level,
+    advice: adviceOf(level, coverage.missing),
+    algorithm_version: ALGORITHM_VERSION,
+    params: params,
+    coverage: coverage,
+    computed_at: computedAt,
+  }
+
+  // 展示用：当日唯一一行
   const existing = $app.findRecordsByFilter(
     'stress_scores',
     'user = {:user} && date >= {:start} && date < {:end}',
     '-date',
     1,
     0,
-    { user: userId, start: dayStart, end: dayEnd }
+    { user: userId, start: bounds[0], end: bounds[1] }
   )
 
   const record =
     existing.length > 0 ? existing[0] : new Record($app.findCollectionByNameOrId('stress_scores'))
   if (existing.length === 0) {
     record.set('user', userId)
-    record.set('date', toPbDate(new Date()))
+    // 按「日」落库：date 取当日零点，配合 (user, date) 唯一索引，一天一行
+    record.set('date', bounds[0])
   }
-  record.set('hps', round1(hps))
-  record.set('score_physio', physioScore === null ? 0 : round1(physioScore))
-  record.set('score_psycho', psychoScore === null ? 0 : round1(psychoScore))
-  record.set('score_context', round1(contextScore))
-  record.set('level', level)
-  record.set('advice', advice)
+  record.set('hps', fields.hps)
+  record.set('score_physio', fields.score_physio)
+  record.set('score_psycho', fields.score_psycho)
+  record.set('score_context', fields.score_context)
+  record.set('level', fields.level)
+  record.set('advice', fields.advice)
+  record.set('algorithm_version', fields.algorithm_version)
+  record.set('params', fields.params)
+  record.set('coverage', fields.coverage)
+  record.set('computed_at', fields.computed_at)
   $app.save(record)
+
+  // 研究用：append-only，永不覆盖
+  const event = new Record($app.findCollectionByNameOrId('stress_score_events'))
+  event.set('user', userId)
+  event.set('date', bounds[0])
+  event.set('hps', fields.hps)
+  event.set('score_physio', fields.score_physio)
+  event.set('score_psycho', fields.score_psycho)
+  event.set('score_context', fields.score_context)
+  event.set('level', fields.level)
+  event.set('algorithm_version', fields.algorithm_version)
+  event.set('params', fields.params)
+  event.set('coverage', fields.coverage)
+  event.set('trigger', String(trigger || 'manual'))
+  event.set('computed_at', fields.computed_at)
+  $app.save(event)
+
+  return fields
 }
 
 /** 钩子里调用：任何异常都不应让用户的写入失败，只记录日志 */
-function safeRecompute(userId) {
+function safeRecompute(userId, trigger) {
   try {
-    recomputeScore(userId)
+    return recomputeScore(userId, trigger)
   } catch (err) {
     $app.logger().error('HPS 重算失败', 'user', userId, 'error', String(err))
+    return null
   }
 }
 
@@ -229,6 +358,7 @@ function userIdOf(record) {
 }
 
 module.exports = {
+  ALGORITHM_VERSION: ALGORITHM_VERSION,
   recomputeScore: recomputeScore,
   safeRecompute: safeRecompute,
   userIdOf: userIdOf,

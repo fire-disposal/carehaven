@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Input, Text, Textarea, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import Icon from '@/components/Icon'
+import { Button, Card, StateBlock, TopBar } from '@/components/ui'
+import { THEME } from '@/lib/theme'
 import { api, isLoggedIn, type FeedbackCategory } from '@/lib/api'
 import './index.scss'
 
@@ -58,41 +60,29 @@ export default function FeedbackPage() {
 
   if (done) {
     return (
-      <View className="page fb-page">
-        <View className="fb-top">
-          <View className="fb-back" onClick={backProfile} ariaRole="button" ariaLabel="返回我的">
-            <Icon name="arrow-left" size={36} />
-          </View>
-          <Text className="fb-top-title">意见反馈</Text>
-          <View className="fb-top-spacer" />
-        </View>
+      <View className="page">
+        <TopBar title="意见反馈" onBack={backProfile} backLabel="返回我的" />
         <View className="page-pad">
-          <View className="fb-done card-lg">
+          <Card className="fb-done">
             <View className="fb-done-icon">
-              <Icon name="circle-check" size={56} color="#2c6a4e" />
+              <Icon name="circle-check" size={56} color={THEME.green} />
             </View>
             <Text className="fb-done-title">已收到您的反馈</Text>
             <Text className="fb-done-text">
               我们会在后台逐条查看。涉及安全或隐私的问题会优先处理；如需回复，我们会通过您留下的联系方式联系您。
             </Text>
-            <View className="btn-primary fb-done-btn" onClick={backProfile}>
+            <Button variant="primary" block className="fb-done-btn" onClick={backProfile}>
               返回我的
-            </View>
-          </View>
+            </Button>
+          </Card>
         </View>
       </View>
     )
   }
 
   return (
-    <View className="page fb-page">
-      <View className="fb-top">
-        <View className="fb-back" onClick={backProfile} ariaRole="button" ariaLabel="返回我的">
-          <Icon name="arrow-left" size={36} />
-        </View>
-        <Text className="fb-top-title">意见反馈</Text>
-        <View className="fb-top-spacer" />
-      </View>
+    <View className="page">
+      <TopBar title="意见反馈" onBack={backProfile} backLabel="返回我的" />
 
       <View className="page-pad">
         <Text className="fb-intro">
@@ -100,7 +90,7 @@ export default function FeedbackPage() {
         </Text>
 
         <Text className="fb-label">反馈类型</Text>
-        <View className="fb-chips">
+        <View className="fb-chips" ariaRole="radiogroup" ariaLabel="反馈类型">
           {CATEGORIES.map((item) => (
             <View
               key={item}
@@ -109,8 +99,9 @@ export default function FeedbackPage() {
                 setCategory(item)
                 setError('')
               }}
-              ariaRole="button"
-              ariaLabel={`选择反馈类型：${item}`}
+              ariaRole="radio"
+              ariaLabel={item}
+              ariaChecked={category === item}
             >
               <Text>{item}</Text>
             </View>
@@ -122,6 +113,7 @@ export default function FeedbackPage() {
           className="fb-textarea"
           value={content}
           maxlength={MAX_LEN}
+          ariaLabel="反馈的具体内容"
           placeholder="请描述发生了什么、在哪里遇到，以及您希望怎么改进。"
           onInput={(e) => {
             setContent(e.detail.value)
@@ -137,6 +129,7 @@ export default function FeedbackPage() {
           className="fb-input"
           value={contact}
           maxlength={100}
+          ariaLabel="联系方式，选填"
           placeholder="邮箱或手机号，方便我们回复"
           onInput={(e) => setContact(e.detail.value)}
         />
@@ -158,16 +151,18 @@ export default function FeedbackPage() {
           </Text>
         </View>
 
-        {error ? <Text className="fb-error">{error}</Text> : null}
+        {error ? <StateBlock variant="error" compact title={error} /> : null}
 
-        <View
-          className={`btn-primary fb-submit ${sending ? 'busy' : ''}`}
-          onClick={submit}
-          ariaRole="button"
+        <Button
+          variant="primary"
+          block
+          disabled={sending}
+          className="fb-submit"
           ariaLabel="提交反馈"
+          onClick={submit}
         >
           {sending ? '提交中…' : '提交反馈'}
-        </View>
+        </Button>
       </View>
     </View>
   )

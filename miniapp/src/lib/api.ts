@@ -201,15 +201,31 @@ export async function wechatBind(code: string): Promise<User> {
 
 export type Level = 'green' | 'yellow' | 'red'
 
+/** 评分可能因数据不足而没有分级（hps-2）；量表结果不会出现 unknown */
+export type ScoreLevel = Level | 'unknown'
+
+export interface ScoreCoverage {
+  physio: boolean
+  psycho: boolean
+  context: boolean
+  missing: string[]
+  weight_sum?: number
+  checkins?: number
+}
+
 export interface StressScore {
   id: string
   date: string
   hps: number
-  level: Level
+  level: ScoreLevel
+  /** 未采集的分量会写 0，必须结合 coverage 判断「没有」还是「确实是 0」 */
   score_physio: number
   score_psycho: number
   score_context: number
   advice: string
+  algorithm_version?: string
+  coverage?: ScoreCoverage
+  computed_at?: string
 }
 
 /** 一次量表自评；分数与分级由服务端返回，客户端不自行计算后覆盖 */
@@ -279,24 +295,55 @@ export interface KbEntry {
   source: string
 }
 
-export interface Post {
+export type WhisperKind = '分享' | '求助' | '陪伴'
+export type WhisperSlot = 'scene' | 'feeling' | 'tried' | 'wish'
+export type ReactionKind = '我也是' | '抱抱' | '有用' | '加油'
+export type ReportReason = '暴露隐私' | '攻击他人' | '不合适' | '其他'
+
+export interface LexiconTerm {
   id: string
+  text: string
+}
+
+/** 渲染规则由服务端下发，客户端只做预览，不自行决定句子结构 */
+export interface WhisperRenderRule {
+  slot: WhisperSlot
+  required: boolean
+  glue: string
+}
+
+export interface WhisperLexicon {
+  version: string
+  kinds: WhisperKind[]
+  reactions: ReactionKind[]
+  reportReasons: ReportReason[]
+  maxText: number
+  dailyPostLimit: number
+  render: WhisperRenderRule[]
+  slots: Record<WhisperSlot, LexiconTerm[]>
+}
+
+export type WhisperTerms = Partial<Record<WhisperSlot, string>>
+
+export interface Whisper {
+  id: string
+  kind: WhisperKind
+  /** 服务端拼好的整句；客户端从不生成、也不回写正文 */
+  text: string
+  terms: WhisperTerms
   nickname: string
-  section: '经验分享' | '情绪树洞' | '照护技巧'
-  content: string
   anonymous: boolean
-  likes: number
-  comments_count: number
+  reactions_count: number
+  reaction_counts: Partial<Record<ReactionKind, number>>
+  report_count: number
+  hidden: boolean
   created: string
 }
 
-export interface Comment {
+export interface WhisperReaction {
   id: string
-  post: string
-  nickname: string
-  content: string
-  anonymous: boolean
-  created: string
+  whisper: string
+  kind: ReactionKind
 }
 
 export interface Rating {
@@ -309,14 +356,23 @@ export interface Rating {
 }
 
 export interface AskResult {
+  /** 服务端记录 id：用于提交「有用 / 没用」 */
+  id?: string
   answer: string
   sources: { id: string; title: string; category: string }[]
+}
+
+export interface ResearchConsent {
+  granted: boolean
+  version: string
+  updated_at: string
 }
 
 export interface QaSession {
   id: string
   question: string
   answer: string
+  helpful?: 'up' | 'down' | ''
   created: string
 }
 
@@ -327,6 +383,17 @@ export interface FeedbackInput {
   content: string
   contact?: string
   page?: string
+}
+
+export interface AccountExport {
+  meta: {
+    exported_at: string
+    user_id: string
+    collections: string[]
+    note: string
+  }
+  account: Record<string, unknown>
+  data: Record<string, Record<string, unknown>[]>
 }
 
 export interface TtsResult {
@@ -490,6 +557,36 @@ export const api = {
     return res.items
   },
 
+  /** 研究参与同意：GET 当前状态；setResearchConsent 写入/撤回 */
+  researchConsent(): Promise<ResearchConsent> {
+    return request<ResearchConsent>('/api/zz/research/consent')
+  },
+
+  setResearchConsent(granted: boolean): Promise<ResearchConsent> {
+    return request<ResearchConsent>('/api/zz/research/consent', {
+      method: 'POST',
+      data: { granted },
+    })
+  },
+
+  /** 单条回答的有用性反馈（检索质量的研究信号） */
+  markAnswerHelpful(sessionId: string, value: 'up' | 'down'): Promise<{ id: string; helpful: string }> {
+    return request(`/api/zz/qa/${sessionId}/helpful`, { method: 'POST', data: { value } })
+  },
+
+  /** 数据权利：导出自己的全部记录（JSON 包，含评分参数快照） */
+  exportAccount(): Promise<AccountExport> {
+    return request<AccountExport>('/api/zz/account/export')
+  },
+
+  /** 注销：服务端删除账号，关系字段级联删除 */
+  deleteAccount(): Promise<{ deleted: boolean }> {
+    return request<{ deleted: boolean }>('/api/zz/account/delete', {
+      method: 'POST',
+      data: { confirm: 'DELETE' },
+    })
+  },
+
   submitFeedback(data: FeedbackInput): Promise<{ id: string; created: string }> {
     return request<{ id: string; created: string }>('/api/zz/feedback', {
       method: 'POST',
@@ -516,64 +613,58 @@ export const api = {
     return res.items
   },
 
-  // 社群
-  async posts(section?: string): Promise<Post[]> {
-    const res = await list<Post>('posts', {
-      filter: section ? `section = "${section}"` : '',
+  // 结构化互助（拼句）：正文由服务端拼接，客户端只提交词元 id
+  whisperLexicon(): Promise<WhisperLexicon> {
+    return request<WhisperLexicon>('/api/zz/whispers/lexicon')
+  },
+
+  async whispers(kind?: WhisperKind): Promise<Whisper[]> {
+    const res = await list<Whisper>('whispers', {
+      filter: kind ? `kind = "${kind}"` : '',
       sort: '-created',
       perPage: 50,
     })
     return res.items
   },
 
-  createPost(data: {
-    section: Post['section']
-    content: string
+  createWhisper(data: {
+    kind: WhisperKind
+    terms: WhisperTerms
     anonymous: boolean
-    nickname: string
-  }): Promise<Post> {
-    const user = getUser()
-    const display = data.anonymous ? '匿名' : data.nickname || user?.name || '照护者'
-    return create<Post>('posts', {
-      user: user?.id,
-      nickname: display,
-      section: data.section,
-      content: data.content,
-      anonymous: data.anonymous,
-      likes: 0,
-      comments_count: 0,
+  }): Promise<Whisper> {
+    return request<Whisper>('/api/zz/whispers', {
+      method: 'POST',
+      data: { kind: data.kind, terms: data.terms, anonymous: data.anonymous },
     })
   },
 
-  /**
-   * 点赞：由服务端路由自增计数。
-   * 不能直接 PATCH posts —— 该表的 updateRule 只允许作者修改自己的帖子。
-   */
-  likePost(postId: string): Promise<{ likes: number }> {
-    return request<{ likes: number }>(`/api/zz/posts/${postId}/like`, { method: 'POST' })
+  /** 固定回应：一人一帖一条，重复提交即改选 */
+  reactWhisper(whisperId: string, kind: ReactionKind): Promise<{
+    kind: ReactionKind
+    reaction_counts: Partial<Record<ReactionKind, number>>
+    reactions_count: number
+  }> {
+    return request(`/api/zz/whispers/${whisperId}/react`, { method: 'POST', data: { kind } })
   },
 
-  async comments(postId: string): Promise<Comment[]> {
-    const res = await list<Comment>('comments', {
-      filter: `post = "${postId}"`,
-      sort: 'created',
-      perPage: 100,
+  /** 我自己给过的回应，用于回显选中的那一个 */
+  async myWhisperReactions(): Promise<WhisperReaction[]> {
+    const me = getUser()
+    if (!me) return []
+    const res = await list<WhisperReaction>('whisper_reactions', {
+      filter: `user = "${me.id}"`,
+      perPage: 200,
     })
     return res.items
   },
 
-  createComment(data: {
-    postId: string
-    content: string
-    anonymous: boolean
-  }): Promise<Comment> {
-    const user = getUser()
-    return create<Comment>('comments', {
-      post: data.postId,
-      user: user?.id,
-      nickname: data.anonymous ? '匿名' : user?.name || '照护者',
-      content: data.content,
-      anonymous: data.anonymous,
+  reportWhisper(
+    whisperId: string,
+    reason: ReportReason
+  ): Promise<{ report_count: number; hidden: boolean }> {
+    return request(`/api/zz/whispers/${whisperId}/report`, {
+      method: 'POST',
+      data: { reason },
     })
   },
 

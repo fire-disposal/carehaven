@@ -74,6 +74,13 @@ routerAdd(
       // 未命中或文件损坏：继续合成；缓存问题不能阻断朗读
     }
 
+    // 命中缓存不计额度：真正会产生上游费用的是这次合成
+    const quota = require(__hooks + '/lib/quota.js')
+    const gate = quota.consume(info.auth.id, 'tts')
+    if (!gate.allowed) {
+      return e.json(429, { message: quota.messageFor('tts', gate.limit) })
+    }
+
     const payload = {
       req_params: {
         text: text,

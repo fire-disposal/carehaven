@@ -1,0 +1,36 @@
+@use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
+
+.ui-stars {
+  display: flex;
+  gap: $sp-2;
+}
+
+.ui-stars__item {
+  @include tap;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rpx;
+  padding: $sp-1 0;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+  background: $c-surface;
+
+  &.is-on {
+    border-color: $c-yellow-line;
+    background: $c-yellow-bg;
+  }
+}
+
+.ui-stars__label {
+  font-size: $fs-label;
+  color: $c-muted;
+}
+
+.ui-stars__item.is-on .ui-stars__label {
+  color: $c-yellow;
+  font-weight: 600;
+}

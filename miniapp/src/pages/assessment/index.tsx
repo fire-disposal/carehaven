@@ -2,6 +2,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import Icon from '@/components/Icon'
+import { Button, Card, Pill, SectionHeader, StateBlock, TopBar } from '@/components/ui'
+import { THEME } from '@/lib/theme'
 import { usePageReadAloud } from '@/lib/readAloud'
 import { api, isLoggedIn, type AssessmentRecord } from '@/lib/api'
 import { SCALES, type ScaleDef } from '@/lib/scales'
@@ -31,6 +33,7 @@ export default function AssessmentPage() {
   const [result, setResult] = useState<AssessmentRecord | null>(null)
   const [history, setHistory] = useState<AssessmentRecord[]>([])
   const [historyError, setHistoryError] = useState('')
+  const [historyLoading, setHistoryLoading] = useState(true)
 
   const loadHistory = useCallback(async () => {
     if (!isLoggedIn()) {
@@ -42,6 +45,8 @@ export default function AssessmentPage() {
       setHistory(await api.assessments(20))
     } catch (e) {
       setHistoryError(e instanceof Error ? e.message : '历史记录加载失败')
+    } finally {
+      setHistoryLoading(false)
     }
   }, [])
 
@@ -160,86 +165,95 @@ export default function AssessmentPage() {
 
   if (mode === 'list') {
     return (
-      <View className="page as-page">
-        <View className="as-top">
-          <View className="as-top-back" onClick={backHome} ariaRole="button" ariaLabel="返回首页">
-            <Icon name="arrow-left" size={36} />
-          </View>
-          <Text className="as-top-title">量表自评</Text>
-          <View className="as-top-spacer" />
-        </View>
+      <View className="page">
+        <TopBar title="量表自评" onBack={backHome} backLabel="返回首页" />
 
         <View className="page-pad">
-          <View className="as-intro">
+          <Card tone="tint" className="as-intro">
             <Text className="as-intro-title">花几分钟，看看自己最近怎么样</Text>
             <Text className="as-intro-text">
               三份标准化自评量表，分别看照护负担、情绪与焦虑。结果用于自我了解，不构成诊断。
             </Text>
             <View className="as-intro-meta">
               <View className="as-intro-item">
-                <Icon name="clock" size={28} color="#16443c" />
+                <Icon name="clock" size={28} color={THEME.primaryDark} />
                 <Text>每份 2–3 分钟</Text>
               </View>
               <View className="as-intro-item">
-                <Icon name="lock" size={28} color="#16443c" />
+                <Icon name="lock" size={28} color={THEME.primaryDark} />
                 <Text>仅自己可见</Text>
               </View>
             </View>
-          </View>
+          </Card>
 
           {SCALES.map((def) => {
             const last = latestByScale[def.key]
             return (
               <View
-                className="as-scale"
+                className="as-scale-hit"
                 key={def.key}
                 onClick={() => start(def)}
                 ariaRole="button"
                 ariaLabel={`开始${def.name}，${def.items.length} 题`}
               >
-                <View className={`as-scale-icon tint-${def.tint}`}>
-                  <Icon name={def.icon} size={44} />
-                </View>
-                <View className="as-scale-main">
-                  <View className="as-scale-head">
-                    <Text className="as-scale-name">{def.name}</Text>
-                    <Text className="as-scale-short">{def.short}</Text>
+                <Card className="as-scale">
+                  <View className={`as-scale-icon tint-${def.tint}`}>
+                    <Icon name={def.icon} size={44} />
                   </View>
-                  <Text className="as-scale-intro">{def.intro}</Text>
-                  <View className="as-scale-meta">
-                    <Text>{def.items.length} 题</Text>
-                    <Text className="as-dot">·</Text>
-                    <Text>{def.duration}</Text>
-                    {last ? (
-                      <Text
-                        className={`pill pill-${last.flag ? 'red' : last.level} as-scale-last`}
-                      >
-                        上次 {last.score} 分{last.flag ? ' · 需关注' : ''}
-                      </Text>
-                    ) : null}
+                  <View className="as-scale-main">
+                    <View className="as-scale-head">
+                      <Text className="as-scale-name">{def.name}</Text>
+                      <Text className="as-scale-short">{def.short}</Text>
+                    </View>
+                    <Text className="as-scale-intro">{def.intro}</Text>
+                    <View className="as-scale-meta">
+                      <Text>{def.items.length} 题</Text>
+                      <Text className="as-dot">·</Text>
+                      <Text>{def.duration}</Text>
+                      {last ? (
+                        <Pill
+                          tone={last.flag ? 'red' : last.level}
+                          className="as-scale-last"
+                        >
+                          {`上次 ${last.score} 分${last.flag ? ' · 需关注' : ''}`}
+                        </Pill>
+                      ) : null}
+                    </View>
                   </View>
-                </View>
-                <Icon name="chevron-right" size={32} color="#626b65" />
+                  <Icon name="chevron-right" size={32} color={THEME.muted} />
+                </Card>
               </View>
             )
           })}
 
-          <View className="section-title">
-            <Text>最近自评</Text>
-            <Text className="muted">{history.length ? `${history.length} 次` : '暂无'}</Text>
-          </View>
+          <SectionHeader
+            title="最近自评"
+            action={
+              <Text className="muted">{history.length ? `${history.length} 次` : '暂无'}</Text>
+            }
+          />
 
-          {historyError ? <Text className="as-error">{historyError}</Text> : null}
-
-          {history.length === 0 ? (
-            <View className="card as-empty">
-              <Text className="as-empty-title">还没有自评记录</Text>
-              <Text className="as-empty-text">
-                选一份量表开始，完成后这里会按时间留下分数与分级，方便回看变化。
-              </Text>
-            </View>
+          {historyLoading ? (
+            <StateBlock variant="loading" title="正在读取自评记录…" />
+          ) : historyError ? (
+            <StateBlock
+              variant="error"
+              title={historyError}
+              desc="网络不太稳，稍后再试一次。"
+              actionLabel="重新加载"
+              onAction={() => {
+                setHistoryLoading(true)
+                void loadHistory()
+              }}
+            />
+          ) : history.length === 0 ? (
+            <StateBlock
+              variant="empty"
+              title="还没有自评记录"
+              desc="选一份量表开始，完成后这里会按时间留下分数与分级，方便回看变化。"
+            />
           ) : (
-            <View className="card as-history">
+            <Card>
               {history.map((item) => {
                 const def = SCALES.find((s) => s.key === item.scale)
                 const flagged = item.flag === true
@@ -251,14 +265,14 @@ export default function AssessmentPage() {
                     </View>
                     <View className="as-history-score">
                       <Text className="as-history-value">{item.score}</Text>
-                      <Text className={`pill pill-${flagged ? 'red' : item.level}`}>
+                      <Pill tone={flagged ? 'red' : item.level}>
                         {flagged ? '需关注' : item.severity}
-                      </Text>
+                      </Pill>
                     </View>
                   </View>
                 )
               })}
-            </View>
+            </Card>
           )}
 
           <Text className="as-disclaimer">
@@ -279,21 +293,12 @@ export default function AssessmentPage() {
     const selected = answers[index]
 
     return (
-      <View className="page as-page as-quiz">
-        <View className="as-top">
-          <View
-            className="as-top-back"
-            onClick={backQuestion}
-            ariaRole="button"
-            ariaLabel={index === 0 ? '退出量表' : '上一题'}
-          >
-            <Icon name="arrow-left" size={36} />
-          </View>
-          <Text className="as-top-title">{active.name}</Text>
-          <Text className="as-top-count">
-            {index + 1} / {active.items.length}
-          </Text>
-        </View>
+      <View className="page">
+        <TopBar
+          title={`${active.name} · ${index + 1} / ${active.items.length}`}
+          onBack={backQuestion}
+          backLabel={index === 0 ? '退出量表' : '上一题'}
+        />
 
         <View className="as-progress">
           <View className="as-progress-fill" style={{ width: `${progress}%` }} />
@@ -305,29 +310,33 @@ export default function AssessmentPage() {
             <Text className="as-quiz-question">{question}</Text>
             <Text className="as-quiz-hint">选出最接近的一档，选完自动进入下一题</Text>
 
-            <View className="as-options">
+            <View className="as-options" ariaRole="radiogroup" ariaLabel="选项">
               {active.options.map((opt) => (
                 <View
                   key={opt.value}
                   className={`as-option ${selected === opt.value ? 'picked' : ''}`}
                   onClick={() => choose(opt.value)}
-                  ariaRole="button"
+                  ariaRole="radio"
                   ariaLabel={opt.label}
+                  ariaChecked={selected === opt.value}
                 >
                   <Text className="as-option-label">{opt.label}</Text>
                   {selected === opt.value ? (
-                    <Icon name="check" size={32} color="#1f5a50" />
+                    <Icon name="check" size={32} color={THEME.primary} />
                   ) : null}
                 </View>
               ))}
             </View>
 
-            {error ? <Text className="as-error">{error}</Text> : null}
             {saving ? <Text className="as-saving">正在计算并保存结果…</Text> : null}
-            {error && answers.length === active.items.length ? (
-              <View className="btn-primary as-retry" onClick={retrySubmit}>
-                重新提交
-              </View>
+            {error ? (
+              <StateBlock
+                variant="error"
+                compact
+                title={error}
+                actionLabel={answers.length === active.items.length ? '重新提交' : undefined}
+                onAction={retrySubmit}
+              />
             ) : null}
           </View>
         </View>
@@ -343,22 +352,14 @@ export default function AssessmentPage() {
   const adviceText = resultAdvice
 
   return (
-    <View className="page as-page">
-      <View className="as-top">
-        <View className="as-top-back" onClick={quit} ariaRole="button" ariaLabel="返回量表列表">
-          <Icon name="arrow-left" size={36} />
-        </View>
-        <Text className="as-top-title">自评结果</Text>
-        <View className="as-top-spacer" />
-      </View>
+    <View className="page">
+      <TopBar title="自评结果" onBack={quit} backLabel="返回量表列表" />
 
       <View className="page-pad">
-        <View className={`as-result tone-${tone}`}>
+        <Card className={`as-result tone-${tone}`}>
           <View className="as-result-head">
             <Text className="as-result-name">{result.scaleName || resultDef.name}</Text>
-            <Text className={`pill pill-${tone}`}>
-              {flagged ? '需立即关注' : result.severity}
-            </Text>
+            <Pill tone={tone}>{flagged ? '需立即关注' : result.severity}</Pill>
           </View>
           <View className="as-result-score">
             <Text className="as-result-value">{result.score}</Text>
@@ -367,56 +368,57 @@ export default function AssessmentPage() {
           <View className="as-result-bar">
             <View className={`as-result-fill lv-${tone}`} style={{ width: `${percent}%` }} />
           </View>
-        </View>
+        </Card>
 
-        <View className="card as-advice">
+        <Card className="as-advice">
           <View className="as-advice-head">
-            <Icon name="circle-info" size={32} color="#16443c" />
+            <Icon name="circle-info" size={32} color={THEME.primaryDark} />
             <Text className="as-advice-title">结果说明</Text>
           </View>
           <Text className="as-advice-text">{adviceText}</Text>
           <Text className="as-advice-note">
             结果不是诊断，也不能替代医生或心理咨询师的专业评估。
           </Text>
-        </View>
+        </Card>
 
         {result.flag ? (
-          <View className="as-safety" ariaRole="alert">
-            <View className="as-safety-head">
-              <Icon name="triangle-exclamation" size={36} color="#963b33" />
-              <Text className="as-safety-title">请优先照顾自己的安全</Text>
-            </View>
-            <Text className="as-safety-text">
-              您刚才提到过伤害自己的想法。请现在就联系一位信任的家人或朋友，不要独自待着；
-              如有立即危险，请拨打 120。也可以拨打全国心理援助热线 12356，和专业人员聊一聊。
-            </Text>
-            <View className="as-safety-actions">
-              <View
-                className="btn-primary as-safety-btn"
+          <View ariaRole="alert">
+            <Card className="as-safety">
+              <View className="as-safety-head">
+                <Icon name="triangle-exclamation" size={36} color={THEME.red} />
+                <Text className="as-safety-title">请优先照顾自己的安全</Text>
+              </View>
+              <Text className="as-safety-text">
+                您刚才提到过伤害自己的想法。请现在就联系一位信任的家人或朋友，不要独自待着；
+                如有立即危险，请拨打 120。也可以拨打全国心理援助热线 12356，和专业人员聊一聊。
+              </Text>
+              <Button
+                variant="primary"
+                block
+                className="as-safety-btn"
+                ariaLabel="拨打 12356 心理援助热线"
                 onClick={() =>
                   Taro.makePhoneCall({ phoneNumber: '12356' }).catch(() =>
                     Taro.showToast({ title: '请拨打 12356', icon: 'none' })
                   )
                 }
               >
-                <Icon name="phone" size={32} color="#fff" />
-                <Text>拨打 12356</Text>
-              </View>
-            </View>
+                拨打 12356
+              </Button>
+            </Card>
           </View>
         ) : null}
 
         <View className="as-result-actions">
-          <View className="btn-ghost as-result-btn" onClick={quit}>
+          <Button variant="ghost" block onClick={quit}>
             返回量表列表
-          </View>
-          <View className="btn-primary as-result-btn" onClick={() => start(resultDef)}>
-            <Icon name="rotate-right" size={30} color="#fff" />
-            <Text>再测一次</Text>
-          </View>
+          </Button>
+          <Button variant="primary" block onClick={() => start(resultDef)}>
+            再测一次
+          </Button>
         </View>
 
-        {error ? <Text className="as-error">{error}</Text> : null}
+        {error ? <StateBlock variant="error" compact title={error} /> : null}
       </View>
     </View>
   )

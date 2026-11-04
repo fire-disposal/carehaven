@@ -6,6 +6,12 @@
 
 migrate(
   (app) => {
+    // 演示数据只用于本地/预发：没有显式打开开关时整段跳过。
+    // 生产环境绝不写入 demo 账号与 simulated 生理数据（见 docs/platform.md A1）。
+    if (String($os.getenv('SEED_DEMO') || '') !== '1') {
+      return
+    }
+
     // 确定性伪随机，保证每次重建数据一致
     let seed = 20260615;
     const rnd = () => {

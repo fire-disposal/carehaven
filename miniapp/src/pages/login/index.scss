@@ -4,7 +4,7 @@
 .login {
   min-height: 100vh;
   background:
-    radial-gradient(120% 72% at 50% 0%, #efe7d9 0%, $c-paper 58%),
+    radial-gradient(120% 72% at 50% 0%, $c-surface 0%, $c-paper 58%),
     $c-paper;
   padding: 112rpx $sp-4 $sp-5;
   box-sizing: border-box;
@@ -27,7 +27,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: $sp-3;
+  margin-bottom: $sp-1;
 }
 
 .brand-seal {
@@ -37,51 +37,14 @@
   color: $c-surface;
 }
 
-.brand-kicker {
-  @include label;
-  margin-bottom: 6rpx;
-}
-
-.brand-name {
-  font-family: $font-serif;
-  font-size: 56rpx;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: 2rpx;
-  color: $c-ink;
-}
-
-.brand-slogan {
-  margin-top: $sp-1;
-  font-size: $fs-small;
-  line-height: 1.7;
-  color: $c-ink-2;
-}
-
 .form {
-  padding: $sp-4;
+  margin-bottom: $sp-3;
 }
 
 /* ---------- 微信一键登录（仅小程序端渲染）---------- */
 
 .wechat-block {
   margin-bottom: $sp-4;
-}
-
-.btn-wechat {
-  height: 96rpx;
-  line-height: 96rpx;
-  text-align: center;
-  border-radius: $radius-sm;
-  background: #07c160; // 微信品牌绿
-  color: #fff;
-  font-size: $fs-body;
-  font-weight: 600;
-  letter-spacing: 0.5rpx;
-}
-
-.btn-wechat.busy {
-  opacity: 0.55;
 }
 
 .divider {
@@ -144,13 +107,12 @@
   margin-top: $sp-4;
 }
 
-.submit.busy {
-  opacity: 0.55;
-}
-
 .switch {
+  @include tap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-top: $sp-3;
-  text-align: center;
   color: $c-primary;
   font-size: $fs-small;
 }
@@ -168,8 +130,9 @@
 .legal {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
-  gap: 4rpx;
+  gap: $sp-0;
   margin-top: $sp-1;
   padding: 0 $sp-3;
   font-size: $fs-label;
@@ -177,6 +140,10 @@
 }
 
 .legal-link {
+  @include tap;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 $sp-1;
   color: $c-primary-dark;
   text-decoration: underline;
 }

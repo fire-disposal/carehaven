@@ -3,13 +3,17 @@ import { Input, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
 import Icon from '@/components/Icon'
+import { Button, Card, PageHead, Pill, SectionHeader, StarRating, StateBlock } from '@/components/ui'
 import type { IconName } from '@/lib/icons'
+import { levelDesc, levelTone } from '@/lib/level'
+import { THEME } from '@/lib/theme'
 import {
   api,
   isLoggedIn,
   type Intervention,
   type InterventionLog,
   type Level,
+  type ScoreLevel,
   type StressScore,
 } from '@/lib/api'
 import './index.scss'
@@ -37,17 +41,14 @@ interface LevelThresholds {
 /** 后端 app_config 缺失时的兜底阈值，与迁移里的默认值一致 */
 const FALLBACK_THRESHOLDS: LevelThresholds = { t_green: 40, t_red: 70 }
 
-const LEVEL_TITLE: Record<Level, string> = {
+const LEVEL_TITLE: Record<ScoreLevel, string> = {
   green: '绿色 · 压力平稳',
   yellow: '黄色 · 压力预警',
   red: '红色 · 压力偏高',
+  unknown: '数据不足 · 尚不分层',
 }
 
-const LEVEL_DESC: Record<Level, string> = {
-  green: '当前压力处在平稳区间，保持规律作息与日常放松练习就可以。',
-  yellow: '压力已经有所累积，建议今天完成一次放松练习，并留意睡眠与照护负担。',
-  red: '压力已明显偏高，请先照顾好自己，才有余力照顾家人。',
-}
+// 分级文案统一走 lib/level，避免一处改了另一处漏
 
 /** 阈值来自后端配置，可能缺失或格式异常，统一收敛成可用数值 */
 function readThresholds(raw: unknown): LevelThresholds {
@@ -109,7 +110,8 @@ export default function ManagePage() {
     setNotice('')
     try {
       const latest = await api.latestScore()
-      const level = latest?.level ?? null
+      // unknown 表示数据不足：不按分级推荐，避免拿「没数据」去匹配方案
+      const level = latest?.level && latest.level !== 'unknown' ? latest.level : null
       const [all, recent, rawThresholds, recommend] = await Promise.all([
         api.interventions(),
         api.interventionLogs(LOG_LIMIT),
@@ -136,7 +138,9 @@ export default function ManagePage() {
       const [latest, recent] = await Promise.all([api.latestScore(), api.interventionLogs(LOG_LIMIT)])
       setScore(latest)
       setLogs(recent)
-      setRecommended(latest?.level ? await api.interventions(latest.level) : [])
+      setRecommended(
+        latest?.level && latest.level !== 'unknown' ? await api.interventions(latest.level) : []
+      )
     } catch (e) {
       setError(e instanceof Error ? e.message : '数据刷新失败，请下拉重试')
     }
@@ -208,7 +212,7 @@ export default function ManagePage() {
     setSaving(false)
   }
 
-  const level: Level | null = score?.level ?? null
+  const level: ScoreLevel | null = score?.level ?? null
   const hps = score && Number.isFinite(score.hps) ? Math.min(100, Math.max(0, Math.round(score.hps))) : null
   const { t_green, t_red } = thresholds
 
@@ -231,15 +235,15 @@ export default function ManagePage() {
     const completing = completingKey === key
     const planMinutes = validMinutes(item.duration_min)
     return (
-      <View className={`mg-it ${compact ? 'compact' : ''}`} key={key}>
+      <Card flush className="mg-it" key={key}>
         <View className="mg-it-head" onClick={() => toggleCard(key)}>
           <View className="mg-it-icon">
-            <Icon name={CATEGORY_ICON[item.category] || 'spa'} size={44} color="#16443c" />
+            <Icon name={CATEGORY_ICON[item.category] || 'spa'} size={44} color={THEME.primaryDark} />
           </View>
           <View className="mg-it-main">
             <Text className="mg-it-title">{item.title || '未命名方案'}</Text>
             <View className="mg-it-meta">
-              <Text className="pill pill-primary">{item.category || '其他'}</Text>
+              <Pill tone="primary">{item.category || '其他'}</Pill>
               <Text className="mg-duration">{planMinutes === null ? '时长未标注' : `约 ${planMinutes} 分钟`}</Text>
             </View>
             {compact || expanded || !item.description ? null : (
@@ -263,85 +267,89 @@ export default function ManagePage() {
                     className="mg-input"
                     type="digit"
                     value={duration}
+                    ariaLabel="实际时长（分钟）"
                     onInput={(e) => setDuration(e.detail.value)}
                   />
                 </View>
 
                 <Text className="mg-label">这次练习的效果</Text>
-                <View className="mg-star-row">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <View
-                      key={n}
-                      className={`mg-star ${stars >= n ? 'on' : ''}`}
-                      onClick={() => setStars(n)}
-                    >
-                      <Icon
-                        name="star"
-                        size={36}
-                        color={stars >= n ? '#7a5310' : '#cfc6b6'}
-                      />
-                      <Text className="mg-star-label">{STAR_LABELS[n - 1]}</Text>
-                    </View>
-                  ))}
-                </View>
+                <StarRating
+                  value={stars}
+                  onChange={setStars}
+                  labels={STAR_LABELS}
+                  ariaLabel="这次练习的效果"
+                  className="mg-stars"
+                />
 
                 <View className="mg-form-actions">
-                  <View
-                    className="btn-ghost mg-action"
+                  <Button
+                    variant="ghost"
+                    className="mg-action"
+                    ariaLabel="稍后再记"
                     onClick={() => {
                       setCompletingKey('')
                       setStars(0)
                     }}
                   >
                     稍后再记
-                  </View>
-                  <View
-                    className={`btn-primary mg-action ${saving ? 'busy' : ''}`}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    className="mg-action"
+                    disabled={saving}
+                    ariaLabel="完成练习并记录"
                     onClick={() => void complete(item)}
                   >
                     {saving ? '保存中…' : '完成'}
-                  </View>
+                  </Button>
                 </View>
               </View>
             ) : (
-              <View className="btn-primary mg-start" onClick={() => startPractice(key, item)}>
+              <Button
+                variant="primary"
+                block
+                className="mg-start"
+                ariaLabel={`开始练习：${item.title || '未命名方案'}`}
+                onClick={() => startPractice(key, item)}
+              >
                 开始练习
-              </View>
+              </Button>
             )}
           </View>
         ) : null}
-      </View>
+      </Card>
     )
   }
 
   return (
     <View className="page">
       <View className="page-pad">
-        <View className="mg-page-head">
-          <Text className="mg-page-title">压力管理</Text>
-          <Text className="mg-page-sub">按您当前的压力状态，给出对应的放松方案</Text>
-        </View>
+        <PageHead title="压力管理" note="按您当前的压力状态，给出对应的放松方案" />
 
-        {error ? <Text className="mg-error">{error}</Text> : null}
-        {error && !loading ? (
-          <View className="btn-ghost mg-retry" onClick={() => void load()}>
-            重新加载
-          </View>
+        {error ? (
+          <StateBlock
+            variant="error"
+            compact
+            className="mg-error"
+            desc={error}
+            actionLabel={loading ? undefined : '重新加载'}
+            onAction={loading ? undefined : () => void load()}
+          />
         ) : null}
         {notice ? (
           <View className="mg-notice">
-            <Icon name="circle-check" size={30} color="#2c6a4e" />
+            <Icon name="circle-check" size={30} color={THEME.green} />
             <Text>{notice}</Text>
           </View>
         ) : null}
 
         {/* ---------- 1. 当前状态 ---------- */}
-        <View className={`mg-hero ${level ? `level-${level}` : 'level-none'}`}>
+        <Card className={`mg-hero ${level ? `level-${level}` : 'level-none'}`}>
           <View className="mg-hero-head">
             <Text className="mg-hero-label">当前状态</Text>
-            <Text className={`pill ${level ? `pill-${level}` : 'pill-primary'}`}>
+            <Pill tone={level ? levelTone(level) : 'primary'}>
               {level ? LEVEL_TITLE[level] : loading ? '评估中…' : '暂无评估'}
-            </Text>
+            </Pill>
           </View>
 
           <View className="mg-hps">
@@ -351,7 +359,7 @@ export default function ManagePage() {
 
           <Text className="mg-hero-desc">
             {level
-              ? LEVEL_DESC[level]
+              ? levelDesc(level)
               : loading
                 ? '正在读取您最近的评估结果…'
                 : '还没有评估结果，先到首页完成一次打卡，就能看到自己的压力状态。'}
@@ -360,7 +368,7 @@ export default function ManagePage() {
           {level === 'red' ? (
             <View className="mg-urgent">
               <View className="mg-urgent-title">
-                <Icon name="triangle-exclamation" size={32} color="#963b33" />
+                <Icon name="triangle-exclamation" size={32} color={THEME.red} />
                 <Text>现在就做一件事</Text>
               </View>
               <Text className="mg-urgent-text">
@@ -396,51 +404,43 @@ export default function ManagePage() {
           <Text className="mg-threshold-note">
             参考线：{t_green} / {t_red}
           </Text>
-        </View>
+        </Card>
 
         {/* ---------- 2. 推荐方案 ---------- */}
-        <View className="section-title">
-          <Text>为您推荐</Text>
-          <Text className="muted">{level ? '匹配当前状态' : '等待评估'}</Text>
-        </View>
+        <SectionHeader
+          title="为您推荐"
+          action={<Text className="muted">{level ? '匹配当前状态' : '等待评估'}</Text>}
+        />
 
         {loading ? (
-          <View className="card mg-empty">
-            <Text className="muted">正在加载推荐方案…</Text>
-          </View>
+          <StateBlock variant="loading" title="正在加载推荐方案…" />
         ) : recommended.length > 0 ? (
           <View>{recommended.map((item) => renderIntervention(item, 'rec', false))}</View>
         ) : (
-          <View className="card mg-empty">
-            <Text className="muted">
-              {level
+          <StateBlock
+            variant="empty"
+            desc={
+              level
                 ? '当前状态暂时没有专属方案，可以到下方「全部工具」里挑一项试试。'
-                : '还没有评估结果。先到首页完成一次打卡，这里会按您的状态推荐方案。'}
-            </Text>
-          </View>
+                : '还没有评估结果。先到首页完成一次打卡，这里会按您的状态推荐方案。'
+            }
+          />
         )}
 
         {/* ---------- 3. 全部工具 ---------- */}
-        <View className="section-title">
-          <Text>全部工具</Text>
-          <Text className="muted">{allItems.length} 项</Text>
-        </View>
+        <SectionHeader title="全部工具" action={<Text className="muted">{allItems.length} 项</Text>} />
 
         {loading ? (
-          <View className="card mg-empty">
-            <Text className="muted">正在加载工具库…</Text>
-          </View>
+          <StateBlock variant="loading" title="正在加载工具库…" />
         ) : groups.length === 0 ? (
-          <View className="card mg-empty">
-            <Text className="muted">工具库暂时没有内容，请稍后重新加载。</Text>
-          </View>
+          <StateBlock variant="empty" desc="工具库暂时没有内容，请稍后重新加载。" />
         ) : (
           <View>
             {groups.map((group) => (
               <View key={group.category}>
                 <View className="mg-group-head">
                   <View className="mg-group-name">
-                    <Icon name={group.icon} size={30} color="#44504a" />
+                    <Icon name={group.icon} size={30} color={THEME.ink2} />
                     <Text>{group.category}</Text>
                   </View>
                   <Text className="muted">{group.items.length} 项</Text>
@@ -452,28 +452,25 @@ export default function ManagePage() {
         )}
 
         {/* ---------- 4. 最近完成记录 ---------- */}
-        <View className="section-title">
-          <Text>最近完成记录</Text>
-          <Text className="muted">最近 {LOG_LIMIT} 条</Text>
-        </View>
+        <SectionHeader
+          title="最近完成记录"
+          action={<Text className="muted">最近 {LOG_LIMIT} 条</Text>}
+        />
 
         {loading ? (
-          <View className="card mg-empty">
-            <Text className="muted">正在加载完成记录…</Text>
-          </View>
+          <StateBlock variant="loading" title="正在加载完成记录…" />
         ) : logs.length === 0 ? (
-          <View className="card mg-empty">
-            <Text className="muted">
-              还没有完成记录。完成一次练习后，这里会显示完成时间、实际时长和您给的效果评分。
-            </Text>
-          </View>
+          <StateBlock
+            variant="empty"
+            desc="还没有完成记录。完成一次练习后，这里会显示完成时间、实际时长和您给的效果评分。"
+          />
         ) : (
           <View>
             {logs.map((log) => {
               const logStars = clampStars(log.feeling)
               const logMinutes = validMinutes(log.duration_actual)
               return (
-                <View className="card mg-log" key={log.id}>
+                <Card className="mg-log" key={log.id}>
                   <View className="mg-log-main">
                     <Text className="mg-log-title">{log.title_snapshot || '未命名方案'}</Text>
                     <Text className="mg-log-meta">
@@ -488,7 +485,7 @@ export default function ManagePage() {
                           key={n}
                           name="star"
                           size={28}
-                          color={n <= logStars ? '#7a5310' : '#cfc6b6'}
+                          color={n <= logStars ? THEME.yellow : THEME.starOff}
                         />
                       ))}
                     </View>
@@ -496,7 +493,7 @@ export default function ManagePage() {
                       {logStars > 0 ? STAR_LABELS[logStars - 1] : '未评价'}
                     </Text>
                   </View>
-                </View>
+                </Card>
               )
             })}
           </View>

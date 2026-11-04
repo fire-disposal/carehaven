@@ -1,43 +1,5 @@
 @use '@/styles/tokens.scss' as *;
-
-.ag-page {
-  min-height: 100vh;
-  padding-bottom: 48rpx;
-}
-
-.ag-top {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  height: 96rpx;
-  display: flex;
-  align-items: center;
-  padding: 0 $sp-2;
-  background: rgba(244, 239, 229, 0.96);
-  border-bottom: 1rpx solid $c-line;
-}
-
-.ag-back {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 36rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: $c-text;
-}
-
-.ag-top-title {
-  flex: 1;
-  text-align: center;
-  font-size: $fs-h2;
-  font-weight: 700;
-  color: $c-text;
-}
-
-.ag-top-spacer {
-  width: 72rpx;
-}
+@use '@/styles/mixins.scss' as *;
 
 .ag-tabs {
   display: flex;
@@ -46,15 +8,15 @@
 }
 
 .ag-tab {
+  @include tap;
   flex: 1;
-  min-height: 80rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1rpx solid $c-line;
-  border-radius: $radius;
-  background: $c-card;
-  color: $c-text-2;
+  border-radius: $radius-sm;
+  background: $c-surface;
+  color: $c-ink-2;
   font-size: $fs-body;
 }
 
@@ -80,15 +42,16 @@
   display: block;
   font-size: $fs-body;
   font-weight: 700;
-  color: $c-text;
+  color: $c-ink;
   margin-bottom: $sp-1;
+  line-height: $lh-tight;
 }
 
 .ag-text {
   display: block;
-  font-size: $fs-small;
-  color: $c-text-2;
-  line-height: 1.85;
+  font-size: $fs-body;
+  color: $c-ink-2;
+  line-height: $lh-body;
   margin-top: $sp-1;
 }
 
@@ -97,6 +60,6 @@
   margin-top: $sp-4;
   font-size: $fs-tiny;
   color: $c-muted;
-  line-height: 1.7;
+  line-height: $lh-body;
   text-align: center;
 }

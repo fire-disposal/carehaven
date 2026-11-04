@@ -47,18 +47,6 @@
   color: $c-primary-dark;
 }
 
-.error-line {
-  display: block;
-  color: $c-red;
-  font-size: $fs-small;
-  line-height: 1.6;
-  background: $c-red-bg;
-  border: 1rpx solid $c-red-line;
-  border-radius: $radius-sm;
-  padding: $sp-2 $sp-3;
-  margin-bottom: $sp-3;
-}
-
 /* ---------- 压力状态卡片 ---------- */
 
 .stress-card {
@@ -220,13 +208,14 @@
 }
 
 .form-close {
-  width: 64rpx;
-  height: 64rpx;
+  @include tap;
+  width: 88rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1rpx solid $c-line;
   border-radius: $radius-sm;
+  flex: none;
 }
 
 .mood-row {
@@ -266,6 +255,8 @@
 .mood-item.picked .mood-label {
   color: $c-primary-dark;
   font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4rpx;
 }
 
 .slider-row {
@@ -322,6 +313,10 @@
   font-size: 30rpx;
   line-height: 1.6;
   color: $c-ink;
+}
+
+.form-error {
+  margin-top: $sp-2;
 }
 
 .form-actions {
@@ -386,7 +381,7 @@
 
 .tool-icon.tint-info {
   background: $c-info-bg;
-  border-color: #ccd9df;
+  border-color: $c-line;
   color: $c-info;
 }
 
@@ -468,49 +463,29 @@
 .physio-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
+  gap: $sp-2;
   margin-bottom: $sp-2;
 }
 
 .physio-tile {
-  width: calc(50% - 6rpx);
-  background: $c-surface;
-  border: 1rpx solid $c-line;
-  border-radius: $radius;
+  width: calc(50% - #{$sp-1});
   padding: $sp-3;
-  box-sizing: border-box;
 }
 
-.tile-head {
+.physio-head {
   display: flex;
-  align-items: center;
-  gap: 6rpx;
+  align-items: flex-start;
+  gap: $sp-1;
 }
 
-.tile-name {
-  font-size: $fs-label;
-  line-height: 1.4;
-  color: $c-muted;
+.physio-icon {
+  margin-top: $sp-0;
+  flex: none;
 }
 
-.tile-value-row {
-  display: flex;
-  align-items: baseline;
-  margin-top: 6rpx;
-}
-
-.tile-value {
-  @include num;
-  font-size: 44rpx;
-  font-weight: 600;
-  line-height: 1.2;
-  color: $c-ink;
-}
-
-.tile-unit {
-  margin-left: 6rpx;
-  font-size: $fs-label;
-  color: $c-muted;
+.physio-stat {
+  flex: 1;
+  min-width: 0;
 }
 
 .source-note {

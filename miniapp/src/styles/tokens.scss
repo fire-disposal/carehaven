@@ -37,6 +37,7 @@ $c-red-line: #ddb3ac;
 $c-accent: #9c4833; // 柿红，用于极少数强调
 $c-accent-soft: #f2e2da;
 $c-info: #3d5a6c;
+$c-star-off: #cfc6b6; // 星级未选中（弱化但不消失）
 $c-info-bg: #e8eef1;
 
 // ---- 兼容旧变量名（页面逐步迁移，避免一次性改动全部选择器）----
@@ -72,7 +73,12 @@ $icon-card: 44rpx;
 $icon-empty: 56rpx;
 $icon-hero: 72rpx;
 
+// ---- 行高 ----
+$lh-body: 1.65; // 正文
+$lh-tight: 1.4; // 标题/数字
+
 // ---- 间距 ----
+$sp-0: 4rpx; // 只用于图标与文字之间的微调
 $sp-1: 8rpx;
 $sp-2: 16rpx;
 $sp-3: 24rpx;

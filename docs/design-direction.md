@@ -66,11 +66,15 @@ $font-num: Georgia, 'Times New Roman', 'Songti SC', 'Noto Serif CJK SC', serif;
 
 | 组件 | 用途 |
 |---|---|
-| `Button` | `primary` / `secondary` / `ghost` / `danger`，`block`、`loading` |
-| `Card` | `plain` / `quiet` / `tint`，`flush` 去内边距 |
+| `PageHead` | 页头三槽：eyebrow / title / note；`variant="brand"` 只给登录与关于 |
+| `TopBar` | 次级页置顶栏，88rpx 返回键，替代四份复制 |
 | `SectionHeader` | 栏线 + 标题 + 可选 eyebrow/action |
+| `Card` | `plain` / `quiet` / `tint`，`flush` 去内边距 |
+| `StateBlock` | 统一三态：`loading` 骨架 / `empty` / `error`（带重试） |
+| `Button` | `primary` / `secondary` / `ghost` / `danger`，`block`、`loading` |
 | `Stat` | 标签 + 衬线数字 + 单位 |
 | `Pill` | `green` / `yellow` / `red` / `primary` / `quiet` 状态标签 |
+| `StarRating` | 1–5 星，radiogroup 语义，选中态不只靠颜色 |
 
 页面优先用组件，不再复制 `.btn-primary` / `.card` 的样式。颜色在 TS 侧统一走 `src/lib/theme.ts`（Slider 等只接受字符串的组件）。
 
@@ -83,10 +87,21 @@ $font-num: Georgia, 'Times New Roman', 'Songti SC', 'Noto Serif CJK SC', serif;
 5. 图标用 24–36rpx，默认继承当前文字色；不放大面积彩色图标底。
 6. 空态、错误态用文字 + 一个动作，不画插画占位。
 
+## 6.1 可访问性底线（2026-11）
+
+- **触控**：所有可点区域 ≥88rpx（`@include tap`）；次级页返回键也是 88rpx，不用圆形。
+- **语义**：可点 `View` 带 `ariaRole` + `ariaLabel`；评分/心情/回应用 `radio`/`radiogroup` + `ariaChecked`。
+- **状态播报**：`StateBlock` 用 `role="status"` / `role="alert"`，错误可被读屏立即播报。
+- **焦点**：全局 `:focus-visible` 2rpx 松烟绿描边（H5），不用浏览器默认蓝。
+- **动效**：全局 `prefers-reduced-motion: reduce` 关闭过渡与骨架呼吸；骨架改用静态色块。
+- **字号**：正文最低 `$fs-body`（32rpx），长文（协议/关于）同样不降；标签最低 `$fs-label`（22rpx）。
+- **颜色**：状态永不只用颜色表达，配合文字/字重/图标。
+
 ## 7. 落地位置
 
 - 令牌：`miniapp/src/styles/tokens.scss`
 - 全局类：`miniapp/src/styles/global.scss`
 - 混入：`miniapp/src/styles/mixins.scss`
 - TS 颜色：`miniapp/src/lib/theme.ts`
-- 页面：`index`（首页）、`login`、`manage`、`profile`、`about` 已按此方向重排；其余页面通过令牌迁移继承。
+- 页面：全部 10 个页面已收口到组件基座（2026-11）；页面不再自建卡片/按钮/状态块/顶栏。
+- 配色：`pages/*/index.config.ts` 的导航栏与下拉底色已对齐 `#1F5A50` / `#F4EFE5`，不再出现偏青的旧值。

@@ -1,6 +1,6 @@
 export default definePageConfig({
   navigationBarTitleText: '协议与隐私',
-  navigationBarBackgroundColor: '#287a73',
+  navigationBarBackgroundColor: '#1F5A50',
   navigationBarTextStyle: 'white',
-  backgroundColor: '#F4F8F7',
+  backgroundColor: '#F4EFE5',
 })

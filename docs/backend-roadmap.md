@@ -7,12 +7,12 @@
 | 工作 | 现状 | 验收 |
 |---|---|---|
 | 写入入口收口 | `checkins`/`physio_records` 由客户端直接写，`source`/`date` 可伪造 | 打卡、生理、设备上报各走服务端路由；服务端写 `received_at`、`source`、`device_id`；设备入口用 token |
-| 评分快照 | `stress_scores` 只有结果；同日 upsert 覆盖 | `algorithm_version`、`params`、`coverage`、`quality`、`computed_at`；新增 append-only `stress_score_events` |
-| 缺失语义 | 缺生理写 0；context 永远入模 | 分量可空；`coverage` 标明缺失；数据不足不返回分层颜色 |
-| 配置治理 | `app_config` 无校验/历史 | 校验 Σw=1、0≤w≤1、阈值有序；`app_config_history` 记录作者/理由/生效时间 |
+| 评分快照 | ✅ 2026-11：快照带版本/参数/覆盖度，新增 `stress_score_events` | 事件可重放；`quality` 尚未建模 |
+| 缺失语义 | ✅ 缺失不入加权；绿区降 `unknown`；`coverage` 记录缺什么 | number 列仍存 0，读取必须看 coverage（已写入 hps-method） |
+| 配置治理 | ✅ 校验 + 历史已上线（作者目前落 `admin`/超管邮箱） | 历史按 key 可查 |
 | 角色与审计 | 只有 PB superuser | `role`/`cohort`/`org`；`audit_logs` 记录操作者、前后值、IP/UA；研究导出、内容审核、配置修改分权 |
-| 数据权利 | 无导出/删除/注销接口 | `GET /api/zz/account/export`、`POST /api/zz/account/delete`；`research_consents` 记录版本/范围/撤回 |
-| UGC 边界 | 社群可发帖，无审核队列 | 按 [ugc-archive.md](ugc-archive.md) 归档并剥离，或补齐举报→处置→留痕；能力未就绪就关闭 |
+| 数据权利 | ✅ 导出/注销接口 + 「我的 - 我的数据」入口 | `research_consents` 仍未建 |
+| UGC 边界 | 已改为词元拼句，无自由文本；举报满 3 人自动隐藏 | 补齐处置留痕（`moderation_actions`）与人工复核队列，见 [console.md](console.md) |
 | 限流与成本 | `/api/zz/ask`、`/api/zz/tts` 无配额 | 用户/IP 限流；TTS 日配额；异常调用告警；降级到本地 KB |
 | 测试与 CI | CI 只有 `tsc` | 评分/量表单测、迁移 up/down、API 冒烟（登录→打卡→评分→量表→反馈） |
 
@@ -37,7 +37,7 @@
 - `app_config_history`：配置变更（key、value、author、reason、effective_from）。
 - `research_consents`：研究同意（user、version、scope、granted_at、withdrawn_at）。
 - `audit_logs`：管理员/审核/导出/配置操作。
-- `moderation_reports` / `moderation_actions`：举报与处置留痕（若保留 UGC）。
+- `moderation_actions`：举报处置留痕（现已有 `whisper_reports`，缺「谁在何时隐藏/恢复」）。
 - `device_registry` / `device_tokens`：设备上报鉴权与轮换。
 - `qa_sessions` 扩展：`model`、`prompt_version`、`tokens`、`latency`、`tool_calls`、`safety_flag`、`conversation_id`。
 
@@ -68,6 +68,6 @@
 1. 评分可回放 + 缺失语义 + 配置治理。
 2. 写入收口 + 设备来源可信 + 模拟数据隔离。
 3. 角色/审计 + 用户导出/删除 + 研究同意。
-4. UGC 归档（或审核闭环）。
+4. 互助内容处置留痕（举报 → 隐藏 → 复核）。
 5. 限流/成本/可观测性 + 测试进 CI。
 6. 再启动 HPS 研究 pilot 与 AI agent 试点。

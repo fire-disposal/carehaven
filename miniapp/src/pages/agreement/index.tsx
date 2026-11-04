@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Text, View } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import Icon from '@/components/Icon'
+import { TopBar } from '@/components/ui'
 import './index.scss'
 
 type Doc = 'terms' | 'privacy'
@@ -15,7 +15,7 @@ const TERMS: Section[] = [
   {
     title: '一、服务内容',
     paras: [
-      '智护忆站为失智症家庭照护者提供压力记录、量表自评、放松练习、照护知识问答与互助社区。服务用于日常自我管理与相互支持，不提供诊断、处方或急救服务。',
+      '智护忆站为失智症家庭照护者提供压力记录、量表自评、放松练习、照护知识问答与结构化互助。互助区不含自由输入：您从平台词库中选择片段，由系统拼成一句话。服务用于日常自我管理与相互支持，不提供诊断、处方或急救服务。',
     ],
   },
   {
@@ -29,7 +29,7 @@ const TERMS: Section[] = [
     title: '三、使用规范',
     paras: [
       '不得利用本服务发布违法、侵权、骚扰、歧视、广告或虚假信息；不得冒用他人身份；不得干扰服务正常运行。',
-      '互助社区的内容由用户发布。我们会在收到举报后核查并处理违规内容，必要时限制相关账号的使用。',
+      '互助区的内容由系统根据您的选择从词库拼接，您无法自行输入文字；回应为一组预设表达。若某条留言被多位用户举报，系统会先隐藏它，再由我们复核；违规情节严重的，我们可能限制相关账号的使用。',
     ],
   },
   {
@@ -42,7 +42,7 @@ const TERMS: Section[] = [
   {
     title: '五、内容与知识产权',
     paras: [
-      '本服务的界面、文字、图标与程序受法律保护。未经许可，不得复制、改编或用于商业用途。您发布的内容仍归您所有；为提供服务，我们会在必要范围内展示与存储这些内容。',
+      '本服务的界面、文字、图标、词库与程序受法律保护。未经许可，不得复制、改编或用于商业用途。您在互助区选择的词元组合及其拼接结果归您所有；为提供服务，我们会在必要范围内存储与展示这些内容。',
     ],
   },
   {
@@ -59,14 +59,14 @@ const PRIVACY: Section[] = [
     paras: [
       '账号信息：邮箱、昵称、登录凭证，以及您主动绑定的微信标识。',
       '健康与照护记录：情绪打卡、睡眠与照护时长、生理指标（HRV、皮肤电、睡眠质量、步数）、量表答案与结果、放松练习记录。',
-      '社区与反馈：您发布的帖子、评论，以及通过意见反馈提交的分类、内容和联系方式。',
+      '互助与反馈：您在互助区选择的词元组合、固定回应与举报记录，以及通过意见反馈提交的分类、内容和联系方式。',
       '设备与日志：为保障服务安全与排查故障所产生的必要访问日志。',
     ],
   },
   {
     title: '二、信息如何使用',
     paras: [
-      '用于计算压力指数、生成趋势与结果说明、推荐放松练习、维护社区内容与回复您的反馈。',
+      '用于计算压力指数、生成趋势与结果说明、推荐放松练习、维护互助内容与回复您的反馈。',
       '使用「朗读」功能时，被朗读的回答文字会发送给火山引擎豆包语音合成服务生成音频；不发送账号身份信息。',
       '我们不会出售您的个人信息，也不会将健康数据用于广告推送。除法律要求或取得您的单独同意外，不向第三方提供。',
     ],
@@ -86,9 +86,10 @@ const PRIVACY: Section[] = [
     ],
   },
   {
-    title: '五、社区内容的可见范围',
+    title: '五、互助内容的可见范围',
     paras: [
-      '您在互助社区发布的内容对其他登录用户可见。选择匿名发布时，其他用户只会看到“匿名”，但为维护社区秩序，系统仍会在后台保留发布者与内容的关联。',
+      '您在互助区拼出的句子与固定回应对其他登录用户可见。选择匿名发出时，其他用户只会看到“匿名”，但系统仍会在后台保留发布者与内容的关联，用于举报核查。',
+      '互助区不保存您的自由文本：句子由词库拼接，我们不收集输入内容。举报记录只对管理员可见，用于复核与处置。',
     ],
   },
   {
@@ -119,29 +120,25 @@ export default function AgreementPage() {
   const sections = doc === 'terms' ? TERMS : PRIVACY
 
   return (
-    <View className="page ag-page">
-      <View className="ag-top">
-        <View className="ag-back" onClick={backProfile} ariaRole="button" ariaLabel="返回我的">
-          <Icon name="arrow-left" size={36} />
-        </View>
-        <Text className="ag-top-title">协议与隐私</Text>
-        <View className="ag-top-spacer" />
-      </View>
+    <View className="page">
+      <TopBar title="协议与隐私" onBack={backProfile} backLabel="返回我的" />
 
-      <View className="ag-tabs">
+      <View className="ag-tabs" ariaRole="radiogroup" ariaLabel="协议类型">
         <View
           className={`ag-tab ${doc === 'terms' ? 'on' : ''}`}
           onClick={() => setDoc('terms')}
-          ariaRole="button"
-          ariaLabel="查看用户协议"
+          ariaRole="radio"
+          ariaLabel="用户协议"
+          ariaChecked={doc === 'terms'}
         >
           <Text>用户协议</Text>
         </View>
         <View
           className={`ag-tab ${doc === 'privacy' ? 'on' : ''}`}
           onClick={() => setDoc('privacy')}
-          ariaRole="button"
-          ariaLabel="查看隐私政策"
+          ariaRole="radio"
+          ariaLabel="隐私政策"
+          ariaChecked={doc === 'privacy'}
         >
           <Text>隐私政策</Text>
         </View>

@@ -1,6 +1,6 @@
 export default definePageConfig({
   navigationBarTitleText: '意见反馈',
-  navigationBarBackgroundColor: '#287a73',
+  navigationBarBackgroundColor: '#1F5A50',
   navigationBarTextStyle: 'white',
-  backgroundColor: '#F4F8F7',
+  backgroundColor: '#F4EFE5',
 })

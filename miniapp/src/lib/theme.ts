@@ -12,6 +12,8 @@ export const THEME = {
   ink2: '#44504a',
   muted: '#626b65',
   line: '#ded5c5',
+  starOff: '#cfc6b6',
+  white: '#ffffff',
   primary: '#1f5a50',
   primaryLight: '#e4ede7',
   primaryDark: '#16443c',

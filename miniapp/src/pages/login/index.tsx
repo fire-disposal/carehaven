@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Input, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
+import { Button, Card, PageHead } from '@/components/ui'
 import { login, register, wechatLogin } from '@/lib/api'
 import './index.scss'
 
@@ -65,19 +66,28 @@ export default function LoginPage() {
   return (
     <View className="login">
       <View className="brand">
-        <View className="brand-logo">
+        <View className="brand-logo" ariaHidden>
           <Text className="brand-seal">忆</Text>
         </View>
-        <Text className="brand-kicker">CAREHAVEN · 照护者支持</Text>
-        <Text className="brand-name">智护忆站</Text>
-        <Text className="brand-slogan">把压力说出来，把照护分一点给自己。</Text>
+        <PageHead
+          variant="brand"
+          eyebrow="CAREHAVEN · 照护者支持"
+          title="智护忆站"
+          note="把压力说出来，把照护分一点给自己。"
+        />
       </View>
 
       {IS_WEAPP && (
         <View className="wechat-block">
-          <View className={`btn-wechat ${busy ? 'busy' : ''}`} onClick={wechatAuth}>
+          <Button
+            variant="primary"
+            block
+            disabled={busy}
+            ariaLabel="微信一键登录"
+            onClick={wechatAuth}
+          >
             微信一键登录
-          </View>
+          </Button>
           <View className="divider">
             <View className="divider-line" />
             <Text className="divider-text">或使用邮箱登录</Text>
@@ -86,7 +96,7 @@ export default function LoginPage() {
         </View>
       )}
 
-      <View className="card-lg form">
+      <Card className="form">
         <View className="field">
           <Text className="field-label">邮箱</Text>
           <Input
@@ -94,6 +104,7 @@ export default function LoginPage() {
             type="text"
             value={email}
             placeholder="用于登录的邮箱"
+            ariaLabel="邮箱"
             onInput={(e) => setEmail(e.detail.value)}
           />
         </View>
@@ -106,6 +117,7 @@ export default function LoginPage() {
               type="text"
               value={name}
               placeholder="例如：李阿姨"
+              ariaLabel="称呼"
               onInput={(e) => setName(e.detail.value)}
             />
           </View>
@@ -118,20 +130,33 @@ export default function LoginPage() {
             password
             value={password}
             placeholder={isRegister ? '至少 8 位' : '请输入密码'}
+            ariaLabel="密码"
             onInput={(e) => setPassword(e.detail.value)}
           />
         </View>
 
-        {error ? <Text className="error">{error}</Text> : null}
+        {error ? (
+          <Text className="error" ariaRole="alert">
+            {error}
+          </Text>
+        ) : null}
 
-        <View className={`btn-primary submit ${busy ? 'busy' : ''}`} onClick={submit}>
-          {busy ? '请稍候…' : isRegister ? '注册并登录' : '登录'}
-        </View>
+        <Button variant="primary" block loading={busy} className="submit" onClick={submit}>
+          {isRegister ? '注册并登录' : '登录'}
+        </Button>
 
-        <View className="switch" onClick={() => { setMode(isRegister ? 'login' : 'register'); setError('') }}>
+        <View
+          className="switch"
+          onClick={() => {
+            setMode(isRegister ? 'login' : 'register')
+            setError('')
+          }}
+          ariaRole="button"
+          ariaLabel={isRegister ? '已有账号，去登录' : '还没有账号，注册一个'}
+        >
           <Text>{isRegister ? '已有账号？去登录' : '还没有账号？注册一个'}</Text>
         </View>
-      </View>
+      </Card>
 
       <Text className="tip">我们只收集与压力评估相关的信息，不会用于其他用途。</Text>
       <View className="legal">
@@ -139,6 +164,8 @@ export default function LoginPage() {
         <Text
           className="legal-link"
           onClick={() => Taro.navigateTo({ url: '/pages/agreement/index?type=terms' })}
+          ariaRole="button"
+          ariaLabel="查看用户协议"
         >
           《用户协议》
         </Text>
@@ -146,6 +173,8 @@ export default function LoginPage() {
         <Text
           className="legal-link"
           onClick={() => Taro.navigateTo({ url: '/pages/agreement/index?type=privacy' })}
+          ariaRole="button"
+          ariaLabel="查看隐私政策"
         >
           《隐私政策》
         </Text>

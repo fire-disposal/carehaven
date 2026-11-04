@@ -1,400 +1,270 @@
-@use '@/styles/tokens.scss' as *;
+@use '../../styles/tokens.scss' as *;
+@use '../../styles/mixins.scss' as *;
 
-/* ---------- 分区切换 ---------- */
+// 结构化互助：拼句台 + 信息流
+//
+// 与「纸本 · 松烟」一致：暖纸、发丝线、近直角、无投影。
+// 句子本身用衬线，把「别人说的话」和界面文字区分开。
 
-.seg {
+.page {
+  // 悬浮入口会压住最后一张卡，留出它加导航的高度
+  padding-bottom: 260rpx;
+}
+
+
+
+
+
+
+
+// 三条规则横排：靠竖发丝线分隔，不用图标底
+.ch-rule {
   display: flex;
-  background: $c-card;
-  border: 1rpx solid $c-line;
-  border-radius: $radius;
-  padding: 6rpx;
-  box-shadow: $shadow;
-}
-
-.seg-item {
-  flex: 1;
-  min-height: 88rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: $radius-sm;
-  color: $c-text-2;
-}
-
-.seg-item.on {
-  background: $c-primary;
-  color: #fff;
-}
-
-.seg-label {
-  margin-top: 2rpx;
-  font-size: $fs-small;
-  font-weight: 600;
-}
-
-/* ---------- 合规提示（内部测试 · UGC 审核未就绪） ---------- */
-
-.ugc-notice {
-  display: flex;
-  align-items: flex-start;
-  gap: 6rpx;
-  background: $c-yellow-bg;
-  border: 1rpx solid $c-yellow-line;
-  border-radius: $radius-sm;
-  padding: $sp-2 $sp-3;
-  margin-top: $sp-2;
-}
-
-.ugc-notice-text {
-  flex: 1;
-  font-size: $fs-tiny;
-  line-height: 1.6;
-  color: $c-yellow;
-}
-
-.ugc-notice-sheet {
-  margin-top: $sp-3;
-}
-
-/* ---------- 状态块（loading / empty / error） ---------- */
-
-.state-block {
-  background: $c-card;
-  border-radius: $radius-lg;
-  padding: $sp-4;
-  margin-top: $sp-3;
-  box-shadow: $shadow;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.state-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.state-text {
-  margin-top: $sp-2;
-  font-size: $fs-h2;
-  font-weight: 600;
-  color: $c-text;
-}
-
-.state-hint {
-  margin-top: $sp-1;
-  font-size: $fs-small;
-  color: $c-text-2;
-  line-height: 1.7;
-  text-align: center;
-}
-
-.cm-error {
-  display: block;
-  width: 100%;
-  color: $c-red;
-  font-size: $fs-small;
-  background: $c-red-bg;
-  border-radius: $radius-sm;
-  padding: $sp-2 $sp-3;
-  margin-bottom: $sp-2;
-}
-
-.state-retry {
-  width: 100%;
-  margin-top: $sp-2;
-}
-
-.state-btn {
-  width: 100%;
-  margin-top: $sp-3;
-}
-
-/* ---------- 帖子卡片 ---------- */
-
-.post-card {
-  background: $c-card;
-  border-radius: $radius-lg;
-  padding: $sp-4;
-  margin-top: $sp-3;
-  box-shadow: $shadow;
-}
-
-.post-head {
-  display: flex;
-  align-items: center;
-}
-
-.avatar {
-  width: 76rpx;
-  height: 76rpx;
-  flex: none;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-primary-light;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 匿名：虚线灰头像 + 虚线灰昵称，形状与颜色都和实名不同 */
-.avatar-anon {
-  background: $c-paper;
-  border: 1rpx dashed $c-line-strong;
-}
-
-.avatar-text {
-  font-size: $fs-h2;
-  font-weight: 700;
-  color: $c-primary-dark;
-}
-
-.post-who {
-  flex: 1;
-  margin: 0 $sp-2;
-  min-width: 0;
-}
-
-.nick {
-  display: block;
-  font-size: $fs-body;
-  font-weight: 600;
-  color: $c-text;
-}
-
-.nick-anon {
-  display: inline-block;
-  color: $c-text-2;
-  font-weight: 500;
-  border: 1rpx dashed $c-line-strong;
-  border-radius: $radius-xs;
-  padding: 0 $sp-2;
-  background: $c-paper;
-  font-size: $fs-small;
-}
-
-.post-time {
-  display: block;
-  font-size: $fs-tiny;
-  color: $c-muted;
-}
-
-.post-tap {
-  padding: $sp-2 0 $sp-1;
-}
-
-.post-body {
-  display: block;
-  font-size: $fs-body;
-  color: $c-text;
-  line-height: 1.75;
-  word-break: break-word;
-}
-
-.post-foot {
-  display: flex;
-  align-items: center;
-  margin-top: $sp-2;
-  padding-top: $sp-2;
+  margin: $sp-3 0 $sp-4;
+  padding: $sp-3 0;
   border-top: 1rpx solid $c-line;
-}
-
-.act {
-  display: flex;
-  align-items: center;
-  min-height: 88rpx;
-  padding: 0 $sp-3;
-  margin-right: $sp-1;
-  border-radius: $radius-sm;
-  background: $c-paper;
-}
-
-.act-num {
-  margin-left: $sp-1;
-  font-size: $fs-small;
-  font-weight: 600;
-  color: $c-text-2;
-}
-
-.act.liked {
-  background: $c-primary-light;
-}
-
-.act.liked .act-num {
-  color: $c-primary-dark;
-}
-
-.act-more {
-  flex: 1;
-  text-align: right;
-  font-size: $fs-small;
-  color: $c-primary;
-  font-weight: 600;
-}
-
-/* ---------- 评论区 ---------- */
-
-.comment-box {
-  margin-top: $sp-2;
-  background: $c-paper;
-  border-radius: $radius;
-  padding: $sp-3;
-}
-
-.comment-hint {
-  display: block;
-  font-size: $fs-small;
-  color: $c-muted;
-  padding: $sp-1 0;
-}
-
-.comment-item {
-  padding: $sp-2 0;
   border-bottom: 1rpx solid $c-line;
 }
 
-.comment-item:last-of-type {
-  border-bottom: none;
+.ch-rule-item {
+  flex: 1;
+  padding: 0 $sp-3;
+  border-left: 1rpx solid $c-line;
+
+  &:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
 }
 
-.nick-small {
-  font-size: $fs-small;
-  font-weight: 600;
-  color: $c-text-2;
-}
-
-.comment-body {
+.ch-rule-k {
   display: block;
-  margin-top: 6rpx;
+  @include label;
+  color: $c-primary-dark;
+}
+
+.ch-rule-v {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+// 分类：下划线式标签，选中才加重
+.ch-filter {
+  display: flex;
+  gap: $sp-4;
+  padding-bottom: $sp-2;
+  margin-bottom: $sp-3;
+  border-bottom: 1rpx solid $c-line;
+}
+
+.ch-filter-item {
+  @include tap;
+  display: flex;
+  align-items: center;
   font-size: $fs-small;
-  color: $c-text;
-  line-height: 1.7;
+  color: $c-muted;
+  border-bottom: 4rpx solid transparent;
+  margin-bottom: -3rpx;
+
+  &.on {
+    color: $c-primary-dark;
+    font-weight: 600;
+    border-bottom-color: $c-primary;
+  }
+}
+
+// ---------------- 卡片 ----------------
+
+.w-card {
+  @include hairline;
+  position: relative;
+  padding: $sp-4;
+  margin-bottom: $sp-3;
+  background: $c-surface;
+  border-radius: $radius;
+  border-left: 4rpx solid $c-primary-light;
+  box-sizing: border-box;
+}
+
+.w-card-hidden {
+  border-style: dashed;
+  border-left-color: $c-line-strong;
+  background: $c-paper;
+}
+
+.w-meta {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-bottom: $sp-2;
+}
+
+.w-kind {
+  display: flex;
+  align-items: center;
+  gap: $sp-0;
+  padding: 2rpx 10rpx;
+  border: 1rpx solid $c-primary-light;
+  border-radius: $radius-xs;
+  background: $c-primary-light;
+}
+
+.w-kind-text {
+  font-size: $fs-label;
+  letter-spacing: 2rpx;
+  color: $c-primary-dark;
+}
+
+.w-who {
+  font-size: $fs-tiny;
+  color: $c-ink-2;
+}
+
+.w-time {
+  margin-left: auto;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.w-text {
+  display: block;
+  font-family: $font-serif;
+  font-size: 34rpx;
+  line-height: 1.85;
+  color: $c-ink;
   word-break: break-word;
 }
 
-.comment-form {
-  margin-top: $sp-3;
+.w-hidden-note {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-tiny;
+  color: $c-accent;
+}
+
+.w-reacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
+  margin: $sp-3 0 $sp-2;
+}
+
+.w-react {
+  display: flex;
+  align-items: center;
+  gap: $sp-0;
+  min-height: 88rpx;
+  padding: 0 $sp-3;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+  background: transparent;
+
+  &.on {
+    border-color: $c-primary;
+    background: $c-primary-light;
+    color: $c-primary-dark;
+  }
+
+  &.busy {
+    opacity: 0.5;
+  }
+}
+
+.w-react-text {
+  font-size: $fs-tiny;
+  color: $c-ink-2;
+}
+
+.w-react.on .w-react-text {
+  color: $c-primary-dark;
+  font-weight: 600;
+}
+
+.w-react-num {
+  @include num;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.w-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding-top: $sp-2;
   border-top: 1rpx solid $c-line;
 }
 
-.c-area {
-  width: 100%;
-  height: 150rpx;
-  padding: $sp-2;
-  background: $c-card;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  font-size: $fs-small;
-  line-height: 1.6;
-  box-sizing: border-box;
-}
-
-.c-counter {
-  display: block;
-  margin-top: 4rpx;
-  text-align: right;
+.w-total {
   font-size: $fs-tiny;
   color: $c-muted;
 }
 
-.c-foot {
+.w-report {
+  @include tap;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: $sp-2;
-}
-
-.switch-line {
-  display: flex;
-  align-items: center;
-  min-height: 88rpx;
-}
-
-.switch-label {
-  font-size: $fs-small;
-  color: $c-text-2;
-  margin-right: $sp-2;
-}
-
-.switch-line-lg {
-  justify-content: space-between;
-  margin-top: $sp-3;
-}
-
-.switch-text {
-  flex: 1;
-  padding-right: $sp-2;
-  min-width: 0;
-}
-
-.switch-hint {
-  display: block;
-  margin-top: 2rpx;
+  padding-left: $sp-3;
   font-size: $fs-tiny;
   color: $c-muted;
-  line-height: 1.6;
 }
 
-.c-send {
-  width: 200rpx;
-  height: 88rpx;
-  line-height: 88rpx;
-  font-size: $fs-body;
-}
+// ---------------- 状态块 ----------------
 
-.cm-end {
+
+
+
+
+
+
+
+
+
+
+.ch-end {
   display: block;
+  margin: $sp-4 0 $sp-2;
   text-align: center;
-  margin-top: $sp-3;
-  margin-bottom: 140rpx;
   font-size: $fs-tiny;
   color: $c-muted;
+  letter-spacing: 1rpx;
 }
 
-/* ---------- 发帖浮动按钮 ---------- */
+// ---------------- 悬浮入口 ----------------
 
 .fab {
   position: fixed;
   right: $sp-4;
-  bottom: 168rpx; /* 底部导航固定高 128rpx，留 40rpx 间隙 */
-  z-index: 90;
-  height: 96rpx;
-  padding: 0 $sp-4;
-  border-radius: $radius-sm;
-  background: $c-primary;
+  bottom: 190rpx;
   display: flex;
   align-items: center;
-  box-shadow: $shadow-lg;
+  gap: $sp-2;
+  height: 96rpx;
+  padding: 0 $sp-4;
+  background: $c-primary;
+  border-radius: $radius-sm;
+  z-index: 20;
 }
 
 .fab-label {
-  margin-left: $sp-1;
-  font-size: $fs-body;
-  font-weight: 600;
+  font-size: $fs-small;
   color: #fff;
+  letter-spacing: 1rpx;
 }
 
-/* ---------- 发帖弹层 ---------- */
+// ---------------- 拼句面板 ----------------
 
 .sheet-layer {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 200;
+  inset: 0;
+  z-index: 120; // 高于底部导航（100），否则操作条会被盖住
 }
 
 .sheet-mask {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(30, 36, 33, 0.45);
+  inset: 0;
+  background: rgba(30, 36, 33, 0.42);
 }
 
 .sheet {
@@ -402,118 +272,225 @@
   left: 0;
   right: 0;
   bottom: 0;
-  max-height: 84vh;
-  overflow-y: auto;
-  background: $c-card;
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+  background: $c-surface;
+  border-top: 1rpx solid $c-line-strong;
   border-radius: $radius-lg $radius-lg 0 0;
-  padding: $sp-4;
-  padding-bottom: calc(#{$sp-4} + env(safe-area-inset-bottom));
-  box-sizing: border-box;
-  box-shadow: $shadow-lg;
 }
 
 .sheet-head {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $sp-2;
+  padding: $sp-4 $sp-4 $sp-2;
+  border-bottom: 1rpx solid $c-line;
 }
 
 .sheet-title {
-  font-size: $fs-h1;
-  font-weight: 700;
-  color: $c-text;
+  font-family: $font-serif;
+  font-size: $fs-h2;
+  font-weight: 600;
+  color: $c-ink;
 }
 
 .sheet-close {
-  width: 88rpx;
-  height: 88rpx;
+  @include tap;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 50%;
+  justify-content: flex-end;
+  min-width: 88rpx;
+}
+
+.sheet-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: $sp-3 $sp-4 0;
+  box-sizing: border-box;
+}
+
+.preview {
+  flex: 0 0 auto;
+  padding: $sp-3 $sp-4;
   background: $c-paper;
+  border-bottom: 1rpx solid $c-line;
+  min-height: 148rpx;
+}
+
+.preview-label {
+  display: block;
+  @include label;
+  margin-bottom: $sp-1;
+}
+
+.preview-text {
+  display: block;
+  font-family: $font-serif;
+  font-size: 34rpx;
+  line-height: 1.8;
+  color: $c-ink;
+
+  &.empty {
+    color: $c-muted;
+    font-size: $fs-small;
+    font-family: $font-sans;
+  }
 }
 
 .sheet-label {
   display: block;
+  margin: $sp-3 0 $sp-2;
+  @include label;
+  color: $c-ink-2;
+}
+
+.slot {
+  margin-top: $sp-3;
+}
+
+.slot-head {
+  display: flex;
+  align-items: baseline;
+  gap: $sp-2;
+  margin-bottom: $sp-2;
+}
+
+.slot-title {
+  font-size: $fs-small;
+  font-weight: 600;
+  color: $c-ink;
+}
+
+.slot-hint {
+  font-size: $fs-label;
+  color: $c-muted;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  min-height: 88rpx;
+  padding: 0 $sp-3;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+  background: $c-surface;
+
+  &.on {
+    border-color: $c-primary;
+    background: $c-primary-light;
+  }
+}
+
+.chip-text {
+  font-size: $fs-small;
+  line-height: 1.5;
+  color: $c-ink-2;
+}
+
+.chip.on .chip-text {
+  color: $c-primary-dark;
+  font-weight: 600;
+}
+
+.switch-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-3;
+  margin-top: $sp-4;
+  padding-top: $sp-3;
+  border-top: 1rpx solid $c-line;
+}
+
+.switch-line-lg .switch-text {
+  flex: 1;
+}
+
+.switch-label {
+  display: block;
+  font-size: $fs-small;
+  color: $c-ink;
+}
+
+.switch-hint {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.sheet-note {
+  display: flex;
+  gap: $sp-1;
+  margin: $sp-3 0 0;
+  padding: $sp-2;
+  background: $c-yellow-bg;
+  border-radius: $radius-xs;
+}
+
+.sheet-note-text {
+  flex: 1;
+  font-size: $fs-tiny;
+  line-height: 1.7;
+  color: $c-yellow;
+}
+
+.sheet-error {
+  display: block;
   margin-top: $sp-2;
   font-size: $fs-small;
-  color: $c-text-2;
-  font-weight: 600;
-}
-
-.pick-row {
-  display: flex;
-  margin-top: $sp-1;
-}
-
-.pick-item {
-  flex: 1;
-  min-height: 96rpx;
-  margin-right: $sp-2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-paper;
-  color: $c-text-2;
-}
-
-.pick-item:last-child {
-  margin-right: 0;
-}
-
-.pick-item.on {
-  border-color: $c-primary;
-  background: $c-primary-light;
-  color: $c-primary-dark;
-}
-
-.pick-label {
-  margin-top: 2rpx;
-  font-size: $fs-tiny;
-  font-weight: 600;
-}
-
-.post-area {
-  width: 100%;
-  height: 260rpx;
-  margin-top: 6rpx;
-  padding: $sp-2;
-  background: $c-paper;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  font-size: $fs-body;
-  line-height: 1.7;
-  box-sizing: border-box;
+  color: $c-red;
 }
 
 .sheet-actions {
+  flex: 0 0 auto;
   display: flex;
-  margin-top: $sp-3;
+  gap: $sp-2;
+  padding: $sp-3 $sp-4 calc(#{$sp-4} + env(safe-area-inset-bottom));
+  border-top: 1rpx solid $c-line;
 }
 
 .sheet-action {
   flex: 1;
-  margin-right: $sp-2;
+  justify-content: center;
 }
 
-.sheet-action:last-child {
-  margin-right: 0;
+
+// 面板进场：只做 80rpx 的上移与遮罩淡入；减少动态时全局规则会关掉
+@media (prefers-reduced-motion: no-preference) {
+  .sheet {
+    animation: sheet-up 220ms $ease both;
+  }
+
+  .sheet-mask {
+    animation: mask-in 180ms $ease both;
+  }
 }
 
-/* ---------- 按下反馈（触屏没有 hover，用 :active 补上状态） ---------- */
+@keyframes sheet-up {
+  from {
+    transform: translateY(80rpx);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 
-.seg-item:active,
-.act:active,
-.pick-item:active,
-.sheet-close:active,
-.sheet-action:active,
-.state-btn:active,
-.state-retry:active,
-.fab:active {
-  opacity: 0.75;
+@keyframes mask-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

@@ -1,81 +1,31 @@
 @use '@/styles/tokens.scss' as *;
-
-.as-page {
-  min-height: 100vh;
-  padding-bottom: 180rpx;
-}
-
-/* ---------- 顶部栏 ---------- */
-
-.as-top {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  height: 96rpx;
-  display: flex;
-  align-items: center;
-  padding: 0 $sp-2;
-  background: rgba(244, 239, 229, 0.96);
-  border-bottom: 1rpx solid $c-line;
-}
-
-.as-top-back {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 36rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: $c-text;
-}
-
-.as-top-title {
-  flex: 1;
-  text-align: center;
-  font-size: $fs-h2;
-  font-weight: 700;
-  color: $c-text;
-}
-
-.as-top-count {
-  min-width: 72rpx;
-  text-align: right;
-  font-size: $fs-small;
-  color: $c-text-2;
-}
-
-.as-top-spacer {
-  width: 72rpx;
-}
+@use '@/styles/mixins.scss' as *;
 
 /* ---------- 列表页 ---------- */
 
 .as-intro {
-  background: $c-primary-light;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-lg;
-  padding: $sp-4;
   margin-bottom: $sp-3;
 }
 
 .as-intro-title {
   display: block;
-  font-size: 40rpx;
+  font-size: $fs-h2;
   font-weight: 700;
   color: $c-primary-dark;
-  line-height: 1.4;
+  line-height: $lh-tight;
 }
 
 .as-intro-text {
   display: block;
   margin-top: $sp-1;
   font-size: $fs-small;
-  color: $c-text-2;
-  line-height: 1.7;
+  color: $c-ink-2;
+  line-height: $lh-body;
 }
 
 .as-intro-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: $sp-4;
   margin-top: $sp-3;
 }
@@ -88,21 +38,23 @@
   color: $c-primary-dark;
 }
 
+/* 量卡片：外层只负责点击与间距，视觉交给 Card */
+.as-scale-hit {
+  display: block;
+  margin-bottom: $sp-3;
+  border-radius: $radius-sm;
+}
+
 .as-scale {
   display: flex;
   align-items: center;
   gap: $sp-3;
-  background: $c-card;
-  border-radius: $radius;
-  padding: $sp-3;
-  margin-bottom: $sp-3;
-  box-shadow: $shadow;
 }
 
 .as-scale-icon {
   width: 88rpx;
   height: 88rpx;
-  border-radius: $radius;
+  border-radius: $radius-sm;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -138,7 +90,7 @@
 .as-scale-name {
   font-size: $fs-h2;
   font-weight: 700;
-  color: $c-text;
+  color: $c-ink;
 }
 
 .as-scale-short {
@@ -149,10 +101,10 @@
 
 .as-scale-intro {
   display: block;
-  margin-top: 4rpx;
+  margin-top: $sp-0;
   font-size: $fs-small;
-  color: $c-text-2;
-  line-height: 1.5;
+  color: $c-ink-2;
+  line-height: $lh-body;
 }
 
 .as-scale-meta {
@@ -160,64 +112,43 @@
   align-items: center;
   flex-wrap: wrap;
   gap: $sp-1;
-  margin-top: $sp-2;
+  margin-top: $sp-1;
   font-size: $fs-tiny;
   color: $c-muted;
 }
 
 .as-dot {
-  color: $c-border;
+  color: $c-line;
 }
 
 .as-scale-last {
   margin-left: $sp-1;
 }
 
-.as-empty {
-  text-align: center;
-}
-
-.as-empty-title {
-  display: block;
-  font-size: $fs-h2;
-  font-weight: 600;
-  color: $c-text;
-}
-
-.as-empty-text {
-  display: block;
-  margin-top: $sp-1;
-  font-size: $fs-small;
-  color: $c-text-2;
-  line-height: 1.7;
-}
-
-.as-history {
-  padding: $sp-1 $sp-3;
-}
-
 .as-history-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: $sp-2;
   padding: $sp-3 0;
   border-bottom: 1rpx solid $c-line;
 }
 
 .as-history-item:last-child {
   border-bottom: none;
+  padding-bottom: 0;
 }
 
 .as-history-name {
   display: block;
   font-size: $fs-body;
   font-weight: 600;
-  color: $c-text;
+  color: $c-ink;
 }
 
 .as-history-date {
   display: block;
-  margin-top: 2rpx;
+  margin-top: $sp-0;
   font-size: $fs-tiny;
   color: $c-muted;
 }
@@ -229,9 +160,10 @@
 }
 
 .as-history-value {
-  font-size: 40rpx;
+  @include num;
+  font-size: $fs-h2;
   font-weight: 700;
-  color: $c-text;
+  color: $c-ink;
 }
 
 .as-disclaimer {
@@ -239,7 +171,7 @@
   margin-top: $sp-3;
   font-size: $fs-tiny;
   color: $c-muted;
-  line-height: 1.7;
+  line-height: $lh-body;
   text-align: center;
 }
 
@@ -253,8 +185,8 @@
 .as-progress-fill {
   height: 100%;
   background: $c-primary;
-  border-radius: 0 8rpx 8rpx 0;
-  transition: width 180ms ease;
+  border-radius: 0 $radius-xs $radius-xs 0;
+  transition: width $dur $ease;
 }
 
 .as-quiz-scroll {
@@ -276,10 +208,10 @@
 .as-quiz-question {
   display: block;
   margin-top: $sp-2;
-  font-size: 40rpx;
-  line-height: 1.5;
+  font-size: $fs-h3;
+  line-height: $lh-body;
   font-weight: 700;
-  color: $c-text;
+  color: $c-ink;
 }
 
 .as-quiz-hint {
@@ -297,15 +229,15 @@
 }
 
 .as-option {
-  min-height: 104rpx;
+  @include tap;
   border: 1rpx solid $c-line;
-  border-radius: $radius;
-  background: $c-card;
+  border-radius: $radius-sm;
+  background: $c-surface;
   padding: $sp-2 $sp-3;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-sizing: border-box;
+  gap: $sp-2;
 }
 
 .as-option.picked {
@@ -314,8 +246,8 @@
 }
 
 .as-option-label {
-  font-size: 34rpx;
-  color: $c-text;
+  font-size: $fs-body;
+  color: $c-ink;
 }
 
 .as-option.picked .as-option-label {
@@ -327,20 +259,14 @@
   display: block;
   margin-top: $sp-3;
   font-size: $fs-small;
-  color: $c-text-2;
+  color: $c-ink-2;
   text-align: center;
-}
-
-.as-retry {
-  margin-top: $sp-3;
 }
 
 /* ---------- 结果 ---------- */
 
 .as-result {
-  border-radius: $radius-lg;
-  padding: $sp-4;
-  border: 1rpx solid $c-line;
+  margin-bottom: $sp-3;
 }
 
 .as-result.tone-green {
@@ -362,12 +288,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: $sp-2;
 }
 
 .as-result-name {
   font-size: $fs-h2;
   font-weight: 600;
-  color: $c-text;
+  color: $c-ink;
 }
 
 .as-result-score {
@@ -378,28 +305,30 @@
 }
 
 .as-result-value {
+  @include num;
   font-size: $fs-display;
-  line-height: 1.1;
+  line-height: $lh-tight;
   font-weight: 700;
-  color: $c-text;
+  color: $c-ink;
 }
 
 .as-result-total {
   font-size: $fs-body;
-  color: $c-text-2;
+  color: $c-ink-2;
 }
 
 .as-result-bar {
   height: 12rpx;
   margin-top: $sp-3;
   border-radius: $radius-xs;
-  background: rgba(30, 36, 33, 0.08);
+  background: $c-line;
   overflow: hidden;
 }
 
 .as-result-fill {
   height: 100%;
   border-radius: $radius-xs;
+  transition: width $dur $ease;
 }
 
 .as-result-fill.lv-green {
@@ -415,7 +344,7 @@
 }
 
 .as-advice {
-  margin-top: $sp-3;
+  margin-bottom: $sp-3;
 }
 
 .as-advice-head {
@@ -427,31 +356,29 @@
 .as-advice-title {
   font-size: $fs-h2;
   font-weight: 600;
-  color: $c-text;
+  color: $c-ink;
 }
 
 .as-advice-text {
   display: block;
   margin-top: $sp-2;
   font-size: $fs-body;
-  line-height: 1.75;
-  color: $c-text;
+  line-height: $lh-body;
+  color: $c-ink;
 }
 
 .as-advice-note {
   display: block;
   margin-top: $sp-2;
   font-size: $fs-tiny;
-  line-height: 1.7;
+  line-height: $lh-body;
   color: $c-muted;
 }
 
 .as-safety {
-  margin-top: $sp-3;
+  margin-bottom: $sp-3;
   background: $c-red-bg;
-  border: 1rpx solid $c-red-line;
-  border-radius: $radius;
-  padding: $sp-4;
+  border-color: $c-red-line;
 }
 
 .as-safety-head {
@@ -469,20 +396,13 @@
 .as-safety-text {
   display: block;
   margin-top: $sp-2;
-  font-size: $fs-small;
-  line-height: 1.8;
-  color: $c-text;
-}
-
-.as-safety-actions {
-  margin-top: $sp-3;
+  font-size: $fs-body;
+  line-height: $lh-body;
+  color: $c-ink;
 }
 
 .as-safety-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $sp-1;
+  margin-top: $sp-3;
 }
 
 .as-result-actions {
@@ -490,19 +410,4 @@
   display: flex;
   flex-direction: column;
   gap: $sp-2;
-}
-
-.as-result-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $sp-1;
-}
-
-.as-error {
-  display: block;
-  margin-top: $sp-3;
-  font-size: $fs-small;
-  color: $c-red;
-  line-height: 1.6;
 }

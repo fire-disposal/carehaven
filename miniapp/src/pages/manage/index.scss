@@ -1,39 +1,19 @@
 @use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
 
-/* ---------- 页头 ---------- */
+// 「压力管理」页样式。
+// 卡片 / 按钮 / 标签 / 栏目头 / 三态全部走 components/ui，这里只保留本页独有的排版。
 
-.mg-page-head {
-  margin-bottom: $sp-3;
-}
-
-.mg-page-title {
-  display: block;
-  font-size: $fs-h1;
-  font-weight: 700;
-  color: $c-text;
-}
-
-.mg-page-sub {
-  display: block;
-  margin-top: 4rpx;
-  font-size: $fs-small;
-  color: $c-muted;
-}
+/* ---------- 状态提示 ---------- */
 
 .mg-error {
-  display: block;
-  color: $c-red;
-  font-size: $fs-small;
-  background: $c-red-bg;
-  border-radius: $radius-sm;
-  padding: $sp-2 $sp-3;
   margin-bottom: $sp-2;
 }
 
 .mg-notice {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: $sp-0;
   color: $c-green;
   font-size: $fs-small;
   background: $c-green-bg;
@@ -45,14 +25,10 @@
 
 /* ---------- 1. 当前分层卡 ---------- */
 
+/* Card 已提供纸底、发丝线与内边距，这里只加顶部 6rpx 的层级色条 */
 .mg-hero {
-  border-radius: $radius-lg;
-  padding: $sp-4;
   margin-bottom: $sp-3;
-  border: 1rpx solid $c-line;
   border-top: 6rpx solid $c-line;
-  background: $c-surface;
-  box-sizing: border-box;
 }
 
 .mg-hero.level-green {
@@ -71,6 +47,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: $sp-2;
 }
 
 .mg-hero-label {
@@ -86,11 +63,10 @@
 }
 
 .mg-hps-value {
-  font-family: $font-num;
-  font-variant-numeric: tabular-nums;
+  @include num;
   font-size: $fs-display;
   font-weight: 600;
-  line-height: 1;
+  line-height: $lh-tight;
   color: $c-text;
 }
 
@@ -105,7 +81,7 @@
 }
 
 .mg-hps-unit {
-  margin-left: $sp-2;
+  margin-left: $sp-1;
   font-size: $fs-small;
   color: $c-text-2;
 }
@@ -114,46 +90,46 @@
   display: block;
   font-size: $fs-body;
   color: $c-text-2;
-  line-height: 1.7;
+  line-height: $lh-body;
 }
 
 .mg-urgent {
   margin-top: $sp-3;
   padding: $sp-3;
-  background: $c-card;
+  background: $c-red-bg;
   border: 1rpx solid $c-red-line;
-  border-radius: $radius;
+  border-radius: $radius-sm;
 }
 
 .mg-urgent-title {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: $sp-0;
   font-size: $fs-h2;
   font-weight: 700;
   color: $c-red;
-  margin-bottom: 6rpx;
+  margin-bottom: $sp-1;
 }
 
 .mg-urgent-text {
   display: block;
   font-size: $fs-body;
   color: $c-text;
-  line-height: 1.7;
+  line-height: $lh-body;
 }
 
-/* 分层刻度条 */
+/* 分层刻度条：12 段刻度，靠宽度表达阈值 */
 
 .mg-scale {
   margin-top: $sp-3;
   padding-top: $sp-3;
-  border-top: 2rpx solid rgba(30, 36, 33, 0.08);
+  border-top: 1rpx solid $c-line;
 }
 
 .mg-scale-bar {
   position: relative;
   display: flex;
-  height: 10rpx;
+  height: $sp-1;
 }
 
 .mg-seg {
@@ -174,9 +150,9 @@
 
 .mg-pointer {
   position: absolute;
-  top: -10rpx;
+  top: -$sp-1;
   width: 6rpx;
-  height: 30rpx;
+  height: $sp-3;
   margin-left: -3rpx;
   background: $c-ink;
   border: 1rpx solid $c-surface;
@@ -185,22 +161,22 @@
 .mg-legend {
   display: flex;
   flex-wrap: wrap;
-  margin-top: $sp-2;
+  margin-top: $sp-1;
 }
 
 .mg-legend-item {
   display: flex;
   align-items: center;
-  margin: 4rpx $sp-3 4rpx 0;
+  margin: $sp-0 $sp-3 $sp-0 0;
   font-size: $fs-small;
   color: $c-text-2;
 }
 
 .mg-dot {
-  width: 16rpx;
-  height: 16rpx;
+  width: $sp-2;
+  height: $sp-2;
   border-radius: 50%;
-  margin-right: 8rpx;
+  margin-right: $sp-1;
 }
 
 .dot-green {
@@ -215,26 +191,24 @@
 
 .mg-threshold-note {
   display: block;
-  margin-top: $sp-2;
+  margin-top: $sp-1;
   font-size: $fs-tiny;
   color: $c-text-2;
-  line-height: 1.7;
+  line-height: $lh-body;
 }
 
 /* ---------- 2/3. 方案卡片 ---------- */
 
 .mg-it {
-  background: $c-surface;
-  border: 1rpx solid $c-line;
-  border-radius: $radius;
   margin-bottom: $sp-3;
 }
 
 .mg-it-head {
   display: flex;
   align-items: center;
+  gap: $sp-2;
   min-height: 96rpx;
-  padding: $sp-3 $sp-3;
+  padding: $sp-3;
   box-sizing: border-box;
 }
 
@@ -250,15 +224,9 @@
   justify-content: center;
 }
 
-.mg-it.compact .mg-it-icon {
-  width: 72rpx;
-  height: 72rpx;
-}
-
 .mg-it-main {
   flex: 1;
   min-width: 0;
-  padding-right: $sp-2;
 }
 
 .mg-it-title {
@@ -266,36 +234,37 @@
   font-size: $fs-body;
   font-weight: 600;
   color: $c-text;
-  line-height: 1.5;
+  line-height: $lh-tight;
 }
 
 .mg-it-meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  margin-top: 6rpx;
+  gap: $sp-1;
+  margin-top: $sp-0;
 }
 
 .mg-duration {
-  margin-left: $sp-2;
   font-size: $fs-tiny;
   color: $c-text-2;
 }
 
 .mg-it-summary {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  margin-top: 6rpx;
+  @include clamp(2);
+  margin-top: $sp-0;
   font-size: $fs-small;
   color: $c-text-2;
-  line-height: 1.6;
+  line-height: $lh-body;
 }
 
+/* 「详情 / 收起」是整行可点的一部分，本身不再单独设触控区 */
 .mg-toggle {
+  @include tap;
   flex: none;
-  padding: $sp-2 $sp-2;
+  display: flex;
+  align-items: center;
+  padding-left: $sp-2;
   font-size: $fs-small;
   font-weight: 600;
   color: $c-primary-dark;
@@ -311,7 +280,7 @@
   padding: $sp-3 0;
   font-size: $fs-body;
   color: $c-text-2;
-  line-height: 1.75;
+  line-height: $lh-body;
 }
 
 .mg-start {
@@ -330,7 +299,7 @@
   margin-bottom: $sp-3;
   font-size: $fs-small;
   color: $c-text-2;
-  line-height: 1.7;
+  line-height: $lh-body;
 }
 
 .mg-field {
@@ -344,9 +313,9 @@
 }
 
 .mg-input {
+  @include tap;
   width: 100%;
-  height: 88rpx;
-  margin-top: 6rpx;
+  margin-top: $sp-1;
   padding: 0 $sp-3;
   background: $c-paper;
   border: 1rpx solid $c-line;
@@ -356,55 +325,18 @@
   box-sizing: border-box;
 }
 
-.mg-star-row {
-  display: flex;
-  margin-top: 6rpx;
-}
-
-.mg-star {
-  flex: 1;
-  min-height: 104rpx;
-  margin: 0 4rpx;
-  padding: $sp-2 0;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-paper;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-}
-
-.mg-star.on {
-  border-color: $c-primary;
-  background: $c-primary-light;
-}
-
-.mg-star-label {
-  margin-top: 4rpx;
-  font-size: $fs-tiny;
-  color: $c-text-2;
-  text-align: center;
-}
-
-.mg-star.on .mg-star-label {
-  color: $c-primary-dark;
-  font-weight: 600;
+.mg-stars {
+  margin-top: $sp-1;
 }
 
 .mg-form-actions {
   display: flex;
+  gap: $sp-2;
   margin-top: $sp-3;
 }
 
 .mg-action {
   flex: 1;
-  margin-right: $sp-2;
-}
-
-.mg-action:last-child {
-  margin-right: 0;
 }
 
 /* 工具分类标题 */
@@ -413,29 +345,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: $sp-2;
   margin: $sp-3 0 $sp-2;
 }
 
 .mg-group-name {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: $sp-0;
   font-size: $fs-body;
   font-weight: 600;
   color: $c-text;
-}
-
-/* ---------- 空态 / 加载态 ---------- */
-
-.mg-empty .muted {
-  display: block;
-  color: $c-text-2;
-  font-size: $fs-body;
-  line-height: 1.7;
-}
-
-.mg-retry {
-  margin-bottom: $sp-3;
 }
 
 /* ---------- 4. 最近完成记录 ---------- */
@@ -444,13 +364,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: $sp-2;
   min-height: 96rpx;
+  margin-bottom: $sp-3;
 }
 
 .mg-log-main {
   flex: 1;
   min-width: 0;
-  padding-right: $sp-2;
 }
 
 .mg-log-title {
@@ -458,12 +379,12 @@
   font-size: $fs-body;
   font-weight: 600;
   color: $c-text;
-  line-height: 1.5;
+  line-height: $lh-tight;
 }
 
 .mg-log-meta {
   display: block;
-  margin-top: 4rpx;
+  margin-top: $sp-0;
   font-size: $fs-tiny;
   color: $c-text-2;
 }
@@ -476,13 +397,13 @@
 .mg-log-star-icons {
   display: flex;
   justify-content: flex-end;
-  gap: 2rpx;
-  line-height: 1.3;
+  gap: $sp-0;
+  line-height: $lh-tight;
 }
 
 .mg-log-star-label {
   display: block;
-  margin-top: 2rpx;
+  margin-top: $sp-0;
   font-size: $fs-tiny;
   color: $c-text-2;
 }

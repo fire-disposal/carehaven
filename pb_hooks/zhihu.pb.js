@@ -14,19 +14,19 @@
 
 onRecordAfterCreateSuccess(function (e) {
   const hps = require(__hooks + '/lib/hps.js')
-  hps.safeRecompute(hps.userIdOf(e.record))
+  hps.safeRecompute(hps.userIdOf(e.record), 'checkin')
   return e.next()
 }, 'checkins')
 
 onRecordAfterUpdateSuccess(function (e) {
   const hps = require(__hooks + '/lib/hps.js')
-  hps.safeRecompute(hps.userIdOf(e.record))
+  hps.safeRecompute(hps.userIdOf(e.record), 'checkin')
   return e.next()
 }, 'checkins')
 
 onRecordAfterDeleteSuccess(function (e) {
   const hps = require(__hooks + '/lib/hps.js')
-  hps.safeRecompute(hps.userIdOf(e.record))
+  hps.safeRecompute(hps.userIdOf(e.record), 'checkin')
   return e.next()
 }, 'checkins')
 
@@ -34,19 +34,19 @@ onRecordAfterDeleteSuccess(function (e) {
 
 onRecordAfterCreateSuccess(function (e) {
   const hps = require(__hooks + '/lib/hps.js')
-  hps.safeRecompute(hps.userIdOf(e.record))
+  hps.safeRecompute(hps.userIdOf(e.record), 'physio')
   return e.next()
 }, 'physio_records')
 
 onRecordAfterUpdateSuccess(function (e) {
   const hps = require(__hooks + '/lib/hps.js')
-  hps.safeRecompute(hps.userIdOf(e.record))
+  hps.safeRecompute(hps.userIdOf(e.record), 'physio')
   return e.next()
 }, 'physio_records')
 
 onRecordAfterDeleteSuccess(function (e) {
   const hps = require(__hooks + '/lib/hps.js')
-  hps.safeRecompute(hps.userIdOf(e.record))
+  hps.safeRecompute(hps.userIdOf(e.record), 'physio')
   return e.next()
 }, 'physio_records')
 
@@ -54,19 +54,19 @@ onRecordAfterDeleteSuccess(function (e) {
 
 onRecordAfterCreateSuccess(function (e) {
   const hps = require(__hooks + '/lib/hps.js')
-  hps.safeRecompute(hps.userIdOf(e.record))
+  hps.safeRecompute(hps.userIdOf(e.record), 'intervention')
   return e.next()
 }, 'intervention_logs')
 
 onRecordAfterUpdateSuccess(function (e) {
   const hps = require(__hooks + '/lib/hps.js')
-  hps.safeRecompute(hps.userIdOf(e.record))
+  hps.safeRecompute(hps.userIdOf(e.record), 'intervention')
   return e.next()
 }, 'intervention_logs')
 
 onRecordAfterDeleteSuccess(function (e) {
   const hps = require(__hooks + '/lib/hps.js')
-  hps.safeRecompute(hps.userIdOf(e.record))
+  hps.safeRecompute(hps.userIdOf(e.record), 'intervention')
   return e.next()
 }, 'intervention_logs')
 
@@ -88,6 +88,12 @@ routerAdd(
       return e.badRequestError('问题过长，请精简到 200 字以内', null)
     }
 
+    const quota = require(__hooks + '/lib/quota.js')
+    const gate = quota.consume(info.auth.id, 'ask')
+    if (!gate.allowed) {
+      return e.json(429, { message: quota.messageFor('ask', gate.limit) })
+    }
+
     const result = kb.answer(question)
     const userId = info.auth ? info.auth.id : ''
 
@@ -103,6 +109,8 @@ routerAdd(
         })
       )
       $app.save(record)
+      // 返回记录 id：客户端据此提交「有用 / 没用」反馈
+      result.id = record.id
     } catch (err) {
       $app.logger().error('问答记录保存失败', 'error', String(err))
     }
@@ -111,51 +119,6 @@ routerAdd(
   },
   $apis.requireAuth()
 )
-
-// ---------------- 帖子点赞（服务端自增） ----------------
-// posts 的 updateRule 只允许作者改自己的帖子，因此点赞不能由客户端 PATCH，
-// 改由服务端路由自增计数。
-
-routerAdd(
-  'POST',
-  '/api/zz/posts/{id}/like',
-  function (e) {
-    const postId = e.request.pathValue('id')
-    const post = $app.findRecordById('posts', postId)
-    const likes = Number(post.get('likes')) || 0
-    post.set('likes', likes + 1)
-    $app.save(post)
-    return e.json(200, { likes: likes + 1 })
-  },
-  $apis.requireAuth()
-)
-
-// ---------------- 评论计数维护（服务端） ----------------
-// posts.comments_count 不能由客户端回写（updateRule 仅允许作者改自己的帖子），
-// 因此在评论增删时由服务端维护计数。
-
-onRecordAfterCreateSuccess(function (e) {
-  try {
-    const post = $app.findRecordById('posts', String(e.record.get('post')))
-    post.set('comments_count', (Number(post.get('comments_count')) || 0) + 1)
-    $app.save(post)
-  } catch (err) {
-    $app.logger().warn('评论计数更新失败', 'error', String(err))
-  }
-  return e.next()
-}, 'comments')
-
-onRecordAfterDeleteSuccess(function (e) {
-  try {
-    const post = $app.findRecordById('posts', String(e.record.get('post')))
-    const next = (Number(post.get('comments_count')) || 0) - 1
-    post.set('comments_count', next < 0 ? 0 : next)
-    $app.save(post)
-  } catch (err) {
-    $app.logger().warn('评论计数更新失败', 'error', String(err))
-  }
-  return e.next()
-}, 'comments')
 
 // ---------------- 微信一键登录（小程序端） ----------------
 // 小程序 wx.login 取 code → 这里换取 openid 并签发 PocketBase token。
