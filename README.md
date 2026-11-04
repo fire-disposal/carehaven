@@ -135,6 +135,7 @@ Actions 手动触发   → 自动部署：备份 → 切换 → 健康检查 →
 - [docs/ai-agent.md](docs/ai-agent.md) — DeepSeek 智能体接入评估与分阶段路线
 - [docs/ugc-structured.md](docs/ugc-structured.md) — 结构化互助：词库、渲染规则、数据模型与验收
 - [docs/console.md](docs/console.md) — 运营控制台评估：自带后台够不够、要补哪三件事
+- [docs/manual.qmd](docs/manual.qmd) — 使用说明书源文件；成品 PDF：[docs/智护忆站-使用说明书-1.1.0.pdf](docs/智护忆站-使用说明书-1.1.0.pdf)
 - [docs/research-tools.md](docs/research-tools.md) — 回放、数据集构建与种子脚本
 - [docs/study-design.md](docs/study-design.md) — 实验组设计：分组、盲法、窗口、按臂导出
 - [docs/mobile-sensing.md](docs/mobile-sensing.md) — 手机端数据采集与 Flutter 方案的成本评估
