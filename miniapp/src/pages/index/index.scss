@@ -19,6 +19,15 @@
   margin-bottom: $sp-1;
 }
 
+.home-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-lg;
+  background: $c-primary-light;
+  flex: none;
+}
+
 .hello-name {
   display: block;
   font-size: $fs-h1;
@@ -28,24 +37,9 @@
   color: $c-ink;
 }
 
-.home-avatar {
-  width: 88rpx;
-  height: 88rpx;
-  border: 1rpx solid $c-line;
-  border-radius: $radius;
-  background: $c-primary-light;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-}
 
-.home-avatar-char {
-  font-family: $font-serif;
-  font-size: 40rpx;
-  line-height: 1;
-  color: $c-primary-dark;
-}
+
+
 
 /* ---------- 压力状态卡片 ---------- */
 

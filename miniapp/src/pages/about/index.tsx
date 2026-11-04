@@ -22,9 +22,6 @@ export default function AboutPage() {
 
       <View className="page-pad">
         <View className="ab-hero">
-          <View className="ab-logo">
-            <Text className="ab-seal">{SITE.seal}</Text>
-          </View>
           <PageHead className="ab-head" variant="brand" title={SITE.name} note={SITE.tagline} />
           <Text className="ab-version">
             版本 {SITE.version} · 更新 {SITE.updatedAt}

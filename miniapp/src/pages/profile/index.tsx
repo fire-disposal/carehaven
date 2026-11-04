@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Input, ScrollView, Switch, Text, Textarea, View } from '@tarojs/components'
+import { Image, Input, ScrollView, Switch, Text, Textarea, View } from '@tarojs/components'
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
 import Icon from '@/components/Icon'
 import { Button, Card, Pill, SectionHeader, StarRating, StateBlock, Stat } from '@/components/ui'
 import type { PillTone } from '@/components/ui'
 import { DEVICE_PROFILES, ingestPhysio } from '@/lib/physio'
+import { AVATARS, avatarById } from '@/lib/avatar'
 import {
   api,
   clearSession,
@@ -137,6 +138,9 @@ export default function ProfilePage() {
   // 研究参与同意：默认未同意，只有显式打开才进入研究数据集
   const [consent, setConsent] = useState<ResearchConsent | null>(null)
   const [consentSaving, setConsentSaving] = useState(false)
+  const [avatarOpen, setAvatarOpen] = useState(false)
+  const [avatarSaving, setAvatarSaving] = useState(false)
+  const [, setAvatarTick] = useState(0)
   const [consentError, setConsentError] = useState('')
 
   // 研究参与：研究码入组、分组（受盲法控制）与依从概况
@@ -184,6 +188,24 @@ export default function ProfilePage() {
       setStudyError(e instanceof Error ? e.message : '退出没有完成，请稍后再试')
     } finally {
       setStudyBusy(false)
+    }
+  }
+
+  async function chooseAvatar(id: string) {
+    if (avatarSaving || avatarById(getUser()?.avatar_preset).id === id) {
+      setAvatarOpen(false)
+      return
+    }
+    setAvatarSaving(true)
+    try {
+      await api.updateAvatar(id)
+      setAvatarTick((v) => v + 1)
+      setAvatarOpen(false)
+      Taro.showToast({ title: '头像已更新', icon: 'none' })
+    } catch (e) {
+      Taro.showToast({ title: e instanceof Error ? e.message : '头像保存失败', icon: 'none' })
+    } finally {
+      setAvatarSaving(false)
     }
   }
 
@@ -576,9 +598,14 @@ export default function ProfilePage() {
         {/* ---------- 用户卡 ---------- */}
         <Card className="pf-user-card">
           <View className="pf-user-top">
-            <View className="pf-avatar">
-              <Text className="pf-avatar-char">{(user?.name || '照').slice(0, 1)}</Text>
-            </View>
+            <Image
+              className="pf-avatar"
+              src={avatarById(user?.avatar_preset).src}
+              mode="aspectFill"
+              onClick={() => setAvatarOpen(true)}
+              ariaRole="button"
+              ariaLabel="更换头像"
+            />
             <View className="pf-user-info">
               <Text className="pf-user-name">{user?.name || '照护者'}</Text>
               <Text className="pf-user-email">{user?.email || '未获取到邮箱'}</Text>
@@ -1316,6 +1343,29 @@ export default function ProfilePage() {
         {exportError ? <StateBlock variant="error" compact desc={exportError} /> : null}
         {consentError ? <StateBlock variant="error" compact desc={consentError} /> : null}
       </View>
+
+      {avatarOpen ? (
+        <View className="pf-sheet-mask" onClick={() => setAvatarOpen(false)}>
+          <View className="pf-sheet" onClick={(e) => e.stopPropagation()}>
+            <Text className="pf-sheet-title">选择头像</Text>
+            <Text className="pf-sheet-desc">选好会保存在账号里，换设备也会同步。</Text>
+            <View className="pf-avatar-grid">
+              {AVATARS.map((item) => (
+                <View
+                  key={item.id}
+                  className={`pf-avatar-option${avatarById(user?.avatar_preset).id === item.id ? ' on' : ''}`}
+                  onClick={() => void chooseAvatar(item.id)}
+                  ariaRole="button"
+                  ariaLabel={`选择${item.label}头像`}
+                >
+                  <Image className="pf-avatar-img" src={item.src} mode="aspectFill" />
+                  <Text className="pf-avatar-label">{item.label}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+      ) : null}
 
       <BottomNav active="profile" />
     </View>

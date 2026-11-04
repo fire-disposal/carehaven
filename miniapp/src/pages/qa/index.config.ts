@@ -4,4 +4,5 @@ export default definePageConfig({
   navigationBarTitleText: PAGE_TITLES.qa,
   navigationBarBackgroundColor: '#1F5A50',
   navigationBarTextStyle: 'white',
+  disableScroll: true,
 })

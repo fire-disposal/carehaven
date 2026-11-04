@@ -5,7 +5,6 @@
 
 export const SITE = {
   name: '智护忆站',
-  seal: '忆',
   tagline: '照护者的压力记录与自我照护工具',
   version: '1.1.0',
   updatedAt: '2026-11-04',

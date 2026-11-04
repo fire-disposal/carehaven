@@ -8,23 +8,9 @@
   padding: $sp-2 0 $sp-4;
 }
 
-.ab-logo {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: $radius-sm;
-  border: 1rpx solid $c-primary-dark;
-  background: $c-primary;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.ab-seal {
-  font-family: $font-serif;
-  font-size: $fs-h1;
-  line-height: 1;
-  color: $c-surface;
-}
+
+
 
 .ab-version {
   display: block;

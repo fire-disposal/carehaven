@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react'
-import { Text, View } from '@tarojs/components'
+import { Image, Text, View } from '@tarojs/components'
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
 import Icon from '@/components/Icon'
 import { Button, Card, Pill, SectionHeader, Stat, StateBlock } from '@/components/ui'
 import type { IconName } from '@/lib/icons'
 import { MOODS } from '@/lib/mood'
+import { avatarById } from '@/lib/avatar'
 import { levelLabel, levelTone } from '@/lib/level'
 import { NO_SCORE_ADVICE, SOURCE_LABEL, SOURCE_NOTE } from '@/content/glossary'
 import { THEME } from '@/lib/theme'
@@ -153,9 +154,14 @@ export default function HomePage() {
               {greeting}，{user?.name || '照护者'}
             </Text>
           </View>
-          <View className="home-avatar" ariaHidden>
-            <Text className="home-avatar-char">{(user?.name || '照').slice(0, 1)}</Text>
-          </View>
+          <Image
+            className="home-avatar"
+            src={avatarById(user?.avatar_preset).src}
+            mode="aspectFill"
+            onClick={() => void Taro.switchTab({ url: '/pages/profile/index' })}
+            ariaRole="button"
+            ariaLabel="打开我的"
+          />
         </View>
 
         {firstLoad ? <StateBlock variant="loading" title="正在加载今日状态…" /> : null}

@@ -15,6 +15,7 @@ export interface User {
   email: string
   name?: string
   avatar?: string
+  avatar_preset?: string
   /** 微信 openid（绑定后存在；H5 端通常为空） */
   wechat_openid?: string
 }
@@ -607,6 +608,18 @@ export const api = {
       perPage: limit,
     })
     return res.items
+  },
+
+  /** 头像：写入 users.avatar（预置插画 id），并刷新本地会话 */
+  async updateAvatar(avatar: string): Promise<User> {
+    const me = getUser()
+    if (!me) throw new Error('请先登录')
+    const user = await request<User>(`/api/collections/users/records/${me.id}`, {
+      method: 'PATCH',
+      data: { avatar_preset: avatar },
+    })
+    setSession(getToken(), user)
+    return user
   },
 
   /** 研究参与同意：GET 当前状态；setResearchConsent 写入/撤回 */
