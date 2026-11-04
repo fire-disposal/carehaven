@@ -52,3 +52,16 @@ interface AudioBus {
 - 新动画：新增 `components/guide/*`，在 `pages/guide` 按 `script.scene` 选择；动画只依赖阶段与时长。
 - 新音频：实现 `AudioBus` 或旁白播放器，页面只替换注入实例。
 - 无障碍：`prefers-reduced-motion` 下呼吸圆与漂浮动画关闭，文字节奏保留。
+
+
+## 6. 语音资源与分发
+
+- 当前：15 段预录旁白（`miniapp/src/assets/voice/*.mp3`），总约 0.6 MB，随包发布；旁白只讲关键句，呼吸课不逐拍重复。
+- 生成：本地 TTS 代码（`~/scripts/web/demovid/tts.py`，火山 Seed-TTS 协议）可直接复用；本机缺少密钥时用 `edge-tts`（`zh-CN-XiaoxiaoNeural`）生成同格式片段，脚本与清单不变。
+- 开源替代：Freesound 的 CC0/CC-BY 颂钵与环境声（注意 BY 需署名）、Pixabay 音效（免署名）；适合做环境声，不适合做中文引导。
+- 省流量：
+  - 只加载当前课程的开场 + 当前阶段，单段 10–40 KB；呼吸课全程只有 1 段开场。
+  - 服务端/静态托管开启 `Cache-Control: public, max-age=31536000, immutable`，文件名带版本；
+  - 网络差或离线时退回合成提示音（0 字节），不阻塞引导；
+  - 预录优先用 Opus/48kbps 单声道，环境声可循环 30–60 秒。
+- CDN：Cloudflare R2 出站免费，配自定义域即可与现有 Cloudflare DNS 同栈；Bunny CDN 适合按流量计价。静态音频放对象存储，路径形如 `/voice/v1/intro-breath.mp3`；小程序需在后台配置 downloadFile 合法域名。

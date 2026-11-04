@@ -6,7 +6,7 @@
 export const SITE = {
   name: '智护忆站',
   tagline: '照护者的压力记录与自我照护工具',
-  version: '1.1.0',
+  version: '1.2.0',
   updatedAt: '2026-11-04',
   domain: 'care.205716.xyz',
   operator: '项目组',
