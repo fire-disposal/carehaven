@@ -568,3 +568,10 @@
   color: $c-primary-dark;
   font-weight: 600;
 }
+
+/* 宽屏：悬浮入口跟随 720 阅读栏（本文件的 .fab 在 app.scss 之后加载，需在此覆盖） */
+@media screen and (min-width: 700px) {
+  .fab {
+    right: calc(50% - 360PX + 32PX);
+  }
+}

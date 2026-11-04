@@ -49,3 +49,82 @@ text {
     transform: translateX(-50%);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   桌面端交互细节
+   - 悬浮按钮与底部面板在宽屏下要跟随 720 阅读栏，而不是贴视口边缘
+   - 指针设备补 hover / cursor，触屏不受影响
+   --------------------------------------------------------------------------- */
+@media screen and (min-width: 700px) {
+  /* 阅读栏 720 居中：左右边缘各距视口 50% - 360px */
+  .fab {
+    right: calc(50% - 360PX + 32PX);
+  }
+
+  .sheet {
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    max-width: 720PX;
+  }
+
+  /* 滚动条与选区：与纸本配色一致，不抢眼 */
+  .taro_page::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .taro_page::-webkit-scrollbar-thumb,
+  body::-webkit-scrollbar-thumb {
+    background: #cfc6b6;
+    border: 2px solid $c-paper;
+    border-radius: 8px;
+  }
+
+  .taro_page::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::selection {
+    background: rgba(31, 90, 80, 0.16);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ui-btn,
+  .w-react,
+  .chip,
+  .preset-chip,
+  .ch-filter-item,
+  .qa-tab,
+  .nav-item,
+  .pf-data-item,
+  .pf-menu-item,
+  .w-report,
+  .today-del,
+  .qa-helpful-btn {
+    cursor: pointer;
+  }
+
+  .ui-btn:hover {
+    filter: brightness(1.04);
+  }
+
+  .w-react:hover,
+  .chip:hover,
+  .preset-chip:hover,
+  .qa-helpful-btn:hover {
+    background: rgba(31, 90, 80, 0.06);
+  }
+
+  .pf-data-item:hover,
+  .pf-menu-item:hover,
+  .nav-item:hover {
+    background: rgba(31, 90, 80, 0.05);
+  }
+
+  .md-link:hover {
+    color: $c-primary-dark;
+  }
+}
