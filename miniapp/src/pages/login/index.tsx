@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Input, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Button, Card, PageHead } from '@/components/ui'
+import { SITE } from '@/content/site'
 import { login, register, wechatLogin } from '@/lib/api'
 import './index.scss'
 
@@ -71,9 +72,9 @@ export default function LoginPage() {
         </View>
         <PageHead
           variant="brand"
-          eyebrow="CAREHAVEN · 照护者支持"
+          eyebrow="照护者支持"
           title="智护忆站"
-          note="把压力说出来，把照护分一点给自己。"
+          note={SITE.tagline}
         />
       </View>
 
@@ -158,7 +159,7 @@ export default function LoginPage() {
         </View>
       </Card>
 
-      <Text className="tip">我们只收集与压力评估相关的信息，不会用于其他用途。</Text>
+      <Text className="tip">仅收集提供服务所需的信息，不会用于广告。</Text>
       <View className="legal">
         <Text>登录即表示同意</Text>
         <Text

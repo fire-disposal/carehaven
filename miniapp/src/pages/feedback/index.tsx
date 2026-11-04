@@ -86,7 +86,7 @@ export default function FeedbackPage() {
 
       <View className="page-pad">
         <Text className="fb-intro">
-          遇到问题、想提建议，或发现不当内容，都可以在这里告诉我们。
+          提交使用问题、建议或内容纠错。需要回复的请留下联系方式。
         </Text>
 
         <Text className="fb-label">反馈类型</Text>
@@ -114,7 +114,7 @@ export default function FeedbackPage() {
           value={content}
           maxlength={MAX_LEN}
           ariaLabel="反馈的具体内容"
-          placeholder="请描述发生了什么、在哪里遇到，以及您希望怎么改进。"
+          placeholder="说明遇到的情况、发生的位置，以及您希望怎么改。"
           onInput={(e) => {
             setContent(e.detail.value)
             setError('')

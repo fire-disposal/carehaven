@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react'
 import { ReadAloudProvider } from '@/lib/readAloud'
+import { SITE } from './content/site'
 import './app.scss'
 
 // 兼容旧基础库：Promise.withResolvers 是 ES2024 才进入标准的能力。

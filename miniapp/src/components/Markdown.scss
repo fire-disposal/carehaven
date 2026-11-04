@@ -1,0 +1,89 @@
+@use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
+
+// 文档区排版：标题克制、正文 28rpx、链接用信息蓝并可点
+.md {
+  display: block;
+}
+
+.md-heading {
+  display: block;
+  color: $c-ink;
+  font-weight: 600;
+  line-height: $lh-tight;
+}
+
+.md-heading--h2 {
+  margin: $sp-4 0 $sp-2;
+  font-size: $fs-h3;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.md-heading--h3 {
+  margin: $sp-3 0 $sp-1;
+  font-size: $fs-body;
+}
+
+.md-p {
+  display: block;
+  margin: $sp-2 0;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-ink-2;
+}
+
+.md-list {
+  display: block;
+  margin: $sp-2 0;
+}
+
+.md-li {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-2;
+  padding: $sp-0 0;
+}
+
+.md-dot {
+  flex: none;
+  width: 8rpx;
+  height: 8rpx;
+  margin-top: 18rpx;
+  background: $c-line-strong;
+  border-radius: $radius-xs;
+}
+
+.md-li-text {
+  flex: 1;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-ink-2;
+}
+
+.md-strong {
+  color: $c-ink;
+  font-weight: 600;
+}
+
+.md-code {
+  @include num;
+  padding: 0 6rpx;
+  font-size: $fs-tiny;
+  color: $c-ink;
+  background: $c-paper;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-xs;
+}
+
+.md-link {
+  color: $c-info;
+  text-decoration: underline;
+  text-underline-offset: 4rpx;
+
+  &:active {
+    color: $c-primary-dark;
+  }
+}

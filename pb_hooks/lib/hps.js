@@ -9,6 +9,7 @@
 // 注意：本文件由 pb_hooks 通过 require() 加载，不能依赖 hook 文件顶层作用域。
 
 const ALGORITHM_VERSION = 'hps-2'
+const copy = require(__hooks + '/lib/copy.js')
 
 function toPbDate(d) {
   return d.toISOString().replace('T', ' ')
@@ -202,17 +203,8 @@ function components(userId, dayStart, dayEnd, ranges) {
   }
 }
 
-function adviceOf(level, missing) {
-  if (level === 'unknown') {
-    return '今天的数据还不够给出分层判断。补一次打卡或生理记录，结果会在几分钟内更新。'
-  }
-  if (level === 'green') {
-    return '压力处于安全区间，保持规律作息与日常放松练习即可。'
-  }
-  if (level === 'yellow') {
-    return '压力已进入预警区间，建议今天完成一次呼吸放松或冥想练习，并留意睡眠。'
-  }
-  return '压力水平显著超标，建议立即进行一次紧急放松，并考虑向家人或专业人员寻求支持。'
+function adviceOf(level) {
+  return copy.LEVEL_ADVICE[level] || copy.LEVEL_ADVICE.unknown
 }
 
 /**
@@ -286,7 +278,7 @@ function recomputeScore(userId, trigger) {
     score_psycho: parts.psycho === null ? 0 : round1(parts.psycho),
     score_context: parts.context === null ? 0 : round1(parts.context),
     level: level,
-    advice: adviceOf(level, coverage.missing),
+    advice: adviceOf(level),
     algorithm_version: ALGORITHM_VERSION,
     params: params,
     coverage: coverage,

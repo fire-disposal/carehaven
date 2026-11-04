@@ -3,6 +3,7 @@ import { Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import Icon from '@/components/Icon'
 import { Button, Card, Pill, SectionHeader, StateBlock, TopBar } from '@/components/ui'
+import { SAFETY } from '@/content/glossary'
 import { THEME } from '@/lib/theme'
 import { usePageReadAloud } from '@/lib/readAloud'
 import { api, isLoggedIn, type AssessmentRecord } from '@/lib/api'
@@ -84,7 +85,7 @@ export default function AssessmentPage() {
               result.maxScore ?? 27
             }。${flaggedResult ? '需要立即关注' : result.severity}。${
               flaggedResult
-                ? `${resultAdvice} 请优先照顾自己的安全，必要时拨打 120 或心理援助热线 12356。`
+                ? `${resultAdvice} 请优先照顾自己的安全，必要时拨打 ${SAFETY.emergency} 或${SAFETY.hotlineLabel} ${SAFETY.hotline}。`
                 : resultAdvice
             }`
           : ''
@@ -170,9 +171,9 @@ export default function AssessmentPage() {
 
         <View className="page-pad">
           <Card tone="tint" className="as-intro">
-            <Text className="as-intro-title">花几分钟，看看自己最近怎么样</Text>
+            <Text className="as-intro-title">三份自评量表</Text>
             <Text className="as-intro-text">
-              三份标准化自评量表，分别看照护负担、情绪与焦虑。结果用于自我了解，不构成诊断。
+              分别评估照护负担、情绪与焦虑。结果为筛查提示，不构成诊断。
             </Text>
             <View className="as-intro-meta">
               <View className="as-intro-item">
@@ -308,7 +309,7 @@ export default function AssessmentPage() {
           <View className="as-quiz-body">
             <Text className="as-quiz-index">第 {index + 1} 题</Text>
             <Text className="as-quiz-question">{question}</Text>
-            <Text className="as-quiz-hint">选出最接近的一档，选完自动进入下一题</Text>
+            <Text className="as-quiz-hint">选择最接近的一项，自动进入下一题</Text>
 
             <View className="as-options" ariaRole="radiogroup" ariaLabel="选项">
               {active.options.map((opt) => (
@@ -377,7 +378,7 @@ export default function AssessmentPage() {
           </View>
           <Text className="as-advice-text">{adviceText}</Text>
           <Text className="as-advice-note">
-            结果不是诊断，也不能替代医生或心理咨询师的专业评估。
+            {SAFETY.disclaimer}
           </Text>
           <Text className="as-advice-followup">
             {result.level === 'green'
@@ -395,20 +396,20 @@ export default function AssessmentPage() {
               </View>
               <Text className="as-safety-text">
                 您刚才提到过伤害自己的想法。请现在就联系一位信任的家人或朋友，不要独自待着；
-                如有立即危险，请拨打 120。也可以拨打全国心理援助热线 12356，和专业人员聊一聊。
+                如有立即危险，请拨打 {SAFETY.emergency}。也可以拨打{SAFETY.hotlineLabel} {SAFETY.hotline}，和专业人员聊一聊。
               </Text>
               <Button
                 variant="primary"
                 block
                 className="as-safety-btn"
-                ariaLabel="拨打 12356 心理援助热线"
+                ariaLabel="拨打 {SAFETY.hotline} 心理援助热线"
                 onClick={() =>
-                  Taro.makePhoneCall({ phoneNumber: '12356' }).catch(() =>
-                    Taro.showToast({ title: '请拨打 12356', icon: 'none' })
+                  Taro.makePhoneCall({ phoneNumber: SAFETY.hotline }).catch(() =>
+                    Taro.showToast({ title: `请拨打 ${SAFETY.hotline}`, icon: 'none' })
                   )
                 }
               >
-                拨打 12356
+                {`拨打 ${SAFETY.hotline}`}
               </Button>
             </Card>
           </View>

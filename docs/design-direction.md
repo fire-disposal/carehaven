@@ -97,6 +97,26 @@ $font-num: Georgia, 'Times New Roman', 'Songti SC', 'Noto Serif CJK SC', serif;
 - **字号**：正文最低 `$fs-body`（32rpx），长文（协议/关于）同样不降；标签最低 `$fs-label`（22rpx）。
 - **颜色**：状态永不只用颜色表达，配合文字/字重/图标。
 
+## 6.2 文案与文档内容层
+
+所有对外文字只有一处真源，页面只负责渲染：
+
+| 文件 | 内容 |
+|---|---|
+| `miniapp/src/content/site.ts` | 站点名、版本、更新日期、描述、页脚版权、`PAGE_TITLES` |
+| `miniapp/src/content/glossary.ts` | 分级文案、来源标签与说明、缺失占位、安全与免责措辞 |
+| `miniapp/src/content/legal.ts` | 用户协议与隐私政策正文、文档版本与生效日期 |
+| `miniapp/src/content/about.ts` | 关于页的功能清单与说明块 |
+| `miniapp/src/content/credits.ts` | 开源组件与第三方服务清单（Markdown，含外链） |
+| `pb_hooks/lib/copy.js` | 服务端随分数/量表下发的建议与安全提示 |
+
+规则：
+
+1. 页面里不写「压力平稳 / 设备采集 / 12356」这类字面量，从 `content/` 取。
+2. 页面标题写在 `PAGE_TITLES`，各页 `index.config.ts` 直接引用；H5 标题由 `app.tsx` 运行时同步。
+3. 协议类文档用 Markdown 或结构化数组维护，版本号与日期一起升；链路由 `components/Markdown.tsx` 渲染（H5 新窗口，小程序复制链接）。
+4. 改动服务端下发的文案时，界面文案不必同步复制；但语义变化（例如分级标准）必须同步 `hps-method.md`。
+
 ## 7. 落地位置
 
 - 令牌：`miniapp/src/styles/tokens.scss`

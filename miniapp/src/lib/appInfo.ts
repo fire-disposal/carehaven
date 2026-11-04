@@ -1,4 +1,8 @@
-export const APP_NAME = '智护忆站'
-/** 与 README/部署记录保持一致；发版时同步更新 */
-export const APP_VERSION = '1.1.0'
-export const APP_UPDATED_AT = '2026-11-04'
+// 兼容入口：真正的数据在 content/site.ts
+export { SITE } from '@/content/site'
+
+import { SITE } from '@/content/site'
+
+export const APP_NAME = SITE.name
+export const APP_VERSION = SITE.version
+export const APP_UPDATED_AT = SITE.updatedAt

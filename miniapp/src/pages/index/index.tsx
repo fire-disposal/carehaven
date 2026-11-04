@@ -6,6 +6,7 @@ import Icon from '@/components/Icon'
 import { Button, Card, Pill, SectionHeader, Stat, StateBlock } from '@/components/ui'
 import type { IconName } from '@/lib/icons'
 import { levelLabel, levelTone } from '@/lib/level'
+import { NO_SCORE_ADVICE, SOURCE_LABEL, SOURCE_NOTE } from '@/content/glossary'
 import { THEME } from '@/lib/theme'
 import {
   api,
@@ -19,12 +20,6 @@ import {
 import './index.scss'
 
 
-
-const SOURCE_TEXT: Record<PhysioRecord['source'], string> = {
-  device: '设备采集',
-  simulated: '模拟数据',
-  manual: '手动录入',
-}
 
 const MOODS: { value: number; icon: IconName; label: string }[] = [
   { value: 1, icon: 'face-angry', label: '很糟' },
@@ -198,7 +193,7 @@ export default function HomePage() {
                 </View>
               </View>
               <Text className="stress-advice">
-                {score?.advice || '暂无评估结果，完成一次打卡即可生成。'}
+                {score?.advice || NO_SCORE_ADVICE}
               </Text>
               <View className="stress-bars">
                 {(['score_physio', 'score_psycho', 'score_context'] as const).map((key) => {
@@ -379,7 +374,6 @@ export default function HomePage() {
 
             {/* 次级入口 */}
             <SectionHeader
-              eyebrow="继续"
               title="支持工具"
               action={<Text className="muted">按当前状态</Text>}
             />
@@ -460,7 +454,7 @@ export default function HomePage() {
             <SectionHeader
               title="身体状态"
               action={
-                <Text className="muted">{physio ? SOURCE_TEXT[physio.source] : '暂无记录'}</Text>
+                <Text className="muted">{physio ? SOURCE_LABEL[physio.source] : '暂无记录'}</Text>
               }
             />
             <View className="physio-grid">
@@ -506,9 +500,7 @@ export default function HomePage() {
               ))}
             </View>
             {physio?.source === 'simulated' ? (
-              <Text className="source-note">
-                这是用于功能演示的合成数据，不是真实测量结果。
-              </Text>
+              <Text className="source-note">{SOURCE_NOTE.simulated}</Text>
             ) : null}
           </>
         )}

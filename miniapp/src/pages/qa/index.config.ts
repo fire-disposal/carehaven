@@ -1,5 +1,7 @@
+import { PAGE_TITLES } from '../../content/site'
+
 export default definePageConfig({
-  navigationBarTitleText: '智能问答',
+  navigationBarTitleText: PAGE_TITLES.qa,
   navigationBarBackgroundColor: '#1F5A50',
   navigationBarTextStyle: 'white',
 })

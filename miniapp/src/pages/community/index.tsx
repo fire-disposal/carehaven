@@ -163,7 +163,7 @@ export default function CommunityPage() {
       const picked = await Taro.showActionSheet({ itemList: reasons as string[] })
       const reason = reasons[picked.tapIndex]
       const res = await api.reportWhisper(item.id, reason)
-      Taro.showToast({ title: '已收到，会尽快核查', icon: 'none' })
+      Taro.showToast({ title: '已提交，等待复核', icon: 'none' })
       if (res.hidden) void load(filter)
     } catch (e) {
       if (isCancel(e)) return
@@ -206,7 +206,7 @@ export default function CommunityPage() {
       setSheetOpen(false)
       setFilter(formKind)
       await load(formKind)
-      Taro.showToast({ title: '已替你拼好，发在首页了', icon: 'none' })
+      Taro.showToast({ title: '已发布', icon: 'none' })
     } catch (e) {
       setFormError(e instanceof Error ? e.message : '这句没能发出去，请稍后再试')
     } finally {
@@ -222,8 +222,8 @@ export default function CommunityPage() {
       <View className="page-pad">
         <PageHead
           eyebrow="结构化互助"
-          title="拼一句给同路人"
-          note="这里不打字。从词库里挑几段，系统替你排成一句话；看到的人只能给固定回应。"
+          title="互助留言"
+          note="从词库选几段，系统拼成一句话。回应是固定选项，不用打字。"
         />
 
         <View className="ch-rule">
@@ -236,7 +236,7 @@ export default function CommunityPage() {
             <Text className="ch-rule-v">默认显示称呼</Text>
           </View>
           <View className="ch-rule-item">
-            <Text className="ch-rule-k">有界</Text>
+            <Text className="ch-rule-k">限额</Text>
             <Text className="ch-rule-v">每人每天 {lexicon?.dailyPostLimit ?? 5} 句</Text>
           </View>
         </View>
@@ -262,13 +262,13 @@ export default function CommunityPage() {
           />
         ) : null}
 
-        {loading ? <StateBlock variant="loading" title="正在收取这些话…" /> : null}
+        {loading ? <StateBlock variant="loading" title="正在加载…" /> : null}
 
         {showEmpty ? (
           <StateBlock
             variant="empty"
-            title={filter === '全部' ? '还没有人在这里拼过句子' : `「${filter}」这一类还没有内容`}
-            desc="选几个词就行。别人看到会知道：你不是一个人在熬。"
+            title={filter === '全部' ? '还没有留言' : `「${filter}」暂无内容`}
+            desc="从词库选几段，系统会拼成一句。"
             actionLabel="拼第一句"
             onAction={openSheet}
           />
@@ -329,7 +329,7 @@ export default function CommunityPage() {
           : null}
 
         {!loading && !loadError && items.length > 0 ? (
-          <Text className="ch-end">以上是本分类的全部内容</Text>
+          <Text className="ch-end">已显示全部内容</Text>
         ) : null}
       </View>
 
@@ -416,7 +416,7 @@ export default function CommunityPage() {
               <View className="sheet-note">
                 <Icon name="circle-info" size={28} color={THEME.yellow} />
                 <Text className="sheet-note-text">
-                  句子由系统按词库排好，不能自己改字。被三位以上的人举报会自动隐藏，等待复核。
+                  句子由词库拼接，不能自行改字。被 3 人以上举报会先隐藏，等待复核。
                 </Text>
               </View>
 

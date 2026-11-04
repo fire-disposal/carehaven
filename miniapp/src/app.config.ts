@@ -1,3 +1,5 @@
+import { SITE } from './content/site'
+
 export default defineAppConfig({
   pages: [
     'pages/login/index',
@@ -14,7 +16,7 @@ export default defineAppConfig({
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#1F5A50',
-    navigationBarTitleText: '智护忆站',
+    navigationBarTitleText: SITE.name,
     navigationBarTextStyle: 'white',
     backgroundColor: '#F4EFE5',
   },

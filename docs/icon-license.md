@@ -20,3 +20,10 @@
 生成脚本不进入构建流程；仓库里已提交生成结果，构建机不需要安装 Font Awesome。
 
 验证边界：H5 已在 Chromium 实测；`build:weapp` 通过，但微信真机的 WXSS base64 字体渲染尚未实测。若真机出现方框，优先检查基础库版本与 WXSS 字体大小限制。
+
+## 完整开源清单
+
+应用内的「关于 - 开源组件与第三方服务」由 `miniapp/src/content/credits.ts`（Markdown）渲染，
+包含框架、工具链、图标字体、第三方服务与数据来源。依赖变化时改那一个文件即可。
+
+清单不在本文件重复维护；如需在仓库内查看，打开 `miniapp/src/content/credits.ts`。

@@ -5,6 +5,7 @@ import BottomNav from '@/components/BottomNav'
 import Icon from '@/components/Icon'
 import { Button, Card, PageHead, Pill, SectionHeader, StarRating, StateBlock } from '@/components/ui'
 import type { IconName } from '@/lib/icons'
+import { LEVEL_TITLE } from '@/content/glossary'
 import { levelDesc, levelTone } from '@/lib/level'
 import { THEME } from '@/lib/theme'
 import {
@@ -41,14 +42,6 @@ interface LevelThresholds {
 /** 后端 app_config 缺失时的兜底阈值，与迁移里的默认值一致 */
 const FALLBACK_THRESHOLDS: LevelThresholds = { t_green: 40, t_red: 70 }
 
-const LEVEL_TITLE: Record<ScoreLevel, string> = {
-  green: '绿色 · 压力平稳',
-  yellow: '黄色 · 压力预警',
-  red: '红色 · 压力偏高',
-  unknown: '数据不足 · 尚不分层',
-}
-
-// 分级文案统一走 lib/level，避免一处改了另一处漏
 
 /** 阈值来自后端配置，可能缺失或格式异常，统一收敛成可用数值 */
 function readThresholds(raw: unknown): LevelThresholds {

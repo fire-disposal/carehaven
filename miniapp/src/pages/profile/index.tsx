@@ -22,6 +22,7 @@ import {
   type StressScore,
 } from '@/lib/api'
 import { levelTone } from '@/lib/level'
+import { SOURCE_LABEL, SOURCE_NOTE } from '@/content/glossary'
 import { THEME } from '@/lib/theme'
 import './index.scss'
 
@@ -45,27 +46,11 @@ const FEELING_TEXT: Record<number, string> = {
 /** 应用满意度星级的标签：StarRating 与下方说明共用这一份 */
 const STARS_LABELS = ['很不满意', '不太满意', '一般', '比较满意', '非常满意']
 
-const SOURCE_TEXT: Record<PhysioRecord['source'], string> = {
-  device: '设备采集',
-  simulated: '模拟数据',
-  manual: '手动录入',
-}
-
 /** pill 配色：模拟数据用黄色提醒，手动录入用主色，设备采集用绿色 */
 const SOURCE_PILL: Record<PhysioRecord['source'], PillTone> = {
   device: 'green',
   simulated: 'yellow',
   manual: 'primary',
-}
-
-/**
- * 来源说明：按 README 的数据来源声明如实标注，
- * 模拟数据不得描述为设备采集，手动录入也不得说成自动采集。
- */
-const SOURCE_NOTE: Record<PhysioRecord['source'], string> = {
-  device: '由已登记的蓝牙设备同步。',
-  simulated: '这是用于功能演示的合成数据，不是真实测量结果。',
-  manual: '这是您手动填写的记录，不是设备测量。',
 }
 
 const DAY_MS = 86400000
@@ -973,7 +958,7 @@ export default function ProfilePage() {
                     : `已登记 ${DEVICE_PROFILES.length} 款蓝牙设备`}
                 </Text>
                 <Pill tone={source ? SOURCE_PILL[source] : 'primary'}>
-                  {physio ? (source ? SOURCE_TEXT[source] : '来源未标注') : '暂无记录'}
+                  {physio ? (source ? SOURCE_LABEL[source] : '来源未标注') : '暂无记录'}
                 </Pill>
               </View>
 

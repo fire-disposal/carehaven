@@ -344,13 +344,13 @@ export default function QaPage() {
           <StateBlock
             variant="empty"
             icon="comment-dots"
-            title="有困扰，随时问"
-            desc="用平常说话的方式描述您遇到的问题，我会从照护知识库里帮您找办法。"
+            title="输入您的问题"
+            desc="系统会从照护知识库里检索相关内容，并列出出处。"
           />
         ) : null}
 
         <View className="qa-suggest-block">
-          <Text className="qa-suggest-title">{turns.length === 0 ? '试试这样问' : '快捷提问'}</Text>
+          <Text className="qa-suggest-title">{turns.length === 0 ? '常见问题' : '继续提问'}</Text>
           <View className="qa-suggest-chips">
             {QUICK_QUESTIONS.map((item) => (
               <View
@@ -390,7 +390,7 @@ export default function QaPage() {
                       <View className="dot" />
                       <View className="dot" />
                     </View>
-                    <Text className="pending-text">正在查找照护知识…</Text>
+                    <Text className="pending-text">正在检索…</Text>
                   </View>
                 ) : null}
 
@@ -582,7 +582,7 @@ export default function QaPage() {
       </ScrollView>
 
       <View className="qa-composer">
-        <Text className="qa-disclaimer">回答来自照护知识库，不能替代医生的建议</Text>
+        <Text className="qa-disclaimer">内容来自照护知识库，不能替代医生建议</Text>
         {mode === 'chat' ? (
           <View className="qa-input-row">
             <Input
@@ -591,7 +591,7 @@ export default function QaPage() {
               value={draft}
               maxlength={MAX_QUESTION}
               confirmType="send"
-              placeholder="说说遇到的困扰，例如：晚上不睡觉"
+              placeholder="输入问题，例如：晚上不睡觉"
               placeholderStyle={`color:${THEME.ink2}`}
               onInput={(e) => setDraft(e.detail.value)}
               onConfirm={() => send(draft)}

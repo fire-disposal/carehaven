@@ -1,5 +1,7 @@
+import { PAGE_TITLES } from '../../content/site'
+
 export default definePageConfig({
-  navigationBarTitleText: '量表自评',
+  navigationBarTitleText: PAGE_TITLES.assessment,
   navigationBarBackgroundColor: '#1F5A50',
   navigationBarTextStyle: 'white',
   backgroundColor: '#F4EFE5',
