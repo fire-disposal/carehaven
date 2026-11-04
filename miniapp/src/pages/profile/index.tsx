@@ -5,7 +5,7 @@ import BottomNav from '@/components/BottomNav'
 import Icon from '@/components/Icon'
 import { Button, Card, Pill, SectionHeader, StarRating, StateBlock, Stat } from '@/components/ui'
 import type { PillTone } from '@/components/ui'
-import { DEVICE_PROFILES } from '@/lib/ble'
+import { DEVICE_PROFILES, ingestPhysio } from '@/lib/physio'
 import {
   api,
   clearSession,
@@ -141,33 +141,11 @@ export default function ProfilePage() {
 
   // 研究参与：研究码入组、分组（受盲法控制）与依从概况
   const [checkins, setCheckins] = useState<Checkin[]>([])
+  const [focusPhysio, setFocusPhysio] = useState(false)
   const [study, setStudy] = useState<StudyMe | null>(null)
   const [studyCode, setStudyCode] = useState('')
   const [studyBusy, setStudyBusy] = useState(false)
   const [studyError, setStudyError] = useState('')
-
-  useEffect(() => {
-    let alive = true
-    api
-      .researchConsent()
-      .then((res) => {
-        if (alive) setConsent(res)
-      })
-      .catch(() => {
-        if (alive) setConsent(null)
-      })
-    api
-      .studyMe()
-      .then((res) => {
-        if (alive) setStudy(res.study ? res : null)
-      })
-      .catch(() => {
-        if (alive) setStudy(null)
-      })
-    return () => {
-      alive = false
-    }
-  }, [])
 
   async function joinStudy() {
     const code = studyCode.trim().toUpperCase()
@@ -331,18 +309,22 @@ export default function ProfilePage() {
     setLoading(true)
     setError('')
     try {
-      const [s, l, r, p, c] = await Promise.all([
+      const [s, l, r, p, c, consentState, studyState] = await Promise.all([
         api.scores(30),
         api.interventionLogs(30),
         api.ratings(),
         api.latestPhysio(),
         api.recentCheckins(14).catch(() => [] as Checkin[]),
+        api.researchConsent().catch(() => null),
+        api.studyMe().catch(() => null),
       ])
       setScores(s)
       setLogs(l)
       setRatings(r)
       setPhysio(p)
       setCheckins(c)
+      setConsent(consentState)
+      setStudy(studyState && studyState.study ? studyState : null)
     } catch (e) {
       setError(e instanceof Error ? e.message : '数据加载失败')
     } finally {
@@ -352,6 +334,22 @@ export default function ProfilePage() {
 
   useDidShow(() => {
     void load()
+
+    // 从首页「生理」入口进来时，滚动到手动录入并短暂高亮
+    let focus = ''
+    try {
+      focus = String(Taro.getStorageSync('zz_profile_focus') || '')
+      if (focus) Taro.removeStorageSync('zz_profile_focus')
+    } catch (e) {
+      focus = ''
+    }
+    if (focus === 'physio') {
+      setFocusPhysio(true)
+      setTimeout(() => {
+        Taro.pageScrollTo({ selector: '.pf-form-block', duration: 300 }).catch(() => {})
+      }, 280)
+      setTimeout(() => setFocusPhysio(false), 2400)
+    }
   })
 
   // 30 天窗口默认滚到最右端：详情卡展示的是最新一天，不能让它停在屏幕外。
@@ -547,11 +545,10 @@ export default function ProfilePage() {
     setPhysioError('')
     setPhysioDone(false)
     try {
-      await api.createPhysioRecord({
-        hrv: hrvValue,
-        gsr: gsrValue,
-        sleep_quality: Math.round(sleepValue),
-        steps: Math.round(stepsValue),
+      await ingestPhysio({
+        source: 'manual',
+        capturedAt: new Date(),
+        metrics: { hrv: hrvValue, gsr: gsrValue, sleep_quality: sleepValue, steps: stepsValue },
       })
       setHrv('')
       setGsr('')
@@ -670,21 +667,6 @@ export default function ProfilePage() {
             </View>
             <Icon name="chevron-right" size={28} color={THEME.muted} />
           </View>
-          <View
-            className="pf-menu-item"
-            onClick={confirmLogout}
-            ariaRole="button"
-            ariaLabel="退出登录"
-          >
-            <View className="pf-menu-icon pf-menu-icon-danger">
-              <Icon name="lock" size={32} color={THEME.red} />
-            </View>
-            <View className="pf-menu-main">
-              <Text className="pf-menu-label pf-menu-label-danger">退出登录</Text>
-              <Text className="pf-menu-desc">退出后需要重新登录</Text>
-            </View>
-            <Icon name="chevron-right" size={28} color={THEME.muted} />
-          </View>
         </Card>
 
         {error ? (
@@ -714,7 +696,7 @@ export default function ProfilePage() {
                 title="还没有压力评估记录"
                 desc="在首页完成一次打卡，系统就会算出当天的压力指数，这里便能看到 30 天的变化曲线。"
                 actionLabel="去首页打卡"
-                onAction={() => Taro.redirectTo({ url: '/pages/index/index' })}
+                onAction={() => void Taro.switchTab({ url: '/pages/index/index' })}
               />
             ) : (
               <Card className="pf-chart-card">
@@ -928,7 +910,7 @@ export default function ProfilePage() {
                 title="近 30 天还没有完成的减压练习"
                 desc="前往「减压」页，挑一个适合此刻的方案做完并记录感受，这里会留下您的完成情况。"
                 actionLabel="去减压"
-                onAction={() => Taro.redirectTo({ url: '/pages/manage/index' })}
+                onAction={() => void Taro.switchTab({ url: '/pages/manage/index' })}
               />
             ) : (
               <Card className="pf-log-card">
@@ -1014,7 +996,7 @@ export default function ProfilePage() {
                 <Text className="pf-note-line">还没有提交过反馈，欢迎写下第一条。</Text>
               ) : (
                 <View className="pf-rating-list">
-                  {ratings.map((r, i) => {
+                  {ratings.slice(0, 5).map((r, i) => {
                     const level = Math.max(
                       0,
                       Math.min(5, typeof r.stars === 'number' ? Math.round(r.stars) : 0)
@@ -1102,7 +1084,7 @@ export default function ProfilePage() {
                 </Text>
               )}
 
-              <View className="pf-form-block">
+              <View className={`pf-form-block ${focusPhysio ? 'pf-physio-focus' : ''}`}>
                 <Text className="pf-form-title">手动录入今日数据</Text>
                 <Text className="pf-form-desc">
                   按您手边能得到的读数填写即可（例如手环或手机健康应用）。保存后来源会标注为
@@ -1194,10 +1176,30 @@ export default function ProfilePage() {
         ) : null}
 
         {/* ---------- 研究参与 ---------- */}
-        <SectionHeader
-          title="研究参与"
-          action={<Text className="muted">{study?.study ? study.study.code : '可选'}</Text>}
-        />
+        <SectionHeader title="研究参与" />
+        <Card flush className="pf-data">
+          <View className="pf-data-item pf-data-item-static">
+            <View className="pf-menu-icon">
+              <Icon name="shield-heart" size={32} color={THEME.primaryDark} />
+            </View>
+            <View className="pf-menu-main">
+              <Text className="pf-menu-label">研究数据使用</Text>
+              <Text className="pf-menu-desc">
+                {consent?.granted
+                  ? `已同意（条款 ${consent.version}）：仅使用去标识后的记录`
+                  : '未同意：您的记录不会进入任何研究数据集'}
+              </Text>
+            </View>
+            <Switch
+              checked={consent?.granted === true}
+              color={THEME.primary}
+              disabled={consentSaving}
+              ariaLabel="研究数据使用"
+              onChange={(e) => void toggleConsent(e.detail.value)}
+            />
+          </View>
+        </Card>
+
         <Card className="pf-study">
           {!study?.study ? (
             <>
@@ -1259,28 +1261,8 @@ export default function ProfilePage() {
         {studyError ? <StateBlock variant="error" compact desc={studyError} /> : null}
 
         {/* ---------- 我的数据：导出与注销 ---------- */}
-        <SectionHeader title="我的数据" action={<Text className="muted">数据权利</Text>} />
+        <SectionHeader title="我的数据" />
         <Card flush className="pf-data">
-          <View className="pf-data-item pf-data-item-static">
-            <View className="pf-menu-icon">
-              <Icon name="shield-heart" size={32} color={THEME.primaryDark} />
-            </View>
-            <View className="pf-menu-main">
-              <Text className="pf-menu-label">参与研究</Text>
-              <Text className="pf-menu-desc">
-                {consent?.granted
-                  ? `已同意（条款 ${consent.version}）：仅使用去标识后的记录`
-                  : '未同意：您的记录不会进入任何研究数据集'}
-              </Text>
-            </View>
-            <Switch
-              checked={consent?.granted === true}
-              color={THEME.primary}
-              disabled={consentSaving}
-              ariaLabel="参与研究"
-              onChange={(e) => void toggleConsent(e.detail.value)}
-            />
-          </View>
           <View
             className="pf-data-item"
             onClick={() => void exportData()}
@@ -1312,6 +1294,21 @@ export default function ProfilePage() {
               <Text className="pf-menu-desc">
                 {deleting ? '正在注销…' : '删除账号与全部记录，无法恢复'}
               </Text>
+            </View>
+            <Icon name="chevron-right" size={28} color={THEME.muted} />
+          </View>
+          <View
+            className="pf-menu-item"
+            onClick={confirmLogout}
+            ariaRole="button"
+            ariaLabel="退出登录"
+          >
+            <View className="pf-menu-icon pf-menu-icon-danger">
+              <Icon name="lock" size={32} color={THEME.red} />
+            </View>
+            <View className="pf-menu-main">
+              <Text className="pf-menu-label pf-menu-label-danger">退出登录</Text>
+              <Text className="pf-menu-desc">退出后需要重新登录</Text>
             </View>
             <Icon name="chevron-right" size={28} color={THEME.muted} />
           </View>

@@ -20,7 +20,7 @@ import {
 import './index.scss'
 
 const LOG_LIMIT = 10
-const SUCCESS_MSG = '已记录，压力指数会随干预数据更新'
+const SUCCESS_MSG = '已记录这次练习'
 
 /** 工具库的四个分类（与后端 interventions.category 取值一致） */
 const CATEGORIES: Intervention['category'][] = ['呼吸放松', '冥想练习', '音乐疗法', '视频指导']
@@ -84,7 +84,6 @@ export default function ManagePage() {
   const [thresholds, setThresholds] = useState<LevelThresholds>(FALLBACK_THRESHOLDS)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
 
   // 展开 / 完成流程：key = 分区 + 方案 id，避免同一方案在推荐区与工具区同时展开
   const [expandedKey, setExpandedKey] = useState('')
@@ -100,7 +99,6 @@ export default function ManagePage() {
     }
     setLoading(true)
     setError('')
-    setNotice('')
     try {
       const latest = await api.latestScore()
       // unknown 表示数据不足：不按分级推荐，避免拿「没数据」去匹配方案
@@ -157,7 +155,6 @@ export default function ManagePage() {
 
   function startPractice(key: string, item: Intervention) {
     setError('')
-    setNotice('')
     setCompletingKey(key)
     setStars(0)
     setDuration(String(validMinutes(item.duration_min) ?? 5))
@@ -179,7 +176,6 @@ export default function ManagePage() {
 
     setSaving(true)
     setError('')
-    setNotice('')
     try {
       await api.logIntervention({ intervention: item, duration_actual: actual, feeling: chosenStars })
     } catch (e) {
@@ -193,7 +189,6 @@ export default function ManagePage() {
     setCompletingKey('')
     setStars(0)
     setDuration('')
-    setNotice(SUCCESS_MSG)
     Taro.showToast({ title: SUCCESS_MSG, icon: 'none' })
     await refresh()
 
@@ -329,13 +324,6 @@ export default function ManagePage() {
             onAction={loading ? undefined : () => void load()}
           />
         ) : null}
-        {notice ? (
-          <View className="mg-notice">
-            <Icon name="circle-check" size={30} color={THEME.green} />
-            <Text>{notice}</Text>
-          </View>
-        ) : null}
-
         {/* ---------- 1. 当前状态 ---------- */}
         <Card className={`mg-hero ${level ? `level-${level}` : 'level-none'}`}>
           <View className="mg-hero-head">

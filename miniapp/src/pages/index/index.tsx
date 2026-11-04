@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react'
-import { Input, Slider, Text, Textarea, View } from '@tarojs/components'
+import { Text, View } from '@tarojs/components'
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
 import Icon from '@/components/Icon'
 import { Button, Card, Pill, SectionHeader, Stat, StateBlock } from '@/components/ui'
 import type { IconName } from '@/lib/icons'
+import { MOODS } from '@/lib/mood'
 import { levelLabel, levelTone } from '@/lib/level'
 import { NO_SCORE_ADVICE, SOURCE_LABEL, SOURCE_NOTE } from '@/content/glossary'
 import { THEME } from '@/lib/theme'
@@ -22,26 +23,6 @@ import './index.scss'
 
 
 
-const MOODS: { value: number; icon: IconName; label: string }[] = [
-  { value: 1, icon: 'face-angry', label: '很糟' },
-  { value: 2, icon: 'face-frown', label: '较差' },
-  { value: 3, icon: 'face-meh', label: '一般' },
-  { value: 4, icon: 'face-smile', label: '较好' },
-  { value: 5, icon: 'face-grin-beam', label: '很好' },
-]
-
-type Prefill = { mood: number; anxiety: number; fatigue: number; sleep_hours: number; care_hours: number }
-
-/** 上次提交的数值，用于下次打开表单时预填 */
-function readPrefill(): Prefill | null {
-  try {
-    const raw = Taro.getStorageSync('zz_checkin_prefill')
-    if (!raw) return null
-    return JSON.parse(String(raw)) as Prefill
-  } catch (e) {
-    return null
-  }
-}
 
 function greetingOf(hour: number): string {
   if (hour < 5) return '夜深了'
@@ -68,18 +49,6 @@ export default function HomePage() {
   const [recent, setRecent] = useState<Checkin[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
-  const [showForm, setShowForm] = useState(false)
-
-  // 打卡表单
-  const prefill = readPrefill()
-  const [mood, setMood] = useState(prefill?.mood ?? 3)
-  const [anxiety, setAnxiety] = useState(prefill?.anxiety ?? 4)
-  const [fatigue, setFatigue] = useState(prefill?.fatigue ?? 5)
-  const [sleepHours, setSleepHours] = useState(String(prefill?.sleep_hours ?? 6.5))
-  const [careHours, setCareHours] = useState(String(prefill?.care_hours ?? 8))
-  const [note, setNote] = useState('')
-  const [formError, setFormError] = useState('')
-  const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
     if (!isLoggedIn()) {
@@ -116,46 +85,6 @@ export default function HomePage() {
   usePullDownRefresh(() => {
     void load().finally(() => Taro.stopPullDownRefresh())
   })
-
-  async function submitCheckin() {
-    if (saving) return
-    const sleep = Number(sleepHours)
-    const care = Number(careHours)
-    if (!Number.isFinite(sleep) || sleep < 0 || sleep > 24) {
-      setFormError('请填写 0–24 之间的睡眠时长')
-      return
-    }
-    if (!Number.isFinite(care) || care < 0 || care > 24) {
-      setFormError('请填写 0–24 之间的照护时长')
-      return
-    }
-    setSaving(true)
-    setFormError('')
-    try {
-      const hour = new Date().getHours()
-      await api.createCheckin({
-        period: hour < 15 ? 'morning' : 'evening',
-        mood,
-        anxiety,
-        fatigue,
-        sleep_hours: sleep,
-        care_hours: care,
-        note,
-      })
-      Taro.setStorageSync(
-        'zz_checkin_prefill',
-        JSON.stringify({ mood, anxiety, fatigue, sleep_hours: sleep, care_hours: care })
-      )
-      setShowForm(false)
-      setNote('')
-      await load()
-      Taro.showToast({ title: '打卡已记录，压力指数已更新', icon: 'none' })
-    } catch (e) {
-      setFormError(e instanceof Error ? e.message : '提交失败')
-    } finally {
-      setSaving(false)
-    }
-  }
 
   async function deleteCheckin(id: string) {
     const res = await Taro.showModal({
@@ -296,7 +225,7 @@ export default function HomePage() {
                 <Button
                   variant="primary"
                   className="stress-cta"
-                  onClick={() => setShowForm(!showForm)}
+                  onClick={() => void Taro.navigateTo({ url: '/pages/checkin/index' })}
                   ariaLabel={todayChecked ? '再记录一次感受' : '记录此刻感受'}
                 >
                   {todayChecked ? '再记一次' : '记录此刻'}
@@ -304,143 +233,12 @@ export default function HomePage() {
               </View>
             </View>
 
-            {/* 打卡表单 */}
-            {showForm ? (
-              <Card className="checkin-form">
-                <View className="form-head">
-                  <Text className="form-title">此刻的心情</Text>
-                  <View
-                    className="form-close"
-                    onClick={() => setShowForm(false)}
-                    ariaRole="button"
-                    ariaLabel="收起打卡表单"
-                  >
-                    <Icon name="xmark" size={30} color={THEME.muted} />
-                  </View>
-                </View>
-                <View className="mood-row" ariaRole="radiogroup" ariaLabel="此刻的心情">
-                  {MOODS.map((m) => (
-                    <View
-                      key={m.value}
-                      className={`mood-item ${mood === m.value ? 'picked' : ''}`}
-                      onClick={() => setMood(m.value)}
-                      ariaRole="radio"
-                      ariaChecked={mood === m.value}
-                      ariaLabel={m.label}
-                    >
-                      <Icon name={m.icon} size={44} />
-                      <Text className="mood-label">{m.label}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                <View className="slider-row">
-                  <View className="row-between">
-                    <Text className="form-label">焦虑程度</Text>
-                    <Text className="slider-value">{anxiety}</Text>
-                  </View>
-                  <Slider
-                    min={0}
-                    max={10}
-                    step={1}
-                    value={anxiety}
-                    activeColor={THEME.primary}
-                    backgroundColor={THEME.line}
-                    blockColor={THEME.surface}
-                    blockSize={22}
-                    ariaLabel={`焦虑程度，当前 ${anxiety} 分，满分 10 分`}
-                    ariaValuemin="0"
-                    ariaValuemax="10"
-                    ariaValuenow={String(anxiety)}
-                    onChanging={(e) => setAnxiety(e.detail.value)}
-                    onChange={(e) => setAnxiety(e.detail.value)}
-                  />
-                </View>
-
-                <View className="slider-row">
-                  <View className="row-between">
-                    <Text className="form-label">疲惫程度</Text>
-                    <Text className="slider-value">{fatigue}</Text>
-                  </View>
-                  <Slider
-                    min={0}
-                    max={10}
-                    step={1}
-                    value={fatigue}
-                    activeColor={THEME.primary}
-                    backgroundColor={THEME.line}
-                    blockColor={THEME.surface}
-                    blockSize={22}
-                    ariaLabel={`疲惫程度，当前 ${fatigue} 分，满分 10 分`}
-                    ariaValuemin="0"
-                    ariaValuemax="10"
-                    ariaValuenow={String(fatigue)}
-                    onChanging={(e) => setFatigue(e.detail.value)}
-                    onChange={(e) => setFatigue(e.detail.value)}
-                  />
-                </View>
-
-                <View className="num-row">
-                  <View className="num-field">
-                    <Text className="form-label">昨夜睡眠（小时）</Text>
-                    <Input
-                      className="num-input"
-                      type="digit"
-                      value={sleepHours}
-                      ariaLabel="昨夜睡眠时长，单位小时"
-                      onInput={(e) => setSleepHours(e.detail.value)}
-                    />
-                  </View>
-                  <View className="num-field">
-                    <Text className="form-label">今日照护（小时）</Text>
-                    <Input
-                      className="num-input"
-                      type="digit"
-                      value={careHours}
-                      ariaLabel="今日照护时长，单位小时"
-                      onInput={(e) => setCareHours(e.detail.value)}
-                    />
-                  </View>
-                </View>
-
-                <Text className="form-label">想补充的话（可不填）</Text>
-                <Textarea
-                  className="note-area"
-                  value={note}
-                  maxlength={200}
-                  placeholder="今天发生了什么让您感到压力的事？"
-                  ariaLabel="想补充的话，可以不填"
-                  onInput={(e) => setNote(e.detail.value)}
-                />
-
-                {formError ? (
-                  <View className="form-error">
-                    <StateBlock variant="error" compact title={formError} />
-                  </View>
-                ) : null}
-
-                <View className="form-actions">
-                  <Button variant="ghost" className="action" onClick={() => setShowForm(false)}>
-                    取消
-                  </Button>
-                  <Button
-                    variant="primary"
-                    className="action"
-                    loading={saving}
-                    onClick={submitCheckin}
-                  >
-                    提交打卡
-                  </Button>
-                </View>
-              </Card>
-            ) : null}
-
             {/* 次级入口 */}
             {/* 今日完成度：三件事各一行，点一下去补 */}
             <View className="today-check">
               <View
                 className={`today-check-item ${todayChecked ? 'done' : ''}`}
-                onClick={() => (todayChecked ? undefined : setShowForm(true))}
+                onClick={() => (todayChecked ? undefined : void Taro.navigateTo({ url: '/pages/checkin/index' }))}
                 ariaRole="button"
                 ariaLabel={todayChecked ? '今日已打卡' : '去打卡'}
               >
@@ -449,7 +247,14 @@ export default function HomePage() {
               </View>
               <View
                 className={`today-check-item ${todayPhysio ? 'done' : ''}`}
-                onClick={() => Taro.switchTab({ url: '/pages/profile/index' })}
+                onClick={() => {
+                  try {
+                    Taro.setStorageSync('zz_profile_focus', 'physio')
+                  } catch (e) {
+                    // 存储失败时只做普通跳转
+                  }
+                  void Taro.switchTab({ url: '/pages/profile/index' })
+                }}
                 ariaRole="button"
                 ariaLabel={todayPhysio ? '今日已有生理数据' : '去补录生理数据'}
               >
@@ -487,7 +292,7 @@ export default function HomePage() {
               </View>
               <View
                 className="tool-tile"
-                onClick={() => Taro.redirectTo({ url: '/pages/manage/index' })}
+                onClick={() => void Taro.switchTab({ url: '/pages/manage/index' })}
                 ariaRole="button"
                 ariaLabel="减压练习"
               >
@@ -499,7 +304,7 @@ export default function HomePage() {
               </View>
               <View
                 className="tool-tile"
-                onClick={() => Taro.redirectTo({ url: '/pages/qa/index' })}
+                onClick={() => void Taro.switchTab({ url: '/pages/qa/index' })}
                 ariaRole="button"
                 ariaLabel="知识问答"
               >

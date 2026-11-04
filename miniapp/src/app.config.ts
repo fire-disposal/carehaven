@@ -12,6 +12,7 @@ export default defineAppConfig({
     'pages/feedback/index',
     'pages/about/index',
     'pages/agreement/index',
+    'pages/checkin/index',
   ],
   window: {
     backgroundTextStyle: 'light',

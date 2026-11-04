@@ -8,11 +8,12 @@ import { CREDITS_MARKDOWN } from '@/content/credits'
 import { SAFETY } from '@/content/glossary'
 import { PAGE_TITLES, SITE } from '@/content/site'
 import { THEME } from '@/lib/theme'
+import { backOrSwitchTab } from '@/lib/nav'
 import './index.scss'
 
 export default function AboutPage() {
   const backProfile = () => {
-    Taro.redirectTo({ url: '/pages/profile/index' })
+    void backOrSwitchTab('/pages/profile/index')
   }
 
   return (

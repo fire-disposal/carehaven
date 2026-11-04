@@ -4,6 +4,7 @@ import Taro, { useRouter } from '@tarojs/taro'
 import { TopBar } from '@/components/ui'
 import { DOC_UPDATED_AT, DOC_VERSION, PRIVACY, TERMS } from '@/content/legal'
 import { PAGE_TITLES } from '@/content/site'
+import { backOrSwitchTab } from '@/lib/nav'
 import './index.scss'
 
 type Doc = 'terms' | 'privacy'
@@ -15,7 +16,7 @@ export default function AgreementPage() {
   const [doc, setDoc] = useState<Doc>(initial)
 
   const backProfile = () => {
-    Taro.redirectTo({ url: '/pages/profile/index' })
+    void backOrSwitchTab('/pages/profile/index')
   }
 
   const sections = doc === 'terms' ? TERMS : PRIVACY

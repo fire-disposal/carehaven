@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { Input, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
-import { Button, Pill, SectionHeader, StateBlock } from '@/components/ui'
+import { Button, Card, Pill, SectionHeader, StateBlock } from '@/components/ui'
 import Icon from '@/components/Icon'
 import { THEME } from '@/lib/theme'
 import { ApiError, api, isLoggedIn, type AgentStatus, type KbEntry, type QaSession } from '@/lib/api'
@@ -154,7 +154,7 @@ function toolLabel(name: string): string {
 }
 
 export default function QaPage() {
-  const [mode, setMode] = useState<'chat' | 'kb'>('chat')
+  const [mode, setMode] = useState<'chat' | 'kb' | 'graph'>('chat')
   const [turns, setTurns] = useState<Turn[]>([])
   const [draft, setDraft] = useState('')
   const [booting, setBooting] = useState(true)
@@ -166,11 +166,14 @@ export default function QaPage() {
   const [category, setCategory] = useState(ALL_CATEGORY)
   const [openSource, setOpenSource] = useState('')
   const [openEntry, setOpenEntry] = useState('')
+  const [graphCategory, setGraphCategory] = useState('')
+  const [graphEntry, setGraphEntry] = useState('')
   const [anchorTick, setAnchorTick] = useState(0)
   const seq = useRef(0)
 
   // 锚点 id 每次变化都会把滚动视图带到目标位置：问答看最新一条，知识库回到列表顶部
-  const anchor = mode === 'chat' ? `qa-anchor-${anchorTick}` : `kb-anchor-${anchorTick}`
+  const anchor =
+    mode === 'kb' ? `kb-anchor-${anchorTick}` : mode === 'chat' ? `qa-anchor-${anchorTick}` : `graph-anchor-${anchorTick}`
 
   const categories = useMemo(() => {
     const list: string[] = []
@@ -357,7 +360,7 @@ export default function QaPage() {
     void runAsk(id, question)
   }
 
-  function switchMode(next: 'chat' | 'kb') {
+  function switchMode(next: 'chat' | 'kb' | 'graph') {
     setMode(next)
     setAnchorTick((tick) => tick + 1)
   }
@@ -539,6 +542,112 @@ export default function QaPage() {
     )
   }
 
+  function renderGraph() {
+    if (booting) return <StateBlock variant="loading" title="正在整理知识图谱…" />
+    if (kbError && !kbReady) {
+      return (
+        <StateBlock
+          variant="error"
+          title={kbError}
+          actionLabel="重新加载"
+          onAction={() => void load()}
+        />
+      )
+    }
+    if (categories.length === 0) {
+      return <StateBlock variant="empty" icon="book-open" title="知识库还没有内容" desc="内容补充后，这里会按分类展开。" />
+    }
+
+    // 版面：以中心节点为圆心，分类节点按角度均匀分布
+    const SIZE = 600
+    const CENTER = SIZE / 2
+    const RADIUS = 152
+    const nodes = categories.map((name, index) => {
+      const angle = (-90 + (360 / categories.length) * index) * (Math.PI / 180)
+      const group = groups.find((g) => g.category === name)
+      return {
+        name: name,
+        count: group ? group.items.length : 0,
+        x: CENTER + RADIUS * Math.cos(angle),
+        y: CENTER + RADIUS * Math.sin(angle),
+        deg: (-90 + (360 / categories.length) * index),
+      }
+    })
+    const activeGroup = groups.find((g) => g.category === graphCategory)
+
+    return (
+      <View className="kg">
+        <View className="qa-anchor" id={`graph-anchor-${anchorTick}`} />
+        <View className="kg-canvas" style={{ width: Taro.pxTransform(SIZE), height: Taro.pxTransform(SIZE), margin: '0 auto' }}>
+          {nodes.map((node, index) => (
+            <View
+              key={`line-${node.name}`}
+              className="kg-line"
+              style={{
+                left: Taro.pxTransform(CENTER),
+                top: Taro.pxTransform(CENTER),
+                width: Taro.pxTransform(RADIUS),
+                transform: `rotate(${node.deg}deg)`,
+                animationDelay: `${index * 40}ms`,
+              }}
+            />
+          ))}
+
+          <View className="kg-node kg-node--center" style={{ left: Taro.pxTransform(CENTER), top: Taro.pxTransform(CENTER) }}>
+            <Text className="kg-center-title">知识库</Text>
+            <Text className="kg-center-count">{entries.length} 条</Text>
+          </View>
+
+          {nodes.map((node, index) => {
+            const on = graphCategory === node.name
+            return (
+              <View
+                key={node.name}
+                className={`kg-node ${on ? 'on' : ''}`}
+                style={{ left: Taro.pxTransform(node.x), top: Taro.pxTransform(node.y), animationDelay: `${index * 40}ms` }}
+                onClick={() => {
+                  setGraphCategory(on ? '' : node.name)
+                  setGraphEntry('')
+                }}
+                ariaRole="button"
+                ariaLabel={`查看分类：${node.name}`}
+              >
+                <Text className="kg-node-title">{node.name}</Text>
+                <Text className="kg-node-count">{node.count}</Text>
+              </View>
+            )
+          })}
+        </View>
+
+        <Text className="kg-hint">
+          {graphCategory ? `「${graphCategory}」下的条目` : '点分类节点查看条目'}
+        </Text>
+
+        {activeGroup ? (
+          <Card flush className="kg-panel">
+            {activeGroup.items.map((entry) => {
+              const open = graphEntry === entry.id
+              return (
+                <View className="kg-entry" key={entry.id}>
+                  <View
+                    className="kg-entry-head"
+                    onClick={() => setGraphEntry(open ? '' : entry.id)}
+                    ariaRole="button"
+                    ariaLabel={`${String(entry.title || '')}，${open ? '收起' : '展开'}全文`}
+                  >
+                    <Text className="kg-entry-title">{String(entry.title || '')}</Text>
+                    <Text className="kg-entry-more">{open ? '收起' : '展开'}</Text>
+                  </View>
+                  <Text className={`kg-entry-text ${open ? 'open' : ''}`}>{String(entry.content || '')}</Text>
+                </View>
+              )
+            })}
+          </Card>
+        ) : null}
+      </View>
+    )
+  }
+
   function renderKnowledge() {
     if (booting) {
       return <StateBlock variant="loading" title="正在读取知识库…" />
@@ -653,12 +762,22 @@ export default function QaPage() {
           <Icon name="book-open" size={32} />
           <Text className="qa-tab-text">知识库</Text>
         </View>
+        <View
+          className={`qa-tab${mode === 'graph' ? ' on' : ''}`}
+          ariaRole="button"
+          ariaLabel="切换到知识图谱"
+          onClick={() => switchMode('graph')}
+        >
+          <Icon name="chart-line" size={32} />
+          <Text className="qa-tab-text">图谱</Text>
+        </View>
       </View>
 
       <ScrollView className="qa-scroll" scrollY scrollWithAnimation scrollIntoView={anchor}>
-        {mode === 'chat' ? renderChat() : renderKnowledge()}
+        {mode === 'chat' ? renderChat() : mode === 'kb' ? renderKnowledge() : renderGraph()}
       </ScrollView>
 
+      {mode === 'graph' ? null : (
       <View className="qa-composer">
         <Text className="qa-disclaimer">
           {agent && agent.enabled
@@ -689,6 +808,7 @@ export default function QaPage() {
           </View>
         ) : null}
       </View>
+      )}
 
       <BottomNav active="qa" />
     </View>

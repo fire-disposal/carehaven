@@ -7,6 +7,7 @@ import { SAFETY } from '@/content/glossary'
 import { THEME } from '@/lib/theme'
 import { usePageReadAloud } from '@/lib/readAloud'
 import { api, isLoggedIn, type AssessmentRecord } from '@/lib/api'
+import { backOrSwitchTab } from '@/lib/nav'
 import { SCALES, type ScaleDef } from '@/lib/scales'
 import './index.scss'
 
@@ -159,7 +160,7 @@ export default function AssessmentPage() {
   }
 
   const backHome = () => {
-    Taro.redirectTo({ url: '/pages/index/index' })
+    void backOrSwitchTab('/pages/index/index')
   }
 
   // ---------------- 列表 ----------------

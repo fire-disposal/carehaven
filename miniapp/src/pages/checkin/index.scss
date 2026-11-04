@@ -1,0 +1,211 @@
+@use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
+
+.ck-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: $c-paper;
+}
+
+.ck-body {
+  padding-bottom: 340rpx;
+}
+
+.ck-date {
+  font-size: $fs-small;
+  color: $c-muted;
+  letter-spacing: 0.08em;
+}
+
+.ck-intro {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-body;
+  line-height: $lh-body;
+  color: $c-ink-2;
+}
+
+.ck-section {
+  margin-top: $sp-6;
+}
+
+.ck-moods {
+  display: flex;
+  gap: $sp-2;
+  margin-top: $sp-3;
+}
+
+.ck-mood {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 20rpx 0;
+  border: 1rpx solid $c-line;
+  border-radius: $radius;
+  background: $c-surface;
+  color: $c-ink-2;
+
+  &.picked {
+    border-color: $c-primary;
+    background: $c-primary-light;
+    color: $c-primary-dark;
+  }
+}
+
+.ck-mood-label {
+  font-size: $fs-tiny;
+}
+
+.ck-card {
+  margin-top: $sp-3;
+}
+
+.ck-slider-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: $sp-3;
+}
+
+.ck-label {
+  font-size: $fs-small;
+  color: $c-ink-2;
+}
+
+.ck-value {
+  font-family: $font-num;
+  font-size: $fs-h2;
+  color: $c-primary-dark;
+}
+
+.ck-scale {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ck-scale-text {
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.ck-num-row {
+  display: flex;
+  gap: $sp-4;
+}
+
+.ck-num-field {
+  flex: 1;
+}
+
+.ck-input-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+  margin-top: $sp-2;
+  padding-bottom: 8rpx;
+  border-bottom: 1rpx solid $c-line-strong;
+}
+
+.ck-input {
+  flex: 1;
+  height: 72rpx;
+  font-family: $font-num;
+  font-size: $fs-h1;
+  color: $c-ink;
+}
+
+.ck-unit {
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.ck-note {
+  width: 100%;
+  height: 200rpx;
+  margin-top: $sp-2;
+  padding: $sp-3;
+  border: 1rpx solid $c-line;
+  border-radius: $radius;
+  background: $c-surface;
+  font-size: $fs-body;
+  box-sizing: border-box;
+}
+
+.ck-error {
+  display: block;
+  margin-top: $sp-3;
+  font-size: $fs-small;
+  color: $c-red;
+}
+
+.ck-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: $sp-3 $sp-4 calc(#{$sp-3} + env(safe-area-inset-bottom));
+  background: $c-paper;
+  border-top: 1rpx solid $c-line;
+}
+
+.ck-footnote {
+  display: block;
+  margin-top: $sp-2;
+  text-align: center;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.ck-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: $sp-7;
+}
+
+.ck-done-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 50%;
+  border: 1rpx solid $c-primary-light;
+  background: $c-primary-light;
+}
+
+.ck-done-title {
+  margin-top: $sp-4;
+  font-family: $font-serif;
+  font-size: $fs-h2;
+  color: $c-ink;
+}
+
+.ck-done-desc {
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-muted;
+  text-align: center;
+}
+
+.ck-done-card {
+  width: 100%;
+  margin: $sp-5 0;
+}
+
+.ck-done-label {
+  font-size: $fs-label;
+  letter-spacing: 0.1em;
+  color: $c-muted;
+}
+
+.ck-done-tip {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-body;
+  color: $c-ink-2;
+}

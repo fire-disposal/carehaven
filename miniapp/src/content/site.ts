@@ -32,4 +32,5 @@ export const PAGE_TITLES = {
   about: '关于',
   agreement: '协议与隐私',
   login: '登录',
+  checkin: '记录此刻',
 } as const

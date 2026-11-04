@@ -459,6 +459,7 @@
 
 .qa-disclaimer {
   display: block;
+  min-height: 34rpx;
   margin-bottom: $sp-1;
   text-align: center;
   font-size: $fs-tiny;
@@ -536,4 +537,148 @@
 .qa-meta-text {
   font-size: $fs-tiny;
   color: $c-muted;
+}
+
+/* ---------------- 知识图谱 ---------------- */
+/* 节点用绝对定位 + transform 居中；动效只做透明度，避免位移与定位互相覆盖 */
+.kg {
+  padding: $sp-2 0 $sp-5;
+}
+
+.kg-canvas {
+  position: relative;
+  margin: $sp-2 auto 0;
+}
+
+.kg-line {
+  position: absolute;
+  height: 1rpx;
+  background: $c-line-strong;
+  transform-origin: left center;
+  animation: kg-fade 260ms $ease both;
+}
+
+.kg-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rpx;
+  min-width: 140rpx;
+  max-width: 190rpx;
+  padding: $sp-1 $sp-2;
+  background: $c-surface;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+  box-sizing: border-box;
+  animation: kg-fade 220ms $ease both;
+  transition: background-color $dur-fast $ease, border-color $dur-fast $ease;
+}
+
+.kg-node.on {
+  background: $c-primary-light;
+  border-color: $c-primary;
+}
+
+.kg-node--center {
+  min-width: 176rpx;
+  padding: $sp-2;
+  background: $c-primary;
+  border-color: $c-primary;
+}
+
+.kg-center-title {
+  font-size: $fs-small;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  color: $c-surface;
+}
+
+.kg-center-count {
+  font-size: $fs-tiny;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.kg-node-title {
+  font-size: $fs-tiny;
+  line-height: 1.4;
+  color: $c-ink-2;
+  text-align: center;
+}
+
+.kg-node-count {
+  font-size: $fs-label;
+  color: $c-muted;
+}
+
+.kg-node.on .kg-node-title,
+.kg-node.on .kg-node-count {
+  color: $c-primary-dark;
+}
+
+.kg-hint {
+  display: block;
+  margin: $sp-3 0 $sp-2;
+  text-align: center;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.kg-panel {
+  margin-bottom: $sp-3;
+}
+
+.kg-entry {
+  padding: $sp-2 $sp-3 $sp-3;
+  border-bottom: 1rpx solid $c-line;
+}
+
+.kg-entry:last-child {
+  border-bottom: 0;
+}
+
+.kg-entry-head {
+  @include tap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-2;
+}
+
+.kg-entry-title {
+  flex: 1;
+  font-size: $fs-small;
+  font-weight: 600;
+  color: $c-ink;
+}
+
+.kg-entry-more {
+  font-size: $fs-tiny;
+  color: $c-primary;
+}
+
+.kg-entry-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin-top: $sp-1;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-ink-2;
+}
+
+.kg-entry-text.open {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+
+@keyframes kg-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

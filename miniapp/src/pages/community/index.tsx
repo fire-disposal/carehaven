@@ -232,12 +232,26 @@ export default function CommunityPage() {
     <View className="page">
       <View className="page-pad">
         <PageHead
-          eyebrow="结构化互助"
           title="互助留言"
-          note="从词库选几段，系统拼成一句话。回应是固定选项，不用打字。"
+          action={
+            <View
+              className="ch-help"
+              onClick={() => {
+                void Taro.showModal({
+                  title: '互助留言说明',
+                  content:
+                    '只能从词库拼句，不能自己打字；回应是固定选项。留言默认匿名，发出前可以关掉。每人每天最多 5 句；被 3 人举报会先隐藏，等待复核。',
+                  showCancel: false,
+                  confirmText: '知道了',
+                })
+              }}
+              ariaRole="button"
+              ariaLabel="查看互助留言说明"
+            >
+              <Icon name="circle-info" size={36} color={THEME.muted} />
+            </View>
+          }
         />
-
-        <Text className="ch-rule-line">无输入框 · 默认匿名 · 每人每天 {lexicon?.dailyPostLimit ?? 5} 句</Text>
 
         <View className="ch-filter">
           {kinds.map((kind) => (

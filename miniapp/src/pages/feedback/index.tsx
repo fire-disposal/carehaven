@@ -5,6 +5,7 @@ import Icon from '@/components/Icon'
 import { Button, Card, StateBlock, TopBar } from '@/components/ui'
 import { THEME } from '@/lib/theme'
 import { api, isLoggedIn, type FeedbackCategory } from '@/lib/api'
+import { backOrSwitchTab } from '@/lib/nav'
 import './index.scss'
 
 const CATEGORIES: FeedbackCategory[] = [
@@ -27,7 +28,7 @@ export default function FeedbackPage() {
   const [done, setDone] = useState(false)
 
   const backProfile = () => {
-    Taro.redirectTo({ url: '/pages/profile/index' })
+    void backOrSwitchTab('/pages/profile/index')
   }
 
   async function submit() {

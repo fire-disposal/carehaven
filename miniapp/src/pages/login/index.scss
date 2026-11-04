@@ -63,6 +63,10 @@
   margin-bottom: $sp-1;
 }
 
+.lg-field:focus-within .lg-input {
+  border-bottom-color: $c-primary;
+}
+
 .lg-input {
   width: 100%;
   height: 88rpx;
@@ -77,8 +81,10 @@
 
 .lg-error {
   display: block;
+  min-height: 44rpx;
   margin-bottom: $sp-2;
   font-size: $fs-small;
+  line-height: 44rpx;
   color: $c-red;
 }
 

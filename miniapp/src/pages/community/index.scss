@@ -27,13 +27,14 @@
 
 
 // 分类：下划线式标签，选中才加重
-.ch-rule-line {
-  display: block;
-  margin: $sp-3 0 $sp-4;
-  padding-top: $sp-2;
-  border-top: 1rpx solid $c-line;
-  font-size: $fs-tiny;
-  letter-spacing: 1rpx;
+
+
+.ch-help {
+  @include tap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88rpx;
   color: $c-muted;
 }
 
@@ -293,6 +294,8 @@
 
 .preview {
   flex: 0 0 auto;
+  height: 282rpx;
+  overflow: hidden;
   padding: $sp-3 $sp-4;
   background: $c-paper;
   border-bottom: 1rpx solid $c-line;
@@ -321,7 +324,10 @@
 }
 
 .preview-text {
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
   font-family: $font-serif;
   font-size: 34rpx;
   line-height: 1.8;

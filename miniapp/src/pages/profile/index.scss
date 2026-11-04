@@ -816,3 +816,24 @@
   color: $c-muted;
   line-height: $lh-body;
 }
+
+/* 从首页「生理」跳进来时的高亮：只闪一次，用来定位，不做持续动画 */
+@keyframes pf-focus-flash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(31, 90, 80, 0);
+  }
+  35% {
+    box-shadow: 0 0 0 6rpx rgba(31, 90, 80, 0.18);
+  }
+}
+
+.pf-physio-focus {
+  border-color: $c-primary;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pf-physio-focus {
+    animation: pf-focus-flash 1.6s $ease 1;
+  }
+}

@@ -6,6 +6,8 @@
 #app .taro_page {
   /* Taro H5 给每个路由容器默认白底（运行时样式）；用更高特异度让页面自己决定底色 */
   background: transparent;
+  /* 滚动条出现/消失时不改变内容宽度 */
+  scrollbar-gutter: stable;
 }
 
 .page {
