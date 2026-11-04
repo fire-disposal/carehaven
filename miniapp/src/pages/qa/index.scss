@@ -527,3 +527,13 @@
 .qa-helpful-text {
   font-size: $fs-tiny;
 }
+
+/* 助手元信息：这一轮读了哪些数据 / 是否为检索回退 */
+.qa-meta {
+  margin-top: $sp-1;
+}
+
+.qa-meta-text {
+  font-size: $fs-tiny;
+  color: $c-muted;
+}

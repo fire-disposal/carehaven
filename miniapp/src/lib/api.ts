@@ -399,6 +399,31 @@ export interface StudyMe {
   adherence: { checkin_days: number; assessments: number; days_since_enroll: number } | null
 }
 
+export interface AgentStatus {
+  enabled: boolean
+  model: string
+  limits: {
+    enabled: boolean
+    requests_per_day: number
+    tokens_per_day: number
+    budget_yuan_per_day: number
+    global_tokens_per_day: number
+  }
+  usage: { requests: number; tokens: number; cost: number }
+  remaining_requests: number
+}
+
+export interface AgentChatResult {
+  id?: string
+  conversationId: string
+  answer: string
+  tools: { name: string; ok: boolean }[]
+  usage: { tokens_in: number; tokens_out: number; cost_yuan: number }
+  remaining_requests?: number
+  model: string
+  safety: boolean
+}
+
 export interface ResearchConsent {
   granted: boolean
   version: string
@@ -593,6 +618,18 @@ export const api = {
     return request<ResearchConsent>('/api/zz/research/consent', {
       method: 'POST',
       data: { granted },
+    })
+  },
+
+  /** 助手：是否可用与今日剩余额度 */
+  agentStatus(): Promise<AgentStatus> {
+    return request<AgentStatus>('/api/zz/agent/status')
+  },
+
+  agentChat(message: string, conversationId?: string): Promise<AgentChatResult> {
+    return request<AgentChatResult>('/api/zz/agent/chat', {
+      method: 'POST',
+      data: { message, conversationId: conversationId || '' },
     })
   },
 

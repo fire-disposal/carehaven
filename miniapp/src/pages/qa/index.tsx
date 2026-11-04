@@ -5,7 +5,7 @@ import BottomNav from '@/components/BottomNav'
 import { Button, Pill, SectionHeader, StateBlock } from '@/components/ui'
 import Icon from '@/components/Icon'
 import { THEME } from '@/lib/theme'
-import { api, isLoggedIn, type KbEntry, type QaSession } from '@/lib/api'
+import { ApiError, api, isLoggedIn, type AgentStatus, type KbEntry, type QaSession } from '@/lib/api'
 import './index.scss'
 
 /** 一次问答的等待上限：超时后气泡内给出「重试」，不让用户对着空白气泡等下去 */
@@ -36,6 +36,13 @@ interface Turn {
   /** 服务端问答记录 id（拿到才允许提交有用性反馈） */
   sessionId?: string
   helpful?: 'up' | 'down'
+  /** 助手元信息：用了哪些工具、token 与是否为回退 */
+  meta?: {
+    tools: string[]
+    model: string
+    fallback?: boolean
+    safety?: boolean
+  }
 }
 
 interface KbGroup {
@@ -134,11 +141,25 @@ function toTurn(item: QaSession, index: number, entries: KbEntry[]): Turn {
   }
 }
 
+const TOOL_LABELS: Record<string, string> = {
+  get_today_status: '今日状态',
+  list_recent_checkins: '最近打卡',
+  list_recent_assessments: '量表结果',
+  get_trend: '压力趋势',
+  search_kb: '知识库',
+}
+
+function toolLabel(name: string): string {
+  return TOOL_LABELS[name] || name
+}
+
 export default function QaPage() {
   const [mode, setMode] = useState<'chat' | 'kb'>('chat')
   const [turns, setTurns] = useState<Turn[]>([])
   const [draft, setDraft] = useState('')
   const [booting, setBooting] = useState(true)
+  const [agent, setAgent] = useState<AgentStatus | null>(null)
+  const conversationRef = useRef('')
   const [chatError, setChatError] = useState('')
   const [entries, setEntries] = useState<KbEntry[]>([])
   const [kbError, setKbError] = useState('')
@@ -183,7 +204,13 @@ export default function QaPage() {
     setBooting(true)
     setChatError('')
     // 知识库挂了不该连带把问答记录也判定为失败，所以两条请求分别结算
-    const [history, knowledge] = await Promise.allSettled([api.qaHistory(30), api.knowledge()])
+    const [history, knowledge, agentState] = await Promise.allSettled([
+      api.qaHistory(30),
+      api.knowledge(),
+      api.agentStatus(),
+    ])
+    if (agentState.status === 'fulfilled') setAgent(agentState.value)
+    else setAgent(null)
 
     const kbList = knowledge.status === 'fulfilled' && Array.isArray(knowledge.value) ? knowledge.value : []
     if (knowledge.status === 'fulfilled') {
@@ -226,6 +253,44 @@ export default function QaPage() {
       prev.map((turn) => (turn.id === turnId ? { ...turn, status: 'pending', answer: '', sources: [], error: '' } : turn))
     )
     try {
+      if (agent && agent.enabled) {
+        try {
+          const res = await withTimeout(api.agentChat(question, conversationRef.current), ASK_TIMEOUT)
+          conversationRef.current = res.conversationId
+          setAgent((prev) =>
+            prev && typeof res.remaining_requests === 'number'
+              ? { ...prev, remaining_requests: res.remaining_requests }
+              : prev
+          )
+          setTurns((prev) =>
+            prev.map((turn) =>
+              turn.id === turnId
+                ? {
+                    ...turn,
+                    status: 'ok',
+                    answer: res.answer,
+                    sources: [],
+                    sessionId: res.id,
+                    meta: {
+                      tools: (res.tools || []).map((t) => t.name),
+                      model: res.model,
+                      safety: res.safety,
+                    },
+                  }
+                : turn
+            )
+          )
+          return
+        } catch (err) {
+          const status = err instanceof ApiError ? err.status : 0
+          const recoverable = status === 429 || status === 502 || status === 503
+          if (!recoverable) throw err
+          // 额度用完或上游不可用：回退检索，并在气泡上标注
+          const note = err instanceof Error ? err.message : '助手暂不可用'
+          Taro.showToast({ title: note, icon: 'none' })
+        }
+      }
+
       const result = await withTimeout(api.ask(question), ASK_TIMEOUT)
       const answer = typeof result?.answer === 'string' ? result.answer.trim() : ''
       if (!answer) throw new Error('没有取到回答内容，请重试')
@@ -239,6 +304,7 @@ export default function QaPage() {
                 sources: normalizeSources(result?.sources),
                 sessionId: result?.id,
                 helpful: undefined,
+                meta: { tools: [], model: 'kb', fallback: Boolean(agent && agent.enabled) },
               }
             : turn
         )
@@ -251,7 +317,7 @@ export default function QaPage() {
     } finally {
       setAnchorTick((tick) => tick + 1)
     }
-  }, [])
+  }, [agent])
 
   const markHelpful = useCallback(async (turn: Turn, value: 'up' | 'down') => {
     if (!turn.sessionId) return
@@ -419,10 +485,22 @@ export default function QaPage() {
                         <Text className="src-caption">来源 {turn.sources.length} 条 · 点标题看全文</Text>
                         {turn.sources.map((source) => renderSource(turn, source))}
                       </View>
-                    ) : kbReady ? (
+                    ) : kbReady && !turn.meta ? (
                       <Text className="src-note">
                         这次没有匹配到知识库条目。可以换个说法再问，或到「知识库」里逐条浏览。
                       </Text>
+                    ) : null}
+
+                    {turn.meta && (turn.meta.tools.length > 0 || turn.meta.fallback) ? (
+                      <View className="qa-meta">
+                        {turn.meta.tools.length > 0 ? (
+                          <Text className="qa-meta-text">
+                            已读取：{turn.meta.tools.map(toolLabel).join('、')}
+                          </Text>
+                        ) : (
+                          <Text className="qa-meta-text">助手暂时不可用，本条为知识库检索结果</Text>
+                        )}
+                      </View>
                     ) : null}
 
                     {turn.sessionId ? (
@@ -560,11 +638,11 @@ export default function QaPage() {
         <View
           className={`qa-tab${mode === 'chat' ? ' on' : ''}`}
           ariaRole="button"
-          ariaLabel="切换到问答"
+          ariaLabel="切换到助手"
           onClick={() => switchMode('chat')}
         >
           <Icon name="comment-dots" size={32} />
-          <Text className="qa-tab-text">问答</Text>
+          <Text className="qa-tab-text">助手</Text>
         </View>
         <View
           className={`qa-tab${mode === 'kb' ? ' on' : ''}`}
@@ -582,7 +660,11 @@ export default function QaPage() {
       </ScrollView>
 
       <View className="qa-composer">
-        <Text className="qa-disclaimer">内容来自照护知识库，不能替代医生建议</Text>
+        <Text className="qa-disclaimer">
+          {agent && agent.enabled
+            ? `助手回答仅供参考，不替代医生建议${agent.remaining_requests >= 0 ? ` · 今日剩余 ${agent.remaining_requests} 次` : ''}`
+            : '内容来自照护知识库，不能替代医生建议'}
+        </Text>
         {mode === 'chat' ? (
           <View className="qa-input-row">
             <Input

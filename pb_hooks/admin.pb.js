@@ -354,3 +354,105 @@ routerAdd(
   },
   $apis.requireSuperuserAuth()
 )
+
+routerAdd(
+  'GET',
+  '/api/zz/admin/agent/usage',
+  function (e) {
+    const agent = require(__hooks + '/lib/agent.js')
+    const info = e.requestInfo()
+    const days = Math.min(30, Math.max(1, Number(info.query.days) || 7))
+    const since = new Date(Date.now() - (days - 1) * 86400000)
+    since.setHours(0, 0, 0, 0)
+    const sinceStr = since.toISOString().replace('T', ' ')
+
+    let rows = []
+    try {
+      rows = $app.findRecordsByFilter(
+        'qa_sessions',
+        'source = "agent" && created >= {:start}',
+        '',
+        2000,
+        0,
+        { start: sinceStr }
+      )
+    } catch (err) {
+      rows = []
+    }
+
+    const byDay = {}
+    const byUser = {}
+    let todayTokens = 0
+    let todayCost = 0
+    const todayKey = new Date().toISOString().slice(0, 10)
+
+    for (let i = 0; i < rows.length; i += 1) {
+      const row = rows[i]
+      const day = String(row.get('created')).slice(0, 10)
+      if (!byDay[day]) byDay[day] = { date: day, requests: 0, tokens_in: 0, tokens_out: 0, cost: 0 }
+      const tin = Number(row.get('tokens_in')) || 0
+      const tout = Number(row.get('tokens_out')) || 0
+      const cost = Number(row.get('cost_yuan')) || 0
+      byDay[day].requests += 1
+      byDay[day].tokens_in += tin
+      byDay[day].tokens_out += tout
+      byDay[day].cost += cost
+      if (day === todayKey) {
+        todayTokens += tin + tout
+        todayCost += cost
+      }
+
+      const userId = String(row.get('user'))
+      if (!byUser[userId]) byUser[userId] = { user: userId, requests: 0, tokens: 0, cost: 0 }
+      byUser[userId].requests += 1
+      byUser[userId].tokens += tin + tout
+      byUser[userId].cost += cost
+    }
+
+    const topUsers = Object.keys(byUser)
+      .map((key) => {
+        const row = byUser[key]
+        let label = row.user.slice(0, 6)
+        try {
+          const user = $app.findRecordById('users', row.user)
+          const email = String(user.get('email') || '')
+          const at = email.indexOf('@')
+          label = at > 0 ? email.slice(0, Math.min(3, at)) + '***' + email.slice(at) : label
+        } catch (err) {
+          // 用户已删除时保留 id 前缀
+        }
+        return {
+          label: label,
+          requests: row.requests,
+          tokens: row.tokens,
+          cost: Math.round(row.cost * 10000) / 10000,
+        }
+      })
+      .sort((a, b) => b.cost - a.cost)
+      .slice(0, 8)
+
+    const daysOut = Object.keys(byDay)
+      .sort()
+      .map((key) => {
+        const row = byDay[key]
+        row.cost = Math.round(row.cost * 10000) / 10000
+        return row
+      })
+
+    return e.json(200, {
+      enabled: agent.isEnabled(),
+      key_configured: Boolean($os.getenv('DEEPSEEK_API_KEY')),
+      model: String($os.getenv('DEEPSEEK_MODEL') || 'deepseek-flash'),
+      limits: agent.limits(),
+      pricing: agent.pricing(),
+      today: {
+        requests: byDay[todayKey] ? byDay[todayKey].requests : 0,
+        tokens: todayTokens,
+        cost: Math.round(todayCost * 10000) / 10000,
+      },
+      days: daysOut,
+      top_users: topUsers,
+    })
+  },
+  $apis.requireSuperuserAuth()
+)

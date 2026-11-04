@@ -32,6 +32,10 @@ services:
       VOLC_TTS_SPEAKER: ${VOLC_TTS_SPEAKER:-zh_female_vv_uranus_bigtts}
       VOLC_TTS_MODEL: ${VOLC_TTS_MODEL:-seed-tts-2.0-standard}
       VOLC_TTS_SAMPLE_RATE: ${VOLC_TTS_SAMPLE_RATE:-24000}
+      # 助手（DeepSeek）：未配置密钥时 /api/zz/agent/status 返回 enabled=false，客户端回退检索
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-flash}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
 
     # 资源上限：留出余量但不与宿主机其他服务抢
     mem_limit: 256m

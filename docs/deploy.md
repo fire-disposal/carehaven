@@ -80,6 +80,7 @@ ssh <SSH_ALIAS> 'printf "SUPERUSER_EMAIL=admin@<PROD_DOMAIN>\nSUPERUSER_PASSWORD
 |---|---|
 | `SUPERUSER_EMAIL` / `SUPERUSER_PASSWORD` | 备份脚本与后台登录（`docker/deploy.sh`、`docker/backup.sh` 读取） |
 | `WECHAT_APP_ID` / `WECHAT_APP_SECRET` | 微信一键登录；留空则接口返回 503 并说明缺少哪个变量（详见 docs/wechat-onboarding.md） |
+| `DEEPSEEK_API_KEY` / `DEEPSEEK_MODEL` / `DEEPSEEK_BASE_URL` | 助手；密钥留空则助手不可用，前端自动回退知识库检索 |
 
 compose 会自动读取同目录 `.env` 做变量插值，**改完 `.env` 后 `docker compose up -d` 即生效**（无需重建镜像）。
 

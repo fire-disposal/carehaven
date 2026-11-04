@@ -109,6 +109,7 @@ function renderLogin(message = '') {
 function shell(active, title, subtitle, content) {
   const nav = [
     ['overview', '概览'],
+    ['agent', '助手'],
     ['studies', '研究'],
     ['moderation', '内容处置'],
     ['config', '配置'],
@@ -172,6 +173,76 @@ async function pageOverview() {
     shell('overview', '概览', `生成于 ${fmtTime(data.generated_at)}`, content)
   } catch (err) {
     shell('overview', '概览', '', `<div class="card error">${esc(err.message)}</div>`)
+  }
+}
+
+// ---------------- 助手 ----------------
+
+async function pageAgent() {
+  shell('agent', '助手', '加载中…', '<div class="empty">读取中…</div>')
+  try {
+    const data = await api('/api/zz/admin/agent/usage?days=7')
+    const metric = (label, value, hint = '') => `
+      <div class="metric"><div class="label">${esc(label)}</div><div class="value">${esc(value)}</div>${hint ? `<div class="hint">${esc(hint)}</div>` : ''}</div>`
+
+    const dayRows = (data.days || [])
+      .map(
+        (row) => `<tr>
+          <td class="mono">${esc(row.date)}</td>
+          <td>${esc(row.requests)}</td>
+          <td>${esc(row.tokens_in)} / ${esc(row.tokens_out)}</td>
+          <td>¥${esc(Number(row.cost).toFixed(4))}</td>
+        </tr>`
+      )
+      .join('')
+
+    const userRows = (data.top_users || [])
+      .map(
+        (row) => `<tr>
+          <td class="mono">${esc(row.label)}</td>
+          <td>${esc(row.requests)}</td>
+          <td>${esc(row.tokens)}</td>
+          <td>¥${esc(Number(row.cost).toFixed(4))}</td>
+        </tr>`
+      )
+      .join('')
+
+    const content = `
+      <div class="grid">
+        ${metric('引擎', data.enabled ? '可用' : '未启用', data.key_configured ? `密钥已配置 · ${data.model}` : '缺少 DEEPSEEK_API_KEY')}
+        ${metric('今日调用', data.today.requests, `上限 ${data.limits.requests_per_day} 次/人/日`)}
+        ${metric('今日 token', data.today.tokens, `单人上限 ${data.limits.tokens_per_day}`)}
+        ${metric('今日估算费用', `¥${Number(data.today.cost).toFixed(4)}`, `单人预算 ¥${data.limits.budget_yuan_per_day}/日`)}
+        ${metric('全站 token 上限', data.limits.global_tokens_per_day, '防止单用户耗尽总资源')}
+      </div>
+
+      <h2>近 7 天用量</h2>
+      <div class="card">
+        <table>
+          <thead><tr><th>日期</th><th>调用</th><th>输入 / 输出 token</th><th>估算费用</th></tr></thead>
+          <tbody>${dayRows || '<tr><td colspan="4" class="empty">还没有助手使用记录。</td></tr>'}</tbody>
+        </table>
+      </div>
+
+      <h2>今日用量最高的用户</h2>
+      <div class="card">
+        <table>
+          <thead><tr><th>用户</th><th>调用</th><th>token</th><th>估算费用</th></tr></thead>
+          <tbody>${userRows || '<tr><td colspan="4" class="empty">今天还没有人使用助手。</td></tr>'}</tbody>
+        </table>
+        <p class="muted">邮箱只显示前缀；费用按 <span class="mono">agent_pricing</span> 估算，不是账单。</p>
+      </div>
+
+      <h2>配额与密钥</h2>
+      <div class="card">
+        <p>配额（请求数 / token / 费用 / 全站 token）在 <a href="#/config">配置 · agent_limits</a> 中修改；计价在 <span class="mono">agent_pricing</span>。</p>
+        <p>密钥只从服务端环境变量读取：<span class="mono">DEEPSEEK_API_KEY</span>、<span class="mono">DEEPSEEK_MODEL</span>（默认 deepseek-flash）、<span class="mono">DEEPSEEK_BASE_URL</span>（默认官方地址）。轮换方式：改服务器 <span class="mono">/srv/carehaven/.env</span> 后重启容器。</p>
+        <p class="muted">助手只在服务端调用模型；客户端不接触密钥，也不能执行工具。</p>
+      </div>`
+
+    shell('agent', '助手', data.enabled ? '可用' : '未启用', content)
+  } catch (err) {
+    shell('agent', '助手', '', `<div class="card error">${esc(err.message)}</div>`)
   }
 }
 
@@ -555,6 +626,7 @@ function render() {
     return
   }
   const [page, param] = hash.split('/')
+  if (page === 'agent') return pageAgent()
   if (page === 'studies') return pageStudies()
   if (page === 'study' && param) return pageStudyDetail(param)
   if (page === 'moderation') return pageModeration()
