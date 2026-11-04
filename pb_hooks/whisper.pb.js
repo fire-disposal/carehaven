@@ -57,7 +57,8 @@ routerAdd(
       return e.json(429, { message: '今天已经拼了 ' + lexicon.DAILY_POST_LIMITS + ' 句，明天再来吧' })
     }
 
-    const anonymous = body.anonymous === true
+    // 默认匿名：只有显式传 false 才实名
+    const anonymous = body.anonymous !== false
     const displayName = anonymous ? '匿名' : String(user.get('name') || '').trim() || '照护者'
 
     let record

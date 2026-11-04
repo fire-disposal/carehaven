@@ -3,6 +3,11 @@
 
 // 全局通用类 —— 只在 app.scss 中引入一次，避免各页面重复产出。
 
+#app .taro_page {
+  /* Taro H5 给每个路由容器默认白底（运行时样式）；用更高特异度让页面自己决定底色 */
+  background: transparent;
+}
+
 .page {
   min-height: 100vh;
   background: $c-bg;
@@ -189,4 +194,73 @@
   .btn-ghost:active {
     transform: none;
   }
+}
+
+// ---------------- 动效细节 ----------------
+// 页面转场只发生在 H5：`.taro_page` 是 Taro 为每个路由创建的容器，
+// 小程序走原生转场，下面这些规则不会命中。
+//
+// 规则（刻意保持短、幅度小）：
+//   底部 Tab 之间 → 淡入 + 上移 8rpx，160ms
+//   进入详情页（量表/反馈/关于/协议） → 淡入 + 右移 24rpx，220ms，表示“深入一层”
+//   登录 → 纯淡入 140ms
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes page-tab-in {
+  from {
+    opacity: 0;
+    transform: translateY(8rpx);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes page-push-in {
+  from {
+    opacity: 0;
+    transform: translateX(24rpx);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .taro_page {
+    animation: page-tab-in 160ms $ease both;
+  }
+
+  .taro_page[id^='/pages/login'] {
+    animation: page-fade-in 140ms $ease both;
+  }
+
+  .taro_page[id^='/pages/assessment'],
+  .taro_page[id^='/pages/feedback'],
+  .taro_page[id^='/pages/about'],
+  .taro_page[id^='/pages/agreement'] {
+    animation: page-push-in 220ms $ease both;
+  }
+}
+
+// 选中与按压：只改 1–2rpx，不做夸张弹跳
+.ui-stars__item:active,
+.chip:active,
+.preset-chip:active {
+  transform: scale(0.985);
+}
+
+// 防止移动端点击时出现灰色高亮块
+page,
+body {
+  -webkit-tap-highlight-color: transparent;
 }

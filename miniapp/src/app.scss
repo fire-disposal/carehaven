@@ -25,20 +25,12 @@ text {
    两侧用更深的纸色与发丝线形成书页感。
    --------------------------------------------------------------------------- */
 @media screen and (min-width: 700px) {
-  body {
-    background: #e8e1d4;
-  }
-
-  /* 固定阅读栏宽：手机版式在桌面不拉伸成稀疏长条。
-     两侧保留纸色留白，像一页放在桌面上的纸。 */
+  /* 桌面只做阅读栏宽约束，不模拟纸张放在桌面上：同底色、无边框、无投影 */
   #app {
     max-width: 720PX;
     min-height: 100vh;
     margin: 0 auto;
     background: $c-paper;
-    border-left: 1rpx solid rgba(30, 36, 33, 0.08);
-    border-right: 1rpx solid rgba(30, 36, 33, 0.08);
-    box-shadow: 0 0 64px rgba(30, 36, 33, 0.08);
   }
 
   /* 底部导航是 fixed 定位（相对视口），需与内容列同宽同轴 */
@@ -93,6 +85,7 @@ text {
 
 @media (hover: hover) and (pointer: fine) {
   .ui-btn,
+  .fab,
   .w-react,
   .chip,
   .preset-chip,

@@ -794,7 +794,7 @@ export default function ProfilePage() {
                     })}
                   </View>
                 </ScrollView>
-                <Text className="pf-chart-hint">点柱子看数值，虚线是平均值</Text>
+                <Text className="pf-chart-hint">点柱看数值，虚线为均值</Text>
                 <View className="pf-legend">
                   {LEVEL_KEYS.map((k) => (
                     <View className="pf-legend-item" key={k}>

@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { Input, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { Button, Card, PageHead } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { SITE } from '@/content/site'
 import { login, register, wechatLogin } from '@/lib/api'
 import './index.scss'
 
-// 微信一键登录只在小程序端可用（网页端拿不到微信登录凭证），
-// 因此在 H5 构建下这个入口整体不渲染。
+// 微信一键登录只在小程序端可用（网页端拿不到微信登录凭证）。
 const IS_WEAPP = Taro.getEnv() === Taro.ENV_TYPE.WEAPP
 
 export default function LoginPage() {
@@ -52,9 +51,7 @@ export default function LoginPage() {
     setBusy(true)
     try {
       const res = await Taro.login()
-      if (!res.code) {
-        throw new Error('未能获取微信登录凭证')
-      }
+      if (!res.code) throw new Error('未能获取微信登录凭证')
       await wechatLogin(res.code)
       Taro.reLaunch({ url: '/pages/index/index' })
     } catch (e) {
@@ -66,55 +63,26 @@ export default function LoginPage() {
 
   return (
     <View className="login">
-      <View className="brand">
-        <View className="brand-logo" ariaHidden>
-          <Text className="brand-seal">忆</Text>
-        </View>
-        <PageHead
-          variant="brand"
-          eyebrow="照护者支持"
-          title="智护忆站"
-          note={SITE.tagline}
-        />
+      <View className="lg-head">
+        <Text className="lg-name">{SITE.name}</Text>
+        <Text className="lg-line">{SITE.tagline}</Text>
       </View>
 
-      {IS_WEAPP && (
-        <View className="wechat-block">
-          <Button
-            variant="primary"
-            block
-            disabled={busy}
-            ariaLabel="微信一键登录"
-            onClick={wechatAuth}
-          >
+      {IS_WEAPP ? (
+        <View className="lg-wechat">
+          <Button variant="primary" block disabled={busy} ariaLabel="微信一键登录" onClick={wechatAuth}>
             微信一键登录
           </Button>
-          <View className="divider">
-            <View className="divider-line" />
-            <Text className="divider-text">或使用邮箱登录</Text>
-            <View className="divider-line" />
-          </View>
+          <Text className="lg-or">或使用邮箱</Text>
         </View>
-      )}
+      ) : null}
 
-      <Card className="form">
-        <View className="field">
-          <Text className="field-label">邮箱</Text>
-          <Input
-            className="field-input"
-            type="text"
-            value={email}
-            placeholder="用于登录的邮箱"
-            ariaLabel="邮箱"
-            onInput={(e) => setEmail(e.detail.value)}
-          />
-        </View>
-
-        {isRegister && (
-          <View className="field">
-            <Text className="field-label">称呼</Text>
+      <View className="lg-form">
+        {isRegister ? (
+          <View className="lg-field">
+            <Text className="lg-label">称呼</Text>
             <Input
-              className="field-input"
+              className="lg-input"
               type="text"
               value={name}
               placeholder="例如：李阿姨"
@@ -122,12 +90,24 @@ export default function LoginPage() {
               onInput={(e) => setName(e.detail.value)}
             />
           </View>
-        )}
+        ) : null}
 
-        <View className="field">
-          <Text className="field-label">密码</Text>
+        <View className="lg-field">
+          <Text className="lg-label">邮箱</Text>
           <Input
-            className="field-input"
+            className="lg-input"
+            type="text"
+            value={email}
+            placeholder="name@example.com"
+            ariaLabel="邮箱"
+            onInput={(e) => setEmail(e.detail.value)}
+          />
+        </View>
+
+        <View className="lg-field">
+          <Text className="lg-label">密码</Text>
+          <Input
+            className="lg-input"
             password
             value={password}
             placeholder={isRegister ? '至少 8 位' : '请输入密码'}
@@ -137,49 +117,48 @@ export default function LoginPage() {
         </View>
 
         {error ? (
-          <Text className="error" ariaRole="alert">
+          <Text className="lg-error" ariaRole="alert">
             {error}
           </Text>
         ) : null}
 
-        <Button variant="primary" block loading={busy} className="submit" onClick={submit}>
+        <Button variant="primary" block loading={busy} className="lg-submit" onClick={submit}>
           {isRegister ? '注册并登录' : '登录'}
         </Button>
+      </View>
 
-        <View
-          className="switch"
-          onClick={() => {
-            setMode(isRegister ? 'login' : 'register')
-            setError('')
-          }}
-          ariaRole="button"
-          ariaLabel={isRegister ? '已有账号，去登录' : '还没有账号，注册一个'}
-        >
-          <Text>{isRegister ? '已有账号？去登录' : '还没有账号？注册一个'}</Text>
-        </View>
-      </Card>
+      <View
+        className="lg-switch"
+        onClick={() => {
+          setMode(isRegister ? 'login' : 'register')
+          setError('')
+        }}
+        ariaRole="button"
+        ariaLabel={isRegister ? '已有账号，去登录' : '还没有账号，注册一个'}
+      >
+        <Text>{isRegister ? '已有账号，去登录' : '还没有账号，注册一个'}</Text>
+      </View>
 
-      <Text className="tip">仅收集提供服务所需的信息，不会用于广告。</Text>
-      <View className="legal">
-        <Text>登录即表示同意</Text>
+      <Text className="lg-foot">
+        登录即表示同意{' '}
         <Text
-          className="legal-link"
+          className="lg-link"
           onClick={() => Taro.navigateTo({ url: '/pages/agreement/index?type=terms' })}
           ariaRole="button"
           ariaLabel="查看用户协议"
         >
-          《用户协议》
-        </Text>
-        <Text>与</Text>
+          用户协议
+        </Text>{' '}
+        与{' '}
         <Text
-          className="legal-link"
+          className="lg-link"
           onClick={() => Taro.navigateTo({ url: '/pages/agreement/index?type=privacy' })}
           ariaRole="button"
           ariaLabel="查看隐私政策"
         >
-          《隐私政策》
+          隐私政策
         </Text>
-      </View>
+      </Text>
     </View>
   )
 }

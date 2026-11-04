@@ -54,8 +54,10 @@
   height: 3rpx;
   margin-top: 5rpx;
   background: transparent;
+  transition: width $dur $ease, background-color $dur $ease;
 }
 
 .nav-item.active .nav-dot {
+  width: 28rpx;
   background: $c-primary;
 }

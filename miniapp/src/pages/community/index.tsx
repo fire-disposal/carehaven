@@ -92,7 +92,7 @@ export default function CommunityPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [formKind, setFormKind] = useState<WhisperKind>('分享')
   const [formTerms, setFormTerms] = useState<WhisperTerms>({})
-  const [formAnon, setFormAnon] = useState(false)
+  const [formAnon, setFormAnon] = useState(true)
   const [formError, setFormError] = useState('')
   const [posting, setPosting] = useState(false)
 
@@ -174,7 +174,7 @@ export default function CommunityPage() {
   function openSheet() {
     setFormKind(filter === '全部' ? '分享' : filter)
     setFormTerms({})
-    setFormAnon(false)
+    setFormAnon(true)
     setFormError('')
     setSheetOpen(true)
   }
@@ -237,20 +237,7 @@ export default function CommunityPage() {
           note="从词库选几段，系统拼成一句话。回应是固定选项，不用打字。"
         />
 
-        <View className="ch-rule">
-          <View className="ch-rule-item">
-            <Text className="ch-rule-k">不写</Text>
-            <Text className="ch-rule-v">没有输入框</Text>
-          </View>
-          <View className="ch-rule-item">
-            <Text className="ch-rule-k">可匿</Text>
-            <Text className="ch-rule-v">默认显示称呼</Text>
-          </View>
-          <View className="ch-rule-item">
-            <Text className="ch-rule-k">限额</Text>
-            <Text className="ch-rule-v">每人每天 {lexicon?.dailyPostLimit ?? 5} 句</Text>
-          </View>
-        </View>
+        <Text className="ch-rule-line">无输入框 · 默认匿名 · 每人每天 {lexicon?.dailyPostLimit ?? 5} 句</Text>
 
         <View className="ch-filter">
           {kinds.map((kind) => (
@@ -339,9 +326,6 @@ export default function CommunityPage() {
             })
           : null}
 
-        {!loading && !loadError && items.length > 0 ? (
-          <Text className="ch-end">已显示全部内容</Text>
-        ) : null}
       </View>
 
       {showEmpty ? null : (
@@ -450,11 +434,9 @@ export default function CommunityPage() {
               <View className="switch-line switch-line-lg">
                 <View className="switch-text">
                   <Text className="switch-label">匿名发出</Text>
-                  <Text className="switch-hint">
-                    {formAnon
-                      ? '其他人只会看到「匿名」'
-                      : `将以「${me?.name || '照护者'}」的名字出现`}
-                  </Text>
+                  {formAnon ? null : (
+                    <Text className="switch-hint">将以「{me?.name || '照护者'}」的名字出现</Text>
+                  )}
                 </View>
                 <Switch
                   checked={formAnon}

@@ -393,10 +393,6 @@ export default function ManagePage() {
               </View>
             </View>
           </View>
-
-          <Text className="mg-threshold-note">
-            参考线：{t_green} / {t_red}
-          </Text>
         </Card>
 
         {/* ---------- 2. 推荐方案 ---------- */}

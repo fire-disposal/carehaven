@@ -252,7 +252,7 @@ export default function HomePage() {
                 <Text className="stress-value">{score ? score.hps.toFixed(0) : '--'}</Text>
                 <View className="stress-unit-wrap">
                   <Text className="stress-unit">综合压力指数</Text>
-                  <Text className="stress-scale">HPS · 0–100</Text>
+                  <Text className="stress-scale">0–100</Text>
                 </View>
               </View>
               <Text className="stress-advice">
@@ -468,10 +468,7 @@ export default function HomePage() {
               <Text className="today-check-streak">连续 {streak} 天</Text>
             </View>
 
-            <SectionHeader
-              title="支持工具"
-              action={<Text className="muted">按当前状态</Text>}
-            />
+            <SectionHeader title="支持工具" />
             <View className="tool-grid">
               <View
                 className="tool-tile tool-wide"

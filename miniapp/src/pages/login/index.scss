@@ -1,149 +1,124 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
+// 登录页：纸上的一个抬头 + 两个下划线输入框。
+// 不放印章、不放卡片、不放分隔说明，减少首屏噪音。
+
 .login {
   min-height: 100vh;
-  background:
-    radial-gradient(120% 72% at 50% 0%, $c-surface 0%, $c-paper 58%),
-    $c-paper;
-  padding: 112rpx $sp-4 $sp-5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 $sp-6 $sp-7;
+  background: $c-paper;
   box-sizing: border-box;
 }
 
-.brand {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: $sp-5;
-  padding: 0 $sp-1;
+.lg-head {
+  margin-bottom: $sp-7;
 }
 
-.brand-logo {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: $radius;
-  background: $c-primary;
-  border: 1rpx solid $c-primary-dark;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: $sp-1;
+.lg-name {
+  display: block;
+  font-family: $font-sans;
+  font-size: 56rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  line-height: 1.2;
+  color: $c-ink;
 }
 
-.brand-seal {
-  font-family: $font-serif;
-  font-size: 52rpx;
-  line-height: 1;
-  color: $c-surface;
+.lg-line {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  color: $c-muted;
+  letter-spacing: 1rpx;
 }
 
-.form {
-  margin-bottom: $sp-3;
-}
-
-/* ---------- 微信一键登录（仅小程序端渲染）---------- */
-
-.wechat-block {
+.lg-wechat {
   margin-bottom: $sp-4;
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  margin-top: $sp-4;
-}
-
-.divider-line {
-  flex: 1;
-  height: 1rpx;
-  background: $c-line;
-}
-
-.divider-text {
-  margin: 0 $sp-2;
-  font-size: $fs-label;
-  letter-spacing: 1rpx;
-  color: $c-muted;
-}
-
-.field {
-  margin-bottom: $sp-3;
-}
-
-.field-label {
+.lg-or {
   display: block;
-  font-size: $fs-small;
-  color: $c-ink-2;
-  margin-bottom: $sp-1;
-}
-
-.field-input {
-  box-sizing: border-box;
-  display: block;
-  width: 100%;
-  height: 96rpx;
-  padding: 0 $sp-3;
-  background: $c-paper;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  font-size: $fs-body;
-  color: $c-text;
-}
-
-.field-input .weui-input {
-  height: 92rpx;
-  font-size: $fs-body;
-  color: $c-text;
-}
-
-.error {
-  display: block;
-  color: $c-red;
-  font-size: $fs-small;
-  margin-bottom: $sp-2;
-}
-
-.submit {
-  margin-top: $sp-4;
-}
-
-.switch {
-  @include tap;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: $sp-3;
-  color: $c-primary;
-  font-size: $fs-small;
-}
-
-.tip {
-  display: block;
-  margin-top: $sp-4;
-  padding: 0 $sp-3;
-  font-size: $fs-label;
-  line-height: 1.7;
+  margin-top: $sp-2;
+  font-size: $fs-tiny;
   color: $c-muted;
   text-align: center;
 }
 
-.legal {
+.lg-form {
+  display: block;
+  max-width: 520rpx;
+}
+
+.lg-field {
+  margin-bottom: $sp-4;
+}
+
+.lg-label {
+  display: block;
+  @include label;
+  margin-bottom: $sp-1;
+}
+
+.lg-input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0;
+  border: 0;
+  border-bottom: 1rpx solid $c-line-strong;
+  background: transparent;
+  font-size: $fs-body;
+  color: $c-ink;
+  box-sizing: border-box;
+}
+
+.lg-error {
+  display: block;
+  margin-bottom: $sp-2;
+  font-size: $fs-small;
+  color: $c-red;
+}
+
+.lg-submit {
+  margin-top: $sp-3;
+  height: 96rpx;
+}
+
+.lg-switch {
+  @include tap;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: $sp-0;
-  margin-top: $sp-1;
-  padding: 0 $sp-3;
-  font-size: $fs-label;
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  color: $c-primary;
+}
+
+.lg-foot {
+  display: block;
+  margin-top: $sp-6;
+  font-size: $fs-tiny;
+  line-height: 1.9;
   color: $c-muted;
 }
 
-.legal-link {
-  @include tap;
-  display: inline-flex;
-  align-items: center;
-  padding: 0 $sp-1;
-  color: $c-primary-dark;
+.lg-link {
+  color: $c-ink-2;
   text-decoration: underline;
+  text-underline-offset: 4rpx;
+}
+
+@media screen and (min-width: 700px) {
+  .login {
+    max-width: 480PX;
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .lg-name {
+    font-size: 44PX;
+  }
 }
