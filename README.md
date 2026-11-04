@@ -48,6 +48,7 @@
 - 语音朗读：豆包 Seed TTS 2.0（HTTP 单向流式）由 `/api/zz/tts` 代理，密钥只在服务端；全局朗读层统一播放入口
 - 结构化互助：从平台词库挑「场景 / 此刻 / 做法 / 想说」，由服务端拼成一句话；无自由输入，固定回应（我也是 / 抱抱 / 有用 / 加油）替代评论，举报满 3 人自动隐藏；处置走 `POST /api/zz/moderation/whispers/{id}` 并留痕。见 [docs/ugc-structured.md](docs/ugc-structured.md)
 - 治理与用量：问答 / TTS 按用户日配额（超限 429，TTS 命中缓存不计数）；「我的 - 数据」可导出、注销、开关研究参与
+- 运营台：`/admin/`（随镜像发布，超管登录）提供概览、研究分组、举报处置、配置与数据页；原始数据仍可用 PocketBase 后台
 - 科研工具：`research/replay.mjs` 回放历史评分（算术一致 + 输入可复现）、`research/dataset.mjs` 产出 HMAC 去标识 CSV 与 manifest。见 [docs/research-tools.md](docs/research-tools.md)
 - 我的：30 天趋势、干预记录、评分记录、生理数据补录
 - 反馈与协议：意见反馈（分类 + 联系方式）、关于、用户协议与隐私政策

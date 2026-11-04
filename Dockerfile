@@ -41,6 +41,8 @@ WORKDIR /pb
 COPY pb_migrations ./pb_migrations
 COPY pb_hooks ./pb_hooks
 COPY --from=web /web/dist ./pb_public
+# 运营台：纯静态，随镜像发布，同源挂在 /admin/
+COPY admin ./pb_public/admin
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
