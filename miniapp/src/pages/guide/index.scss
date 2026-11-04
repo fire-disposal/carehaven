@@ -1,0 +1,160 @@
+@use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
+
+.gd-page {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: $c-paper;
+  color: $c-ink;
+  overflow: hidden;
+}
+
+.gd-body {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  padding: $sp-5 $sp-4 calc(#{$sp-5} + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.gd-start,
+.gd-done {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: $sp-2;
+}
+
+
+
+.gd-title {
+  font-family: $font-serif;
+  font-size: 56rpx;
+  line-height: 1.2;
+  color: $c-ink;
+}
+
+.gd-minutes {
+  font-family: $font-num;
+  font-size: $fs-h2;
+  color: $c-primary-dark;
+}
+
+.gd-sub {
+  font-size: $fs-body;
+  line-height: $lh-body;
+  color: $c-ink-2;
+}
+
+
+
+
+
+
+
+
+
+
+
+.gd-live {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-3;
+}
+
+.gd-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-6 0 $sp-4;
+  text-align: center;
+}
+
+.gd-prompt-label {
+  font-family: $font-serif;
+  font-size: $fs-h1;
+  color: $c-primary-dark;
+}
+
+.gd-prompt-detail {
+  font-size: $fs-body;
+  line-height: $lh-body;
+  color: $c-ink-2;
+  max-width: 560rpx;
+}
+
+.gd-prompt-remain {
+  font-family: $font-num;
+  font-size: $fs-h3;
+  color: $c-muted;
+}
+
+
+
+.gd-clock {
+  font-family: $font-num;
+  font-size: 64rpx;
+  color: $c-primary-dark;
+}
+
+.gd-controls {
+  display: flex;
+  gap: $sp-2;
+  margin-top: $sp-4;
+}
+
+.gd-done-title {
+  font-family: $font-serif;
+  font-size: $fs-h1;
+  text-align: center;
+}
+
+
+
+.gd-rate {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+}
+
+.gd-rate-title {
+  font-size: $fs-body;
+  color: $c-ink-2;
+}
+
+.gd-duration {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-3;
+}
+
+.gd-rate-label {
+  font-size: $fs-small;
+  color: $c-muted;
+}
+
+.gd-duration-input {
+  width: 160rpx;
+  height: 72rpx;
+  padding: 0 $sp-2;
+  border: 1rpx solid $c-line;
+  border-radius: $radius;
+  background: $c-paper;
+  font-family: $font-num;
+  font-size: $fs-h3;
+  text-align: center;
+}
+
+.gd-error {
+  color: $c-red;
+  font-size: $fs-small;
+}

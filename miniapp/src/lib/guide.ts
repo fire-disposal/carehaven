@@ -1,0 +1,200 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+// 引导课：纯数据脚本 + 时间线状态机。
+// 动画组件只消费「当前阶段 + 该阶段时长」，因此新增课程不需要改动画代码。
+
+export type PhaseKind = 'inhale' | 'hold' | 'exhale' | 'rest' | 'prompt'
+export type SceneKind = 'breath' | 'scan' | 'ground'
+
+export interface GuidePhase {
+  kind: PhaseKind
+  label: string
+  detail?: string
+  seconds: number
+}
+
+export interface GuideScript {
+  id: string
+  title: string
+  subtitle: string
+  scene: SceneKind
+  ambient: 'none' | 'rain'
+  phases: GuidePhase[]
+}
+
+const cycle = (phases: GuidePhase[], times: number): GuidePhase[] =>
+  Array.from({ length: times }).flatMap(() => phases)
+
+/** 内置课程。时长按阶段累加，不在别处重复写死 */
+export const GUIDE_SCRIPTS: Record<string, GuideScript> = {
+  'breath-box': {
+    id: 'breath-box',
+    title: '四拍呼吸',
+    subtitle: '吸、停、呼、停，各四拍。跟着圆形走即可。',
+    scene: 'breath',
+    ambient: 'none',
+    phases: cycle(
+      [
+        { kind: 'inhale', label: '吸气', detail: '数四拍，让腹部慢慢鼓起', seconds: 4 },
+        { kind: 'hold', label: '停', detail: '轻轻屏住', seconds: 4 },
+        { kind: 'exhale', label: '呼气', detail: '数四拍，慢慢放掉', seconds: 4 },
+        { kind: 'rest', label: '停', detail: '什么都不用做', seconds: 4 },
+      ],
+      6
+    ),
+  },
+  'breath-478': {
+    id: 'breath-478',
+    title: '4-7-8 放松呼吸',
+    subtitle: '更适合睡前或情绪紧绷时。若屏息不适，直接进入呼气。',
+    scene: 'breath',
+    ambient: 'rain',
+    phases: cycle(
+      [
+        { kind: 'inhale', label: '吸气', detail: '四拍', seconds: 4 },
+        { kind: 'hold', label: '屏息', detail: '七拍，按舒适度调整', seconds: 7 },
+        { kind: 'exhale', label: '呼气', detail: '八拍，像吹灭一支蜡烛', seconds: 8 },
+      ],
+      6
+    ),
+  },
+  'body-scan': {
+    id: 'body-scan',
+    title: '身体扫描',
+    subtitle: '从肩膀开始，一路放松到脚。走神了就回到当前这句。',
+    scene: 'scan',
+    ambient: 'none',
+    phases: [
+      { kind: 'prompt', label: '坐稳', detail: '双脚踩地，肩膀松下来。先做三次自然呼吸。', seconds: 40 },
+      { kind: 'prompt', label: '肩膀与下巴', detail: '呼气时让肩膀下沉，牙齿分开，舌头放松。', seconds: 40 },
+      { kind: 'prompt', label: '双手', detail: '感觉手掌的温度，手指不用力。', seconds: 40 },
+      { kind: 'prompt', label: '胸口与腹部', detail: '注意呼吸起伏，不刻意加深。', seconds: 40 },
+      { kind: 'prompt', label: '双腿与脚', detail: '让重量落到地面，脚趾松开。', seconds: 40 },
+      { kind: 'prompt', label: '回到此刻', detail: '慢慢睁眼，动一动手指，再起身。', seconds: 40 },
+    ],
+  },
+  grounding: {
+    id: 'grounding',
+    title: '五感落地',
+    subtitle: '用五个感官把注意力带回房间，适合慌的时候。',
+    scene: 'ground',
+    ambient: 'none',
+    phases: [
+      { kind: 'prompt', label: '看见 5 样东西', detail: '慢慢环顾，心里说出它们的名字。', seconds: 30 },
+      { kind: 'prompt', label: '摸到 4 样东西', detail: '桌面、衣角、椅背，感受温度和质地。', seconds: 30 },
+      { kind: 'prompt', label: '听见 3 种声音', detail: '近的、远的，不用评价。', seconds: 30 },
+      { kind: 'prompt', label: '闻到 2 种气味', detail: '闻不到也没关系，注意空气接触鼻腔的感觉。', seconds: 30 },
+      { kind: 'prompt', label: '尝到 1 种味道', detail: '喝一口水，或者只是注意口腔里的感觉。', seconds: 30 },
+    ],
+  },
+}
+
+export function scriptById(id: string | undefined): GuideScript {
+  return GUIDE_SCRIPTS[id || ''] ?? GUIDE_SCRIPTS['breath-box']
+}
+
+export function scriptForIntervention(item: { title: string; category: string }): GuideScript {
+  const title = item.title || ''
+  if (title.includes('4-7-8')) return GUIDE_SCRIPTS['breath-478']
+  if (title.includes('扫描')) return GUIDE_SCRIPTS['body-scan']
+  if (title.includes('五感') || title.includes('落地')) return GUIDE_SCRIPTS.grounding
+  if (item.category === '呼吸放松') return GUIDE_SCRIPTS['breath-box']
+  if (item.category === '冥想练习') return GUIDE_SCRIPTS['body-scan']
+  if (item.category === '音乐疗法') return GUIDE_SCRIPTS['breath-478']
+  return GUIDE_SCRIPTS.grounding
+}
+
+export function scriptSeconds(script: GuideScript): number {
+  return script.phases.reduce((sum, phase) => sum + phase.seconds, 0)
+}
+
+interface SessionHandlers {
+  onPhase?: (phase: GuidePhase, index: number) => void
+  onEnd?: () => void
+}
+
+/**
+ * 时间线：日期驱动而不是简单自减，切后台再回来也不会走偏。
+ * 只暴露「当前阶段 / 剩余秒数 / 暂停」，动画与音频由调用方订阅。
+ */
+export function useGuideSession(script: GuideScript, handlers: SessionHandlers = {}) {
+  const [index, setIndex] = useState(0)
+  const [remaining, setRemaining] = useState(script.phases[0]?.seconds ?? 0)
+  const [paused, setPaused] = useState(false)
+  const [done, setDone] = useState(false)
+  const startedAt = useRef(Date.now())
+  const pauseAt = useRef(0)
+  const elapsedBefore = useRef(0)
+  const firedIndex = useRef(0)
+  const handlersRef = useRef(handlers)
+  handlersRef.current = handlers
+
+  const phase = script.phases[index]
+
+  useEffect(() => {
+    startedAt.current = Date.now()
+    firedIndex.current = 0
+    handlersRef.current.onPhase?.(script.phases[0], 0)
+    const timer = setInterval(() => {
+      if (pauseAt.current) return
+      const elapsed = elapsedBefore.current + (Date.now() - startedAt.current) / 1000
+      let acc = 0
+      let nextIndex = script.phases.length - 1
+      for (let i = 0; i < script.phases.length; i++) {
+        acc += script.phases[i].seconds
+        if (elapsed < acc) {
+          nextIndex = i
+          break
+        }
+      }
+      const offset = acc - script.phases[nextIndex].seconds
+      const left = Math.max(0, Math.ceil(script.phases[nextIndex].seconds - (elapsed - offset)))
+      setIndex(nextIndex)
+      setRemaining(left)
+      if (nextIndex !== firedIndex.current) {
+        firedIndex.current = nextIndex
+        handlersRef.current.onPhase?.(script.phases[nextIndex], nextIndex)
+      }
+      if (elapsed >= scriptSeconds(script)) {
+        setDone(true)
+        clearInterval(timer)
+        handlersRef.current.onEnd?.()
+      }
+    }, 200)
+    return () => clearInterval(timer)
+    // script 变化才重开一局
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [script])
+
+  const pause = useCallback(() => {
+    if (pauseAt.current) return
+    pauseAt.current = Date.now()
+    elapsedBefore.current += (Date.now() - startedAt.current) / 1000
+    setPaused(true)
+  }, [])
+
+  const resume = useCallback(() => {
+    if (!pauseAt.current) return
+    pauseAt.current = 0
+    startedAt.current = Date.now()
+    setPaused(false)
+  }, [])
+
+  const elapsedSeconds = Math.min(
+    scriptSeconds(script),
+    script.phases.slice(0, index).reduce((sum, p) => sum + p.seconds, 0) + (phase ? phase.seconds - remaining : 0)
+  )
+
+  return {
+    phase,
+    index,
+    remaining,
+    paused,
+    done,
+    elapsedSeconds,
+    pause,
+    resume,
+    progress: Math.min(1, (index + (phase ? 1 - remaining / phase.seconds : 0)) / script.phases.length),
+    totalSeconds: scriptSeconds(script),
+  }
+}

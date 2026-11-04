@@ -1,0 +1,40 @@
+@use '@/styles/tokens.scss' as *;
+
+.phase-track {
+  display: flex;
+  gap: $sp-1;
+  width: 100%;
+  max-width: 560rpx;
+  margin: 0 auto;
+}
+
+.phase-seg {
+  flex: 1;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+  background: $c-surface;
+
+  &.done {
+    background: $c-primary-light;
+    border-color: $c-green-line;
+  }
+
+  &.on {
+    background: $c-primary;
+    border-color: $c-primary-dark;
+  }
+
+  &.on .phase-seg-text {
+    color: $c-surface;
+    font-weight: 600;
+  }
+}
+
+.phase-seg-text {
+  font-size: $fs-small;
+  color: $c-ink-2;
+}

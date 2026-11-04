@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react'
-import { Input, Text, View } from '@tarojs/components'
+import { Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import BottomNav from '@/components/BottomNav'
 import Icon from '@/components/Icon'
-import { Button, Card, PageHead, Pill, SectionHeader, StarRating, StateBlock } from '@/components/ui'
+import { Button, Card, PageHead, Pill, SectionHeader, StateBlock } from '@/components/ui'
 import type { IconName } from '@/lib/icons'
 import { LEVEL_TITLE } from '@/content/glossary'
 import { levelDesc, levelTone } from '@/lib/level'
+import { scriptForIntervention } from '@/lib/guide'
 import { THEME } from '@/lib/theme'
 import {
   api,
@@ -20,7 +21,6 @@ import {
 import './index.scss'
 
 const LOG_LIMIT = 10
-const SUCCESS_MSG = '已记录这次练习'
 
 /** 工具库的四个分类（与后端 interventions.category 取值一致） */
 const CATEGORIES: Intervention['category'][] = ['呼吸放松', '冥想练习', '音乐疗法', '视频指导']
@@ -86,11 +86,6 @@ export default function ManagePage() {
   const [error, setError] = useState('')
 
   // 展开 / 完成流程：key = 分区 + 方案 id，避免同一方案在推荐区与工具区同时展开
-  const [expandedKey, setExpandedKey] = useState('')
-  const [completingKey, setCompletingKey] = useState('')
-  const [stars, setStars] = useState(0)
-  const [duration, setDuration] = useState('')
-  const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
     if (!isLoggedIn()) {
@@ -114,8 +109,6 @@ export default function ManagePage() {
       setLogs(recent)
       setThresholds(readThresholds(rawThresholds))
       setRecommended(recommend)
-      setExpandedKey('')
-      setCompletingKey('')
     } catch (e) {
       setError(e instanceof Error ? e.message : '数据加载失败，请稍后重试')
     } finally {
@@ -141,65 +134,6 @@ export default function ManagePage() {
     void load()
   })
 
-  function toggleCard(key: string) {
-    setError('')
-    if (expandedKey === key) {
-      setExpandedKey('')
-      setCompletingKey('')
-      return
-    }
-    setExpandedKey(key)
-    setCompletingKey('')
-    setStars(0)
-  }
-
-  function startPractice(key: string, item: Intervention) {
-    setError('')
-    setCompletingKey(key)
-    setStars(0)
-    setDuration(String(validMinutes(item.duration_min) ?? 5))
-  }
-
-  async function complete(item: Intervention) {
-    if (saving) return
-    const minutes = Number(duration)
-    if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 240) {
-      setError('请填写 1–240 分钟之间的实际时长')
-      return
-    }
-    const chosenStars = clampStars(stars)
-    if (chosenStars < 1) {
-      setError('请先选择这次练习的效果（1–5 星）')
-      return
-    }
-    const actual = Math.round(minutes)
-
-    setSaving(true)
-    setError('')
-    try {
-      await api.logIntervention({ intervention: item, duration_actual: actual, feeling: chosenStars })
-    } catch (e) {
-      setError(e instanceof Error ? e.message : '记录失败，请稍后重试')
-      setSaving(false)
-      return
-    }
-
-    // 完成记录已落库：无论评分是否成功，都先收起表单并刷新列表
-    setExpandedKey('')
-    setCompletingKey('')
-    setStars(0)
-    setDuration('')
-    Taro.showToast({ title: SUCCESS_MSG, icon: 'none' })
-    await refresh()
-
-    try {
-      await api.createRating({ target: 'intervention', target_id: item.id, stars: chosenStars })
-    } catch {
-      setError('练习已记录，但效果评分未保存，可稍后再评一次。')
-    }
-    setSaving(false)
-  }
-
   const level: ScoreLevel | null = score?.level ?? null
   const hps = score && Number.isFinite(score.hps) ? Math.min(100, Math.max(0, Math.round(score.hps))) : null
   const { t_green, t_red } = thresholds
@@ -217,14 +151,18 @@ export default function ManagePage() {
     },
   ].filter((group) => group.items.length > 0)
 
+  function startGuide(item: Intervention) {
+    const script = scriptForIntervention(item)
+    void Taro.navigateTo({
+      url: `/pages/guide/index?sid=${encodeURIComponent(item.id)}&title=${encodeURIComponent(item.title)}&cat=${encodeURIComponent(item.category)}&script=${script.id}`,
+    })
+  }
+
   function renderIntervention(item: Intervention, section: string, compact: boolean) {
-    const key = `${section}-${item.id}`
-    const expanded = expandedKey === key
-    const completing = completingKey === key
     const planMinutes = validMinutes(item.duration_min)
     return (
-      <Card flush className="mg-it" key={key}>
-        <View className="mg-it-head" onClick={() => toggleCard(key)}>
+      <Card flush className="mg-it" key={`${section}-${item.id}`}>
+        <View className="mg-it-head">
           <View className="mg-it-icon">
             <Icon name={CATEGORY_ICON[item.category] || 'spa'} size={44} color={THEME.primaryDark} />
           </View>
@@ -234,77 +172,14 @@ export default function ManagePage() {
               <Pill tone="primary">{item.category || '其他'}</Pill>
               <Text className="mg-duration">{planMinutes === null ? '时长未标注' : `约 ${planMinutes} 分钟`}</Text>
             </View>
-            {compact || expanded || !item.description ? null : (
+            {compact || !item.description ? null : (
               <Text className="mg-it-summary">{item.description}</Text>
             )}
           </View>
-          <Text className="mg-toggle">{expanded ? '收起' : '详情'}</Text>
         </View>
-
-        {expanded ? (
-          <View className="mg-it-body">
-            <Text className="mg-desc">{item.description || '暂无详细说明。'}</Text>
-
-            {completing ? (
-              <View className="mg-form">
-                <Text className="mg-hint">练习结束后再记录：选择这次的效果，并填写实际用时。</Text>
-
-                <View className="mg-field">
-                  <Text className="mg-label">实际时长（分钟）</Text>
-                  <Input
-                    className="mg-input"
-                    type="digit"
-                    value={duration}
-                    ariaLabel="实际时长（分钟）"
-                    onInput={(e) => setDuration(e.detail.value)}
-                  />
-                </View>
-
-                <Text className="mg-label">这次练习的效果</Text>
-                <StarRating
-                  value={stars}
-                  onChange={setStars}
-                  labels={STAR_LABELS}
-                  ariaLabel="这次练习的效果"
-                  className="mg-stars"
-                />
-
-                <View className="mg-form-actions">
-                  <Button
-                    variant="ghost"
-                    className="mg-action"
-                    ariaLabel="稍后再记"
-                    onClick={() => {
-                      setCompletingKey('')
-                      setStars(0)
-                    }}
-                  >
-                    稍后再记
-                  </Button>
-                  <Button
-                    variant="primary"
-                    className="mg-action"
-                    disabled={saving}
-                    ariaLabel="完成练习并记录"
-                    onClick={() => void complete(item)}
-                  >
-                    {saving ? '保存中…' : '完成'}
-                  </Button>
-                </View>
-              </View>
-            ) : (
-              <Button
-                variant="primary"
-                block
-                className="mg-start"
-                ariaLabel={`开始练习：${item.title || '未命名方案'}`}
-                onClick={() => startPractice(key, item)}
-              >
-                开始练习
-              </Button>
-            )}
-          </View>
-        ) : null}
+        <Button variant="primary" block className="mg-start" onClick={() => startGuide(item)} ariaLabel={`开始：${item.title || '未命名方案'}`}>
+          {`开始 · ${scriptForIntervention(item).title}`}
+        </Button>
       </Card>
     )
   }

@@ -132,6 +132,7 @@ Actions 手动触发   → 自动部署：备份 → 切换 → 健康检查 →
 - [docs/platform.md](docs/platform.md) — 平台化：基础设施与科研工具（可复现 / 可审计 / 可导出），含运行时实证与建设清单
 - [docs/hps-method.md](docs/hps-method.md) — HPS 公式、测量学缺口、权重/阈值研究计划
 - [docs/physio-ingestion.md](docs/physio-ingestion.md) — 生理数据接入契约（手动/蓝牙/原生 App）与设备上报约定
+- [docs/guide-engine.md](docs/guide-engine.md) — 引导练习课程/动画/音频抽象与完成回路
 - [docs/backend-roadmap.md](docs/backend-roadmap.md) — 后端 P0/P1、数据治理与接口轮廓
 - [docs/ai-agent.md](docs/ai-agent.md) — DeepSeek 智能体接入评估与分阶段路线
 - [docs/ugc-structured.md](docs/ugc-structured.md) — 结构化互助：词库、渲染规则、数据模型与验收

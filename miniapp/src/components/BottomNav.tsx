@@ -9,7 +9,7 @@ const TABS: { key: string; label: string; icon: IconName; path: string }[] = [
   { key: 'manage', label: '减压', icon: 'spa', path: '/pages/manage/index' },
   { key: 'qa', label: '问答', icon: 'comment-dots', path: '/pages/qa/index' },
   { key: 'community', label: '互助', icon: 'users', path: '/pages/community/index' },
-  { key: 'profile', label: '我的', icon: 'chart-line', path: '/pages/profile/index' },
+  { key: 'profile', label: '我的', icon: 'user', path: '/pages/profile/index' },
 ]
 
 export default function BottomNav({ active }: { active: string }) {

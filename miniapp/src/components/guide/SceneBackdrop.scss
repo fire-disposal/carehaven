@@ -1,0 +1,155 @@
+@use '@/styles/tokens.scss' as *;
+
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 呼吸：同心薄环缓慢呼吸 */
+.scene-ring {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  border: 1rpx solid rgba(31, 90, 80, 0.16);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: scene-breathe 12s $ease infinite;
+}
+
+.scene-ring.r1 {
+  width: 620rpx;
+  height: 620rpx;
+}
+
+.scene-ring.r2 {
+  width: 760rpx;
+  height: 760rpx;
+  animation-delay: 2s;
+}
+
+.scene-ring.r3 {
+  width: 900rpx;
+  height: 900rpx;
+  animation-delay: 4s;
+}
+
+@keyframes scene-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+}
+
+/* 身体扫描：柔和光带 + 缓慢上浮的点 */
+.scene--scan {
+  background: linear-gradient(180deg, rgba(228, 237, 231, 0.65), transparent 55%);
+}
+
+.scan-wash {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  top: 10%;
+  height: 46%;
+  background: radial-gradient(ellipse at center, rgba(31, 90, 80, 0.14), transparent 65%);
+  filter: blur(12rpx);
+}
+
+.scan-dot {
+  position: absolute;
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: rgba(31, 90, 80, 0.5);
+  animation: scene-float 14s linear infinite;
+}
+
+.scan-dot.d1 {
+  left: 18%;
+  top: 70%;
+  animation-delay: 0s;
+}
+
+.scan-dot.d2 {
+  left: 72%;
+  top: 62%;
+  animation-delay: 3s;
+}
+
+.scan-dot.d3 {
+  left: 42%;
+  top: 78%;
+  animation-delay: 6s;
+}
+
+.scan-dot.d4 {
+  left: 86%;
+  top: 48%;
+  animation-delay: 9s;
+}
+
+@keyframes scene-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-320rpx);
+  }
+}
+
+/* 五感落地：近似地平线的静态层次 */
+.scene--ground {
+  background: linear-gradient(180deg, rgba(244, 239, 229, 0) 40%, rgba(31, 90, 80, 0.06));
+}
+
+.ground-line {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 1rpx;
+  background: rgba(31, 90, 80, 0.18);
+}
+
+.ground-line.l1 {
+  bottom: 24%;
+}
+
+.ground-line.l2 {
+  bottom: 18%;
+  opacity: 0.7;
+}
+
+.ground-line.l3 {
+  bottom: 12%;
+  opacity: 0.45;
+}
+
+.ground-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 20%;
+  width: 420rpx;
+  height: 120rpx;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(156, 72, 51, 0.14), transparent 70%);
+  filter: blur(8rpx);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-ring,
+  .scan-dot {
+    animation: none;
+  }
+}

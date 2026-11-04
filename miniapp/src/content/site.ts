@@ -32,4 +32,5 @@ export const PAGE_TITLES = {
   agreement: '协议与隐私',
   login: '登录',
   checkin: '记录此刻',
+  guide: '引导练习',
 } as const
