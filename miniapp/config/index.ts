@@ -2,6 +2,7 @@ import path from 'node:path'
 import { defineConfig, type UserConfigExport } from '@tarojs/cli'
 import devConfig from './dev'
 import prodConfig from './prod'
+import keepAssetsExternal from './vite-assets'
 
 // 智护忆站小程序端构建配置（Taro 4 + Vite）
 // 同一套代码：build:h5 出网页版（用于验收与截图），build:weapp 出微信小程序版。
@@ -28,7 +29,8 @@ export default defineConfig<'vite'>(async (merge) => {
       options: {},
     },
     framework: 'react',
-    compiler: { type: 'vite' },
+    postcss: { url: { enable: false, config: {} } },
+    compiler: { type: 'vite', vitePlugins: [keepAssetsExternal()] },
     mini: {
       postcss: {
         pxtransform: {
@@ -48,6 +50,8 @@ export default defineConfig<'vite'>(async (merge) => {
         mode: 'hash',
       },
       postcss: {
+        // 媒体（语音）不转 base64，交给静态资源与 CDN 缓存
+        url: { enable: false, config: {} },
         // Taro 注入的缩放脚本形如：fontSize = clamp(2×baseFontSize × min(视口宽, 视口高) / 750, min, max)
         // 默认 baseFontSize=20（即脚本里的 40/750），宽屏下 min 取到视口高度（如 800）
         // → 字号顶到上限 40px，比手机竖屏（20.8px）大近 2 倍，这就是「宽屏/横屏变形」的成因。

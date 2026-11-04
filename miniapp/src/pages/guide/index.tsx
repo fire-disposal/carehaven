@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Input, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Button, Card, StarRating, TopBar } from '@/components/ui'
@@ -8,6 +8,7 @@ import PhaseTrack from '@/components/guide/PhaseTrack'
 import { backOrSwitchTab } from '@/lib/nav'
 import { getAudioBus } from '@/lib/audio'
 import { scriptById, useGuideSession } from '@/lib/guide'
+import { NarrationPlayer } from '@/lib/narration'
 import type { PhaseKind } from '@/lib/guide'
 import { api, type Intervention } from '@/lib/api'
 import './index.scss'
@@ -27,24 +28,38 @@ export default function GuidePage() {
 
   const [started, setStarted] = useState(false)
   const [ended, setEnded] = useState(false)
-  const [muted, setMuted] = useState(false)
+  const [voiceOn, setVoiceOn] = useState(() => Taro.getStorageSync('zz_guide_voice') !== '0')
   const [stars, setStars] = useState(0)
   const [minutes, setMinutes] = useState(String(Math.max(1, Math.round(script.phases.reduce((s, p) => s + p.seconds, 0) / 60))))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const startedAt = useRef(0)
   const audio = useRef(getAudioBus())
+  const narrator = useRef(new NarrationPlayer())
+  const voiceRef = useRef(voiceOn)
+  voiceRef.current = voiceOn
 
-  const session = useGuideSession(script, {
-    onPhase: () => {
-      audio.current.cue('phase')
+  const session = useGuideSession(
+    script,
+    {
+      onPhase: (phase, index) => {
+        audio.current.cue('phase')
+        if (voiceRef.current && (index > 0 || !script.introVoice)) narrator.current.play(phase.voice)
+      },
+      onEnd: () => {
+        audio.current.cue('end')
+        audio.current.setAmbient('none')
+        narrator.current.stop()
+        setEnded(true)
+      },
     },
-    onEnd: () => {
-      audio.current.cue('end')
-      audio.current.setAmbient('none')
-      setEnded(true)
-    },
-  })
+    started && !ended
+  )
+
+  useEffect(() => () => {
+    narrator.current.destroy()
+    audio.current.setAmbient('none')
+  }, [])
 
   const holdScale = session.phase.kind === 'inhale' ? 1.08 : 0.8
 
@@ -54,17 +69,31 @@ export default function GuidePage() {
     void audio.current.unlock()
     audio.current.cue('start')
     audio.current.setAmbient(script.ambient)
+    if (voiceRef.current) {
+      if (script.introVoice) narrator.current.play(script.introVoice)
+      else narrator.current.play(script.phases[0]?.voice)
+    }
   }
 
-  function toggleMute() {
-    const next = !muted
-    setMuted(next)
-    audio.current.setMuted(next)
+  function toggleVoice() {
+    const next = !voiceOn
+    setVoiceOn(next)
+    Taro.setStorageSync('zz_guide_voice', next ? '1' : '0')
+    if (!next) {
+      narrator.current.stop()
+    } else if (started && !ended) {
+      narrator.current.play(session.phase.voice)
+    }
   }
 
   function togglePause() {
-    if (session.paused) session.resume()
-    else session.pause()
+    if (session.paused) {
+      session.resume()
+      if (voiceOn) narrator.current.play(session.phase.voice)
+    } else {
+      session.pause()
+      narrator.current.stop()
+    }
   }
 
   async function save() {
@@ -181,10 +210,14 @@ export default function GuidePage() {
             <Button variant="secondary" onClick={togglePause} ariaLabel={session.paused ? '继续' : '暂停'}>
               {session.paused ? '继续' : '暂停'}
             </Button>
-            <Button variant="ghost" onClick={toggleMute} ariaLabel={muted ? '打开声音' : '静音'}>
-              {muted ? '声音关' : '声音开'}
+            <Button variant="ghost" onClick={toggleVoice} ariaLabel={voiceOn ? '关闭语音' : '打开语音'}>
+              {voiceOn ? '语音开' : '语音关'}
             </Button>
-            <Button variant="ghost" onClick={() => setEnded(true)} ariaLabel="提前结束">
+            <Button variant="ghost" onClick={() => {
+              narrator.current.stop()
+              audio.current.setAmbient('none')
+              setEnded(true)
+            }} ariaLabel="提前结束">
               结束
             </Button>
           </View>

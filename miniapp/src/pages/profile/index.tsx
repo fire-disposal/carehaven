@@ -1272,6 +1272,16 @@ export default function ProfilePage() {
                   {nextWindow.open ? '可提交' : nextWindow.late ? '已过期' : '未开放'}
                 </Text>
               ) : null}
+              {nextWindow && (nextWindow.open || nextWindow.late) ? (
+                <Button
+                  variant="primary"
+                  block
+                  onClick={() => void Taro.navigateTo({ url: '/pages/assessment/index' })}
+                  ariaLabel={`去做第 ${nextWindow.day} 天评估`}
+                >
+                  {`去做第 ${nextWindow.day} 天评估`}
+                </Button>
+              ) : null}
               <View className="pf-study-actions">
                 <Button
                   variant="ghost"

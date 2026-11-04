@@ -2,6 +2,16 @@
 
 > 入口文档：只列里程碑、依赖与验收；细节见各专题文档。
 
+## 研究优先级（置顶，2026-11）
+
+1. **数据卫生**：回放全绿、评估窗口可见可点、退出原因结构化。
+2. **先验迁移**：文献先验 → pilot 贝叶斯更新，产出权重/阈值的区间而非点值。
+3. **个体校准**：每人 5–10 个锚点，混合效应模型，标注 `calibration_version`。
+4. **设备域校准**：设备到位后做 20–30 次同窗配对，再启用设备分。
+5. **运营最小闭环**：参与者级依从、导出留痕、只读研究角色。
+
+详见 [research/migration-learning.md](research/migration-learning.md) 与 [research/carehaven-transfer-learning.pdf](research/carehaven-transfer-learning.pdf)。
+
 ## 当前状态
 
 - 原型链路已跑通：打卡/生理 → HPS → 分层干预 → 量表/问答/TTS；单机部署与备份已落地。
