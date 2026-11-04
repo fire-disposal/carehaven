@@ -319,10 +319,25 @@
   min-height: 148rpx;
 }
 
+.preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .preview-label {
   display: block;
   @include label;
   margin-bottom: $sp-1;
+}
+
+.preview-clear {
+  @include tap;
+  display: flex;
+  align-items: center;
+  padding-left: $sp-3;
+  font-size: $fs-tiny;
+  color: $c-muted;
 }
 
 .preview-text {
@@ -352,9 +367,29 @@
 
 .slot-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: $sp-2;
   margin-bottom: $sp-2;
+}
+
+// 步骤序号：未选是空心数字，选完变成对勾
+.slot-step {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36rpx;
+  height: 36rpx;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-xs;
+
+  &.done {
+    color: $c-surface;
+    background: $c-primary;
+    border-color: $c-primary;
+  }
 }
 
 .slot-title {
@@ -475,14 +510,13 @@
   }
 }
 
+// 只做位移：带透明度时，动画中途截图/低端机掉帧会显得面板“半透明”
 @keyframes sheet-up {
   from {
     transform: translateY(80rpx);
-    opacity: 0.4;
   }
   to {
     transform: translateY(0);
-    opacity: 1;
   }
 }
 
@@ -493,4 +527,44 @@
   to {
     opacity: 1;
   }
+}
+
+// 快速开始：内置组合，点一下就能成句
+.preset-head {
+  display: flex;
+  align-items: baseline;
+  gap: $sp-2;
+  margin: $sp-2 0 $sp-1;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
+  margin-bottom: $sp-2;
+}
+
+.preset-chip {
+  @include tap;
+  display: flex;
+  align-items: center;
+  padding: 0 $sp-3;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+  background: $c-surface;
+
+  &.on {
+    border-color: $c-primary;
+    background: $c-primary-light;
+  }
+}
+
+.preset-label {
+  font-size: $fs-small;
+  color: $c-ink-2;
+}
+
+.preset-chip.on .preset-label {
+  color: $c-primary-dark;
+  font-weight: 600;
 }

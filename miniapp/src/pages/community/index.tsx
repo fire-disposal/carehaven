@@ -179,6 +179,17 @@ export default function CommunityPage() {
     setSheetOpen(true)
   }
 
+  function applyPreset(preset: { kind: WhisperKind; terms: WhisperTerms }) {
+    setFormKind(preset.kind)
+    setFormTerms({ ...preset.terms })
+    setFormError('')
+  }
+
+  function clearForm() {
+    setFormTerms({})
+    setFormError('')
+  }
+
   function pick(slot: WhisperSlot, id: string) {
     setFormError('')
     setFormTerms((prev) => {
@@ -357,13 +368,46 @@ export default function CommunityPage() {
             </View>
 
             <View className="preview">
-              <Text className="preview-label">预览</Text>
+              <View className="preview-head">
+                <Text className="preview-label">预览</Text>
+                {Object.keys(formTerms).length > 0 ? (
+                  <Text className="preview-clear" onClick={clearForm} ariaRole="button" ariaLabel="清空选择">
+                    清空
+                  </Text>
+                ) : null}
+              </View>
               <Text className={`preview-text ${preview ? '' : 'empty'}`}>
-                {preview || '从下面挑词，句子会出现在这里'}
+                {preview || '从下面选组合或逐项挑词，句子会出现在这里'}
               </Text>
             </View>
 
             <ScrollView scrollY className="sheet-scroll">
+              <View className="preset-head">
+                <Text className="slot-title">快速开始</Text>
+                <Text className="slot-hint">点一个组合，再按需改</Text>
+              </View>
+              <View className="preset-row">
+                {(lexicon?.presets ?? []).map((preset) => {
+                  const active =
+                    formKind === preset.kind &&
+                    formTerms.scene === preset.terms.scene &&
+                    formTerms.feeling === preset.terms.feeling &&
+                    formTerms.tried === preset.terms.tried &&
+                    formTerms.wish === preset.terms.wish
+                  return (
+                    <View
+                      key={preset.id}
+                      className={`preset-chip ${active ? 'on' : ''}`}
+                      onClick={() => applyPreset(preset)}
+                      ariaRole="button"
+                      ariaLabel={`使用组合：${preset.label}`}
+                    >
+                      <Text className="preset-label">{preset.label}</Text>
+                    </View>
+                  )
+                })}
+              </View>
+
               <Text className="sheet-label">属于哪一类</Text>
               <View className="chip-row">
                 {(lexicon?.kinds ?? []).map((kind) => (
@@ -377,9 +421,14 @@ export default function CommunityPage() {
                 ))}
               </View>
 
-              {(lexicon?.render ?? []).map((rule) => (
+              {(lexicon?.render ?? []).map((rule, index) => {
+                const done = Boolean(formTerms[rule.slot])
+                return (
                 <View className="slot" key={rule.slot}>
                   <View className="slot-head">
+                    <Text className={`slot-step ${done ? 'done' : ''}`}>
+                      {done ? '✓' : index + 1}
+                    </Text>
                     <Text className="slot-title">{SLOT_LABEL[rule.slot].title}</Text>
                     <Text className="slot-hint">{SLOT_LABEL[rule.slot].hint}</Text>
                   </View>
@@ -395,7 +444,8 @@ export default function CommunityPage() {
                     ))}
                   </View>
                 </View>
-              ))}
+                )
+              })}
 
               <View className="switch-line switch-line-lg">
                 <View className="switch-text">

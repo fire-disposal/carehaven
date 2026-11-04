@@ -312,6 +312,13 @@ export interface WhisperRenderRule {
   glue: string
 }
 
+export interface WhisperPreset {
+  id: string
+  label: string
+  kind: WhisperKind
+  terms: WhisperTerms
+}
+
 export interface WhisperLexicon {
   version: string
   kinds: WhisperKind[]
@@ -321,6 +328,8 @@ export interface WhisperLexicon {
   dailyPostLimit: number
   render: WhisperRenderRule[]
   slots: Record<WhisperSlot, LexiconTerm[]>
+  /** 内置组合：一次点选即可成句，再按需微调 */
+  presets: WhisperPreset[]
 }
 
 export type WhisperTerms = Partial<Record<WhisperSlot, string>>

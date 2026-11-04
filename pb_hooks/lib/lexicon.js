@@ -67,6 +67,47 @@ const RENDER = [
   { slot: 'wish', required: true, glue: '。' },
 ]
 
+// 内置组合：一次点选就能得到一句通顺的话，比逐项挑四个槽位省事
+// 组合必须落在上面四个槽位的词元里，改动时两边一起改（启动时会做存在性校验）。
+const PRESETS = [
+  {
+    id: 'night_share',
+    label: '夜间照护',
+    kind: '分享',
+    terms: { scene: 'night_wander', feeling: 'exhausted', tried: 'night_light', wish: 'anyone_else' },
+  },
+  {
+    id: 'alone_share',
+    label: '白天独处',
+    kind: '分享',
+    terms: { scene: 'alone_day', feeling: 'lonely', tried: 'nothing', wish: 'hug' },
+  },
+  {
+    id: 'ask_repeat',
+    label: '反复提问',
+    kind: '求助',
+    terms: { scene: 'same_question', feeling: 'breaking', tried: 'write_note', wish: 'how_did_you' },
+  },
+  {
+    id: 'ask_recognize',
+    label: '认不出我',
+    kind: '求助',
+    terms: { scene: 'not_recognize', feeling: 'wronged', tried: 'sit_wait', wish: 'be_heard' },
+  },
+  {
+    id: 'company_breathe',
+    label: '留一口气',
+    kind: '陪伴',
+    terms: { scene: 'finally_asleep', feeling: 'calm', tried: 'ten_min', wish: 'breathe' },
+  },
+  {
+    id: 'company_tomorrow',
+    label: '明天再试',
+    kind: '陪伴',
+    terms: { scene: 'temper', feeling: 'blank', tried: 'keep_quiet', wish: 'new_try' },
+  },
+]
+
 const MAX_TEXT = 200
 // 每人每日发帖上限：结构化内容不该被刷屏，也顺带压住滥用成本。
 const DAILY_POST_LIMITS = 5
@@ -97,6 +138,7 @@ function publicLexicon() {
     dailyPostLimit: DAILY_POST_LIMITS,
     render: RENDER,
     slots: SLOTS,
+    presets: PRESETS,
   }
 }
 
@@ -132,6 +174,18 @@ function compose(terms) {
   }
   return { text: text, terms: normalized }
 }
+
+/** 组合必须只引用词库里存在的词元，且必选槽位齐全 */
+function validatePresets() {
+  for (let i = 0; i < PRESETS.length; i += 1) {
+    const preset = PRESETS[i]
+    const composed = compose(preset.terms)
+    if (!composed.text) throw new Error('内置组合无法成句：' + preset.id)
+    if (!isKind(preset.kind)) throw new Error('内置组合的分类无效：' + preset.id)
+  }
+}
+
+validatePresets()
 
 function isKind(value) {
   return KINDS.indexOf(String(value)) >= 0
