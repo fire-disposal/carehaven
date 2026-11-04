@@ -295,6 +295,48 @@ if (tableExists('whispers')) {
   )
 }
 
+// ---------- 研究设计：研究、分组、入组 ----------
+if (tableExists('studies')) {
+  const studies = db
+    .query('SELECT code, title, protocol_version, status, opens_at, closes_at, blinding, schedule FROM studies ORDER BY code')
+    .all()
+  writeCsv(
+    'studies',
+    ['code', 'title', 'protocol_version', 'status', 'opens_at', 'closes_at', 'blinding', 'schedule'],
+    studies
+  )
+}
+
+if (tableExists('study_arms')) {
+  const arms = db
+    .query(
+      `SELECT s.code AS study_code, a.code AS arm_code, a.label, a.ratio
+       FROM study_arms a JOIN studies s ON s.id = a.study ORDER BY s.code, a.code`
+    )
+    .all()
+  writeCsv('study_arms', ['study_code', 'arm_code', 'label', 'ratio'], arms)
+}
+
+if (tableExists('study_enrollments')) {
+  const rows = byIncluded(
+    db
+      .query(
+        `SELECT e.user, e.assigned_at, e.method, e.status, e.withdrawn_at,
+                s.code AS study_code, a.code AS arm_code
+         FROM study_enrollments e
+         JOIN studies s ON s.id = e.study
+         JOIN study_arms a ON a.id = e.arm
+         ORDER BY e.assigned_at`
+      )
+      .all()
+  )
+  writeCsv(
+    'study_enrollments',
+    ['research_id', 'study_code', 'arm_code', 'assigned_at', 'method', 'status', 'withdrawn_at'],
+    rows.map((r) => ({ ...r, research_id: hmacId(r.user) }))
+  )
+}
+
 // ---------- 质量报表 ----------
 const quality = { generated_at: new Date().toISOString(), exclusions, users: [] }
 
@@ -354,6 +396,32 @@ if (tableExists('stress_score_events')) {
       span_days: spanDays,
       ema_compliance: spanDays > 0 ? Number((daysWithScore.length / spanDays).toFixed(3)) : null,
     })
+  }
+
+  if (tableExists('study_enrollments')) {
+    const enrollments = byIncluded(
+      db
+        .query(
+          `SELECT e.user, e.assigned_at, e.status, a.code AS arm_code
+           FROM study_enrollments e JOIN study_arms a ON a.id = e.arm`
+        )
+        .all()
+    )
+    const byArm = new Map()
+    for (const e of enrollments) {
+      const key = e.arm_code
+      if (!byArm.has(key)) byArm.set(key, { arm_code: key, enrolled: 0, withdrawn: 0, checkin_days: 0 })
+      const row = byArm.get(key)
+      row.enrolled += 1
+      if (e.status === 'withdrawn') row.withdrawn += 1
+      const days = (checkinDays.get(e.user) || new Set()).size
+      row.checkin_days += days
+    }
+    quality.by_arm = [...byArm.values()].map((row) => ({
+      ...row,
+      mean_checkin_days: row.enrolled ? Number((row.checkin_days / row.enrolled).toFixed(2)) : null,
+      withdrawal_rate: row.enrolled ? Number((row.withdrawn / row.enrolled).toFixed(3)) : null,
+    }))
   }
 
   quality.coverage_rate = {

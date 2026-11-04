@@ -371,6 +371,34 @@ export interface AskResult {
   sources: { id: string; title: string; category: string }[]
 }
 
+export interface StudyScheduleItem {
+  day: number
+  scales: string[]
+  window: number
+  due_at: string
+  open: boolean
+  late: boolean
+}
+
+export interface StudyMe {
+  study: {
+    code: string
+    title: string
+    protocol_version: string
+    status: string
+    blinding: 'none' | 'arm_hidden'
+  } | null
+  enrollment: {
+    status: 'active' | 'withdrawn' | 'completed'
+    assigned_at: string
+    withdrawn_at: string
+    method: string
+  } | null
+  arm: { code: string; label: string } | null
+  schedule: StudyScheduleItem[]
+  adherence: { checkin_days: number; assessments: number; days_since_enroll: number } | null
+}
+
 export interface ResearchConsent {
   granted: boolean
   version: string
@@ -576,6 +604,19 @@ export const api = {
       method: 'POST',
       data: { granted },
     })
+  },
+
+  /** 研究：当前参与状态、组别（受盲法控制）与日程 */
+  studyMe(): Promise<StudyMe> {
+    return request<StudyMe>('/api/zz/study/me')
+  },
+
+  enrollStudy(code: string): Promise<{ enrolled: boolean; already?: boolean }> {
+    return request('/api/zz/study/enroll', { method: 'POST', data: { code } })
+  },
+
+  withdrawStudy(reason: string): Promise<{ withdrawn: boolean }> {
+    return request('/api/zz/study/withdraw', { method: 'POST', data: { reason } })
   },
 
   /** 单条回答的有用性反馈（检索质量的研究信号） */

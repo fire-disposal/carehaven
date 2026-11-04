@@ -19,6 +19,7 @@ import {
   type PhysioRecord,
   type Rating,
   type ResearchConsent,
+  type StudyMe,
   type StressScore,
 } from '@/lib/api'
 import { levelTone } from '@/lib/level'
@@ -51,6 +52,13 @@ const SOURCE_PILL: Record<PhysioRecord['source'], PillTone> = {
   device: 'green',
   simulated: 'yellow',
   manual: 'primary',
+}
+
+// 研究日程里的量表用标准缩写，比内部 key 更易读
+const SCALE_LABEL: Record<string, string> = {
+  phq9: 'PHQ-9',
+  gad7: 'GAD-7',
+  zbi12: 'ZBI-12',
 }
 
 const DAY_MS = 86400000
@@ -130,6 +138,12 @@ export default function ProfilePage() {
   const [consentSaving, setConsentSaving] = useState(false)
   const [consentError, setConsentError] = useState('')
 
+  // 研究参与：研究码入组、分组（受盲法控制）与依从概况
+  const [study, setStudy] = useState<StudyMe | null>(null)
+  const [studyCode, setStudyCode] = useState('')
+  const [studyBusy, setStudyBusy] = useState(false)
+  const [studyError, setStudyError] = useState('')
+
   useEffect(() => {
     let alive = true
     api
@@ -140,10 +154,58 @@ export default function ProfilePage() {
       .catch(() => {
         if (alive) setConsent(null)
       })
+    api
+      .studyMe()
+      .then((res) => {
+        if (alive) setStudy(res.study ? res : null)
+      })
+      .catch(() => {
+        if (alive) setStudy(null)
+      })
     return () => {
       alive = false
     }
   }, [])
+
+  async function joinStudy() {
+    const code = studyCode.trim().toUpperCase()
+    if (!code || studyBusy) return
+    setStudyBusy(true)
+    setStudyError('')
+    try {
+      await api.enrollStudy(code)
+      setStudy(await api.studyMe())
+      setStudyCode('')
+      Taro.showToast({ title: '已加入研究', icon: 'none' })
+    } catch (e) {
+      setStudyError(e instanceof Error ? e.message : '加入没有完成，请核对研究码')
+    } finally {
+      setStudyBusy(false)
+    }
+  }
+
+  async function leaveStudy() {
+    if (studyBusy) return
+    const reasons = ['时间安排冲突', '不方便继续', '效果不明显', '其他原因']
+    let index = -1
+    try {
+      const picked = await Taro.showActionSheet({ itemList: reasons })
+      index = picked.tapIndex
+    } catch (e) {
+      return
+    }
+    setStudyBusy(true)
+    setStudyError('')
+    try {
+      await api.withdrawStudy(reasons[index] || '其他原因')
+      setStudy(await api.studyMe())
+      Taro.showToast({ title: '已退出研究', icon: 'none' })
+    } catch (e) {
+      setStudyError(e instanceof Error ? e.message : '退出没有完成，请稍后再试')
+    } finally {
+      setStudyBusy(false)
+    }
+  }
 
   async function toggleConsent(next: boolean) {
     if (consentSaving) return
@@ -353,6 +415,11 @@ export default function ProfilePage() {
   const avgFeeling = feelings.length
     ? feelings.reduce((a, b) => a + b, 0) / feelings.length
     : null
+
+  const nextWindow =
+    (study?.schedule || []).find((item) => item.open) ||
+    (study?.schedule || []).find((item) => !item.late) ||
+    null
 
   const starValues = ratings.map((r) => r.stars).filter(isOneToFive)
   const avgStars = starValues.length
@@ -1090,6 +1157,71 @@ export default function ProfilePage() {
             </Card>
           </>
         ) : null}
+
+        {/* ---------- 研究参与 ---------- */}
+        <SectionHeader
+          title="研究参与"
+          action={<Text className="muted">{study?.study ? study.study.code : '可选'}</Text>}
+        />
+        <Card className="pf-study">
+          {!study?.study ? (
+            <>
+              <Text className="pf-note-line">
+                参与研究需要研究码。加入后按协议分组，并完成指定时间点的量表。
+              </Text>
+              <View className="pf-study-row">
+                <Input
+                  className="pf-study-input"
+                  value={studyCode}
+                  placeholder="输入研究码"
+                  ariaLabel="研究码"
+                  onInput={(e) => setStudyCode(e.detail.value.toUpperCase())}
+                />
+                <Button
+                  className="pf-study-btn"
+                  onClick={() => void joinStudy()}
+                  disabled={!studyCode.trim() || studyBusy}
+                  ariaLabel="加入研究"
+                >
+                  加入
+                </Button>
+              </View>
+            </>
+          ) : (
+            <>
+              <Text className="pf-study-title">{study.study.title}</Text>
+              <Text className="pf-study-sub">
+                研究码 {study.study.code} · 协议 {study.study.protocol_version} · 入组{' '}
+                {fmtDateTime(study.enrollment?.assigned_at || '')}
+              </Text>
+              <View className="pf-study-grid">
+                <Stat label="分组" value={study.arm?.code ? study.arm.code : '—'} />
+                <Stat label="入组天数" value={study.adherence?.days_since_enroll ?? 0} unit="天" />
+                <Stat label="打卡天数" value={study.adherence?.checkin_days ?? 0} unit="天" />
+                <Stat label="量表次数" value={study.adherence?.assessments ?? 0} unit="次" />
+              </View>
+              {study.arm?.label ? <Text className="pf-note-line">{study.arm.label}</Text> : null}
+              {nextWindow ? (
+                <Text className="pf-study-window">
+                  第 {nextWindow.day} 天评估（{nextWindow.scales.map((k) => SCALE_LABEL[k] || k).join(' / ')}）· 截止{' '}
+                  {fmtDateTime(nextWindow.due_at)} ·{' '}
+                  {nextWindow.open ? '可提交' : nextWindow.late ? '已过期' : '未开放'}
+                </Text>
+              ) : null}
+              <View className="pf-study-actions">
+                <Button
+                  variant="ghost"
+                  block
+                  onClick={() => void leaveStudy()}
+                  disabled={studyBusy || study.enrollment?.status !== 'active'}
+                >
+                  {study.enrollment?.status === 'active' ? '退出研究' : '已退出研究'}
+                </Button>
+              </View>
+            </>
+          )}
+        </Card>
+        {studyError ? <StateBlock variant="error" compact desc={studyError} /> : null}
 
         {/* ---------- 我的数据：导出与注销 ---------- */}
         <SectionHeader title="我的数据" action={<Text className="muted">数据权利</Text>} />

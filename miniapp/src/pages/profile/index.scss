@@ -717,3 +717,65 @@
 .pf-data-item-static {
   cursor: default;
 }
+
+/* 研究参与：研究码入组与分组概况 */
+.pf-study-row {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-top: $sp-2;
+}
+
+.pf-study-input {
+  flex: 1;
+  height: 88rpx;
+  padding: 0 $sp-3;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+  background: $c-paper;
+  font-size: $fs-body;
+  color: $c-ink;
+  box-sizing: border-box;
+}
+
+.pf-study-btn {
+  flex: none;
+  min-width: 168rpx;
+}
+
+.pf-study-title {
+  display: block;
+  font-size: $fs-h3;
+  font-weight: 600;
+  color: $c-ink;
+}
+
+.pf-study-sub {
+  display: block;
+  margin-top: $sp-0;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.pf-study-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-3;
+  margin: $sp-3 0 $sp-1;
+}
+
+.pf-study-grid > * {
+  flex: 1 1 30%;
+  min-width: 140rpx;
+}
+
+.pf-study-window {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-tiny;
+  color: $c-ink-2;
+}
+
+.pf-study-actions {
+  margin-top: $sp-3;
+}
