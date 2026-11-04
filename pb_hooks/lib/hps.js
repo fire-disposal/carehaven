@@ -8,7 +8,7 @@
 //
 // 注意：本文件由 pb_hooks 通过 require() 加载，不能依赖 hook 文件顶层作用域。
 
-const ALGORITHM_VERSION = 'hps-2'
+const ALGORITHM_VERSION = 'hps-3'
 const copy = require(__hooks + '/lib/copy.js')
 
 function toPbDate(d) {
@@ -20,10 +20,6 @@ function dayBounds() {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
   const end = new Date(start.getTime() + 86400000)
   return [toPbDate(start), toPbDate(end)]
-}
-
-function daysAgo(days) {
-  return toPbDate(new Date(Date.now() - days * 86400000))
 }
 
 function clamp01(x) {
@@ -143,6 +139,7 @@ function components(userId, dayStart, dayEnd, ranges) {
 
   let psycho = null
   let careHoursTotal = 0
+  let sleepHoursTotal = 0
   if (checkins.length > 0) {
     let sum = 0
     for (let i = 0; i < checkins.length; i++) {
@@ -152,35 +149,26 @@ function components(userId, dayStart, dayEnd, ranges) {
       const fatigueScore = (Number(c.get('fatigue')) / 10) * 100
       sum += 0.45 * moodScore + 0.35 * anxietyScore + 0.2 * fatigueScore
       careHoursTotal += Number(c.get('care_hours')) || 0
+      sleepHoursTotal += Number(c.get('sleep_hours')) || 0
     }
     psycho = sum / checkins.length
   }
 
-  // 3) 情境：需要当日打卡才有「照护时长」，否则视为未采集
+  // 3) 负荷：照护时长 + 睡眠不足
+  //
+  // hps-2 曾把「干预次数 / 问答次数」算进情境分，等于"用得越多压力越高"，
+  // 与构念纠缠且制造反馈环。hps-3 只保留两个与负荷直接相关、且用户能如实回答的量：
+  //   - 平均照护时长（/16 小时封顶）
+  //   - 睡眠缺口（8 小时及以上记 0，3 小时及以下记满）
   let context = null
+  let avgCareHours = 0
+  let avgSleepHours = 0
   if (checkins.length > 0) {
-    const avgCareHours = careHoursTotal / checkins.length
-    const weekStart = daysAgo(7)
-    const logs = $app.findRecordsByFilter(
-      'intervention_logs',
-      'user = {:user} && completed_at >= {:start}',
-      '',
-      100,
-      0,
-      { user: userId, start: weekStart }
-    )
-    const asks = $app.findRecordsByFilter(
-      'qa_sessions',
-      'user = {:user} && created >= {:start}',
-      '',
-      100,
-      0,
-      { user: userId, start: weekStart }
-    )
-    context =
-      0.6 * (clamp01(avgCareHours / 16) * 100) +
-      0.25 * (clamp01(logs.length / 5) * 100) +
-      0.15 * (clamp01(asks.length / 5) * 100)
+    avgCareHours = careHoursTotal / checkins.length
+    avgSleepHours = sleepHoursTotal / checkins.length
+    const careLoad = clamp01(avgCareHours / 16)
+    const sleepDeficit = clamp01((8 - avgSleepHours) / 5)
+    context = 0.6 * careLoad * 100 + 0.4 * sleepDeficit * 100
   }
 
   const missing = []
@@ -192,6 +180,8 @@ function components(userId, dayStart, dayEnd, ranges) {
     physio: physio,
     psycho: psycho,
     context: context,
+    care_hours_avg: checkins.length > 0 ? careHoursTotal / checkins.length : 0,
+    sleep_hours_avg: checkins.length > 0 ? sleepHoursTotal / checkins.length : 0,
     coverage: {
       physio: physio !== null,
       psycho: psycho !== null,
@@ -245,6 +235,8 @@ function recomputeScore(userId, trigger) {
     physio_fields: parts.coverage.physio_fields,
     missing: parts.coverage.missing,
     checkins: parts.coverage.checkins,
+    care_hours_avg: Math.round(parts.care_hours_avg * 10) / 10,
+    sleep_hours_avg: Math.round(parts.sleep_hours_avg * 10) / 10,
     weight_sum: Math.round(weightSum * 1000) / 1000,
   }
 

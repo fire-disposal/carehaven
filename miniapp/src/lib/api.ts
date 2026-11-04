@@ -476,25 +476,17 @@ export const api = {
     return res.items[0] || null
   },
 
-  /** 写入一条生理数据：手动录入或蓝牙设备同步（source 决定来源标注） */
+  /**
+   * 手动录入生理数据：服务端写入 date 与 source=manual，
+   * 客户端不再决定来源与日期（避免伪造设备数据）。
+   */
   createPhysioRecord(data: {
-    hrv: number
-    gsr: number
-    sleep_quality: number
+    hrv: number | null
+    gsr: number | null
+    sleep_quality: number | null
     steps: number
-    source: PhysioRecord['source']
-    measuredAt?: string
-  }): Promise<PhysioRecord> {
-    const user = getUser()
-    return create<PhysioRecord>('physio_records', {
-      user: user?.id,
-      date: data.measuredAt || new Date().toISOString().replace('T', ' '),
-      hrv: data.hrv,
-      gsr: data.gsr,
-      sleep_quality: data.sleep_quality,
-      steps: data.steps,
-      source: data.source,
-    })
+  }): Promise<{ id: string; date: string }> {
+    return request('/api/zz/physio/manual', { method: 'POST', data })
   },
 
   // 打卡
@@ -519,13 +511,11 @@ export const api = {
     sleep_hours: number
     care_hours: number
     note?: string
-  }): Promise<Checkin> {
-    const user = getUser()
-    return create<Checkin>('checkins', {
-      ...data,
-      note: data.note || '',
-      user: user?.id,
-      date: new Date().toISOString().replace('T', ' '),
+  }): Promise<{ id: string; date: string }> {
+    // 服务端负责 user / date / 范围校验
+    return request('/api/zz/checkins', {
+      method: 'POST',
+      data: { ...data, note: data.note || '' },
     })
   },
 

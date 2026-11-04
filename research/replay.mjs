@@ -87,15 +87,8 @@ const physioStmt = db.query(
    ORDER BY date DESC LIMIT 1`
 )
 const checkinStmt = db.query(
-  `SELECT mood, anxiety, fatigue, care_hours FROM checkins
+  `SELECT mood, anxiety, fatigue, care_hours, sleep_hours FROM checkins
    WHERE user = ? AND date >= ? AND date < ? AND created < ?`
-)
-const logsStmt = db.query(
-  `SELECT COUNT(*) AS n FROM intervention_logs
-   WHERE user = ? AND completed_at >= ? AND created < ?`
-)
-const asksStmt = db.query(
-  `SELECT COUNT(*) AS n FROM qa_sessions WHERE user = ? AND created >= ? AND created < ?`
 )
 
 let checked = 0
@@ -114,7 +107,6 @@ for (const event of events) {
     continue
   }
   const dayEnd = new Date(dayStart.getTime() + 86400000)
-  const weekStart = new Date(dayStart.getTime() - 7 * 86400000)
 
   let params = DEFAULT
   if (event.params && String(event.params).trim() !== '') {
@@ -137,7 +129,7 @@ for (const event of events) {
 
   const version = String(event.algorithm_version || 'unknown')
   byVersion.set(version, (byVersion.get(version) || 0) + 1)
-  if (version !== 'hps-2') {
+  if (version !== 'hps-3') {
     skipped += 1
     continue
   }
@@ -183,10 +175,8 @@ for (const event of events) {
   const cutoff = String(event.created || pbTime(dayEnd))
   const physioRow = physioStmt.get(event.user, pbTime(dayStart), pbTime(dayEnd), cutoff)
   const checkins = checkinStmt.all(event.user, pbTime(dayStart), pbTime(dayEnd), cutoff)
-  const logs7d = logsStmt.get(event.user, pbTime(weekStart), cutoff)?.n ?? 0
-  const asks7d = asksStmt.get(event.user, pbTime(weekStart), cutoff)?.n ?? 0
 
-  const raw = computeScore({ physio: physioRow || null, checkins, logs7d, asks7d }, params)
+  const raw = computeScore({ physio: physioRow || null, checkins }, params)
   if (raw.hps === null) {
     timing += 1
     continue

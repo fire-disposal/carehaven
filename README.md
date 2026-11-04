@@ -113,7 +113,7 @@ Actions 手动触发   → 自动部署：备份 → 切换 → 健康检查 →
 ## 边界与已知问题
 
 - `physio_records.source = "simulated"` 是合成数据，用于演示链路，不是设备采集；汇报与论文必须如实标注。
-- HPS 参数未校准：缺失分量已改为 `unknown` 分级并记 `coverage`，评分带算法版本与参数快照；但权重仍是默认值，客户端仍可写来源/日期；测量学缺口见 [docs/hps-method.md](docs/hps-method.md)。
+- HPS 参数未校准：缺失分量已改为 `unknown` 分级并记 `coverage`，评分带算法版本与参数快照；hps-3 起干预/问答次数不再计入压力，客户端也不能再写来源与日期。权重仍是默认值，测量学缺口见 [docs/hps-method.md](docs/hps-method.md)。
 - 知识问答不是 LLM：只做关键词与 2-gram 检索后拼接原文，检索不到会明确说没找到；DeepSeek 接入评估见 [docs/ai-agent.md](docs/ai-agent.md)。
 - 量表计分与分级阈值（ZBI-12 / PHQ-9 / GAD-7）需经专业确认后才可用于对外结论。
 - 互助内容不含用户自造文本，但组合语义仍需举报与人工复核；处置动作目前没有留痕台账，见 [docs/console.md](docs/console.md)。对外申报按「结构化留言」描述，不写「社区发帖」。

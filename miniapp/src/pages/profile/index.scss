@@ -779,3 +779,40 @@
 .pf-study-actions {
   margin-top: $sp-3;
 }
+
+/* 打卡记录：自查用，按行分隔，不做卡片嵌套 */
+.pf-checkins {
+  margin-bottom: $sp-3;
+}
+
+.pf-checkin {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-2;
+  padding: $sp-3;
+  border-bottom: 1rpx solid $c-line;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.pf-checkin-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-checkin-title {
+  display: block;
+  font-size: $fs-small;
+  color: $c-ink;
+  line-height: $lh-body;
+}
+
+.pf-checkin-meta {
+  display: block;
+  margin-top: $sp-0;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  line-height: $lh-body;
+}

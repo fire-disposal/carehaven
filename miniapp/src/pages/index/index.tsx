@@ -12,6 +12,7 @@ import {
   api,
   getUser,
   isLoggedIn,
+  remove,
   type AssessmentRecord,
   type Checkin,
   type PhysioRecord,
@@ -28,6 +29,19 @@ const MOODS: { value: number; icon: IconName; label: string }[] = [
   { value: 4, icon: 'face-smile', label: '较好' },
   { value: 5, icon: 'face-grin-beam', label: '很好' },
 ]
+
+type Prefill = { mood: number; anxiety: number; fatigue: number; sleep_hours: number; care_hours: number }
+
+/** 上次提交的数值，用于下次打开表单时预填 */
+function readPrefill(): Prefill | null {
+  try {
+    const raw = Taro.getStorageSync('zz_checkin_prefill')
+    if (!raw) return null
+    return JSON.parse(String(raw)) as Prefill
+  } catch (e) {
+    return null
+  }
+}
 
 function greetingOf(hour: number): string {
   if (hour < 5) return '夜深了'
@@ -51,16 +65,18 @@ export default function HomePage() {
   const [physio, setPhysio] = useState<PhysioRecord | null>(null)
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [latestAssessment, setLatestAssessment] = useState<AssessmentRecord | null>(null)
+  const [recent, setRecent] = useState<Checkin[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [showForm, setShowForm] = useState(false)
 
   // 打卡表单
-  const [mood, setMood] = useState(3)
-  const [anxiety, setAnxiety] = useState(4)
-  const [fatigue, setFatigue] = useState(5)
-  const [sleepHours, setSleepHours] = useState('6.5')
-  const [careHours, setCareHours] = useState('8')
+  const prefill = readPrefill()
+  const [mood, setMood] = useState(prefill?.mood ?? 3)
+  const [anxiety, setAnxiety] = useState(prefill?.anxiety ?? 4)
+  const [fatigue, setFatigue] = useState(prefill?.fatigue ?? 5)
+  const [sleepHours, setSleepHours] = useState(String(prefill?.sleep_hours ?? 6.5))
+  const [careHours, setCareHours] = useState(String(prefill?.care_hours ?? 8))
   const [note, setNote] = useState('')
   const [formError, setFormError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -73,16 +89,18 @@ export default function HomePage() {
     setLoading(true)
     setLoadError('')
     try {
-      const [s, p, c, a] = await Promise.all([
+      const [s, p, c, a, r] = await Promise.all([
         api.latestScore(),
         api.latestPhysio(),
         api.todayCheckins(),
         api.assessments(1).catch(() => [] as AssessmentRecord[]),
+        api.recentCheckins(30).catch(() => [] as Checkin[]),
       ])
       setScore(s)
       setPhysio(p)
       setCheckins(c)
       setLatestAssessment(a[0] || null)
+      setRecent(r)
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : '数据加载失败')
     } finally {
@@ -124,6 +142,10 @@ export default function HomePage() {
         care_hours: care,
         note,
       })
+      Taro.setStorageSync(
+        'zz_checkin_prefill',
+        JSON.stringify({ mood, anxiety, fatigue, sleep_hours: sleep, care_hours: care })
+      )
       setShowForm(false)
       setNote('')
       await load()
@@ -135,8 +157,49 @@ export default function HomePage() {
     }
   }
 
+  async function deleteCheckin(id: string) {
+    const res = await Taro.showModal({
+      title: '删除这条打卡',
+      content: '删除后当天指数会重新计算，操作不可恢复。',
+      confirmText: '删除',
+    }).catch(() => ({ confirm: false }))
+    if (!res.confirm) return
+    try {
+      await remove('checkins', id)
+      await load()
+      Taro.showToast({ title: '已删除', icon: 'none' })
+    } catch (e) {
+      Taro.showToast({ title: e instanceof Error ? e.message : '删除失败', icon: 'none' })
+    }
+  }
+
   const user = getUser()
   const todayChecked = checkins.length > 0
+  const sameLocalDay = (raw: string | undefined) => {
+    if (!raw) return false
+    const d = new Date(raw.includes(' ') ? raw.replace(' ', 'T') : raw)
+    if (Number.isNaN(d.getTime())) return false
+    return d.toDateString() === new Date().toDateString()
+  }
+  const todayPhysio = sameLocalDay(physio?.date)
+  const todayAssessed = sameLocalDay(latestAssessment?.created)
+  const streak = (() => {
+    const days = new Set(
+      recent
+        .map((item) => new Date((item.created || item.date || '').replace(' ', 'T')))
+        .filter((d) => !Number.isNaN(d.getTime()))
+        .map((d) => d.toDateString())
+    )
+    let count = 0
+    const cursor = new Date()
+    // 今天没打卡时，从昨天开始算，避免早上打开就断签
+    if (!days.has(cursor.toDateString())) cursor.setDate(cursor.getDate() - 1)
+    while (days.has(cursor.toDateString())) {
+      count += 1
+      cursor.setDate(cursor.getDate() - 1)
+    }
+    return count
+  })()
   const level = score?.level ?? null
   const now = new Date()
   const greeting = greetingOf(now.getHours())
@@ -373,6 +436,38 @@ export default function HomePage() {
             ) : null}
 
             {/* 次级入口 */}
+            {/* 今日完成度：三件事各一行，点一下去补 */}
+            <View className="today-check">
+              <View
+                className={`today-check-item ${todayChecked ? 'done' : ''}`}
+                onClick={() => (todayChecked ? undefined : setShowForm(true))}
+                ariaRole="button"
+                ariaLabel={todayChecked ? '今日已打卡' : '去打卡'}
+              >
+                <Text className="today-check-mark">{todayChecked ? '✓' : '○'}</Text>
+                <Text className="today-check-label">打卡</Text>
+              </View>
+              <View
+                className={`today-check-item ${todayPhysio ? 'done' : ''}`}
+                onClick={() => Taro.switchTab({ url: '/pages/profile/index' })}
+                ariaRole="button"
+                ariaLabel={todayPhysio ? '今日已有生理数据' : '去补录生理数据'}
+              >
+                <Text className="today-check-mark">{todayPhysio ? '✓' : '○'}</Text>
+                <Text className="today-check-label">生理</Text>
+              </View>
+              <View
+                className={`today-check-item ${todayAssessed ? 'done' : ''}`}
+                onClick={() => Taro.navigateTo({ url: '/pages/assessment/index' })}
+                ariaRole="button"
+                ariaLabel={todayAssessed ? '今日已完成量表' : '去做量表'}
+              >
+                <Text className="today-check-mark">{todayAssessed ? '✓' : '○'}</Text>
+                <Text className="today-check-label">量表</Text>
+              </View>
+              <Text className="today-check-streak">连续 {streak} 天</Text>
+            </View>
+
             <SectionHeader
               title="支持工具"
               action={<Text className="muted">按当前状态</Text>}
@@ -443,6 +538,14 @@ export default function HomePage() {
                           </Text>
                         </View>
                         <Pill tone="primary">{item.period === 'morning' ? '日间' : '晚间'}</Pill>
+                        <Text
+                          className="today-del"
+                          onClick={() => void deleteCheckin(item.id)}
+                          ariaRole="button"
+                          ariaLabel="删除这条打卡"
+                        >
+                          删除
+                        </Text>
                       </View>
                     )
                   })}

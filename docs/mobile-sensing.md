@@ -91,7 +91,34 @@ flowchart LR
 
 **止损条件**：若 1–2 阶段显示"用户不愿佩戴/不愿授权"，或被动数据与研究结局相关性接近 0，则不做第 3 阶段。
 
-## 8. 非目标
+## 8. 没有 iOS 设备时的平台矩阵
+
+结论先说：**现在不做 iOS 原生；iPhone 用户继续用小程序/H5。** iOS 构建的硬门槛不是框架，而是 macOS + Xcode（或云 Mac），以及没有设备时的验证手段。
+
+| 客户端 | 覆盖用户 | 能拿到的数据 | 无 iOS 设备时可否开发 | 无 iOS 设备时可否验证 |
+|---|---|---|---|---|
+| 微信小程序（现有 Taro） | iOS + Android（微信内） | 自评、手动、前台 BLE | 可以 | 可以（开发者工具 + 真机 Android） |
+| H5 | 全平台浏览器 | 同上，无后台/BLE | 可以 | 可以（Chromium/Safari 桌面） |
+| Android 原生（Kotlin） | Android | Health Connect、后台、BLE | 可以 | 可以（模拟器 + 真机） |
+| Flutter | Android | 同 Kotlin | 可以 | Android 充分；**iOS 无法验证** |
+| Flutter/RN iOS 构建 | iOS | 同 Android | 需要 macOS 或 CI macOS runner | 模拟器（需 Mac）/云真机（付费）/TestFlight（需 iPhone 测试者） |
+
+现实约束：
+
+- 私有仓库用 GitHub Actions 的 `macos-latest` 按 10 倍分钟计费；一次 iOS 构建 + 归档约 10–20 分钟，长期不便宜。
+- Flutter 的 iOS 侧问题（权限弹窗、HealthKit 授权、后台刷新）**只有真机能确认**；模拟器不能覆盖健康数据与 BLE。
+- 云真机（BrowserStack / Sauce Labs）按分钟付费，适合发布前冒烟，不适合日常迭代。
+
+因此建议的**受支持矩阵**（写进研究方案与 README）：
+
+| 平台 | 支持级别 | 说明 |
+|---|---|---|
+| 微信小程序 | 一级 | 全部核心功能（自评、问答、互助、减压、研究入组） |
+| Android 伴侣应用（可选） | 二级 | 被动数据采集；仅在"被动数据是主要结局"时开发 |
+| iOS 原生/伴侣应用 | 暂不支持 | iPhone 用户走小程序；方案里声明该限制 |
+| H5 | 三级 | 只作分享与兜底，不承诺后台能力 |
+
+## 9. 非目标
 
 - 不用手机摄像头 PPG 做 HRV 研究结论；
 - 不把不同设备的睡眠分期合并成一个变量；

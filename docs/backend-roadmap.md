@@ -6,7 +6,7 @@
 
 | 工作 | 现状 | 验收 |
 |---|---|---|
-| 写入入口收口 | `checkins`/`physio_records` 由客户端直接写，`source`/`date` 可伪造 | 打卡、生理、设备上报各走服务端路由；服务端写 `received_at`、`source`、`device_id`；设备入口用 token |
+| 写入入口收口 | ✅ 2026-11：打卡与手动生理改走 `/api/zz/checkins`、`/api/zz/physio/manual`，服务端写 date/source 并校验范围；集合写规则关闭。设备入口与 `device_id` 仍待做 | 客户端伪造写入返回 403（已实测） |
 | 评分快照 | ✅ 2026-11：快照带版本/参数/覆盖度，新增 `stress_score_events` | 事件可重放；`quality` 尚未建模 |
 | 缺失语义 | ✅ 缺失不入加权；绿区降 `unknown`；`coverage` 记录缺什么 | number 列仍存 0，读取必须看 coverage（已写入 hps-method） |
 | 配置治理 | ✅ 校验 + 历史已上线（作者目前落 `admin`/超管邮箱） | 历史按 key 可查 |

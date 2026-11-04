@@ -9,7 +9,7 @@
 // 这里是「唯一真源」的离线副本：线上 hooks 与科研回放共用同一套公式，
 // 改动时必须两边同步，并用 research/test/hps-core.test.mjs 的 golden vectors 兜底。
 
-export const ALGORITHM_VERSION = 'hps-2'
+export const ALGORITHM_VERSION = 'hps-3'
 
 export function clamp01(x) {
   return x < 0 ? 0 : x > 1 ? 1 : x
@@ -29,9 +29,7 @@ const DEFAULT_PARAMS = {
 /**
  * @param {object} input
  * @param {object|null} input.physio  {hrv, gsr, sleep_quality} 或 null
- * @param {Array<{mood:number, anxiety:number, fatigue:number, care_hours:number}>} input.checkins
- * @param {number} input.logs7d       近 7 天干预完成次数
- * @param {number} input.asks7d       近 7 天问答次数
+ * @param {Array<{mood:number, anxiety:number, fatigue:number, care_hours:number, sleep_hours:number}>} input.checkins
  * @param {object} params             与快照一致：{weights, thresholds, ranges}
  */
 export function computeScore(input, params = DEFAULT_PARAMS) {
@@ -64,6 +62,7 @@ export function computeScore(input, params = DEFAULT_PARAMS) {
   const checkins = Array.isArray(input.checkins) ? input.checkins : []
   let psycho = null
   let careHoursTotal = 0
+  let sleepHoursTotal = 0
   if (checkins.length > 0) {
     let sum = 0
     for (const c of checkins) {
@@ -72,18 +71,17 @@ export function computeScore(input, params = DEFAULT_PARAMS) {
       const fatigueScore = (Number(c.fatigue) / 10) * 100
       sum += 0.45 * moodScore + 0.35 * anxietyScore + 0.2 * fatigueScore
       careHoursTotal += Number(c.care_hours) || 0
+      sleepHoursTotal += Number(c.sleep_hours) || 0
     }
     psycho = sum / checkins.length
   }
 
-  // 情境
+  // 负荷：照护时长 + 睡眠缺口（与线上 hps-3 一致）
   let context = null
   if (checkins.length > 0) {
     const avgCareHours = careHoursTotal / checkins.length
-    context =
-      0.6 * (clamp01(avgCareHours / 16) * 100) +
-      0.25 * (clamp01((input.logs7d || 0) / 5) * 100) +
-      0.15 * (clamp01((input.asks7d || 0) / 5) * 100)
+    const avgSleepHours = sleepHoursTotal / checkins.length
+    context = 0.6 * (clamp01(avgCareHours / 16) * 100) + 0.4 * (clamp01((8 - avgSleepHours) / 5) * 100)
   }
 
   const missing = []

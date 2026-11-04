@@ -18,6 +18,7 @@ import {
   type ScoreLevel,
   type PhysioRecord,
   type Rating,
+  type Checkin,
   type ResearchConsent,
   type StudyMe,
   type StressScore,
@@ -139,6 +140,7 @@ export default function ProfilePage() {
   const [consentError, setConsentError] = useState('')
 
   // 研究参与：研究码入组、分组（受盲法控制）与依从概况
+  const [checkins, setCheckins] = useState<Checkin[]>([])
   const [study, setStudy] = useState<StudyMe | null>(null)
   const [studyCode, setStudyCode] = useState('')
   const [studyBusy, setStudyBusy] = useState(false)
@@ -329,16 +331,18 @@ export default function ProfilePage() {
     setLoading(true)
     setError('')
     try {
-      const [s, l, r, p] = await Promise.all([
+      const [s, l, r, p, c] = await Promise.all([
         api.scores(30),
         api.interventionLogs(30),
         api.ratings(),
         api.latestPhysio(),
+        api.recentCheckins(14).catch(() => [] as Checkin[]),
       ])
       setScores(s)
       setLogs(l)
       setRatings(r)
       setPhysio(p)
+      setCheckins(c)
     } catch (e) {
       setError(e instanceof Error ? e.message : '数据加载失败')
     } finally {
@@ -548,7 +552,6 @@ export default function ProfilePage() {
         gsr: gsrValue,
         sleep_quality: Math.round(sleepValue),
         steps: Math.round(stepsValue),
-        source: 'manual',
       })
       setHrv('')
       setGsr('')
@@ -879,6 +882,38 @@ export default function ProfilePage() {
                   </View>
                 </View>
               </View>
+            )}
+
+            {/* ---------- 打卡记录（自查） ---------- */}
+            <SectionHeader
+              title="打卡记录"
+              action={<Text className="muted">{checkins.length ? `最近 ${checkins.length} 次` : ''}</Text>}
+            />
+            {checkins.length === 0 ? (
+              <StateBlock
+                variant="empty"
+                compact
+                title="还没有打卡记录"
+                desc="在首页记录一次，就会出现在这里。"
+              />
+            ) : (
+              <Card flush className="pf-checkins">
+                {checkins.map((item) => (
+                  <View className="pf-checkin" key={item.id}>
+                    <View className="pf-checkin-main">
+                      <Text className="pf-checkin-title">
+                        {fmtDateTime(item.created || item.date)} · 心情 {item.mood} · 焦虑 {item.anxiety} · 疲惫{' '}
+                        {item.fatigue}
+                      </Text>
+                      <Text className="pf-checkin-meta">
+                        睡眠 {item.sleep_hours} 小时 · 照护 {item.care_hours} 小时
+                        {item.note ? ` · ${item.note}` : ''}
+                      </Text>
+                    </View>
+                    <Pill tone="primary">{item.period === 'morning' ? '日间' : '晚间'}</Pill>
+                  </View>
+                ))}
+              </Card>
             )}
 
             {/* ---------- 干预记录 ---------- */}

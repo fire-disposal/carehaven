@@ -495,3 +495,51 @@
   color: $c-muted;
   padding: 0 4rpx $sp-2;
 }
+
+// 今日完成度：打卡 / 生理 / 量表，一眼看到还缺什么
+.today-check {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-bottom: $sp-3;
+  padding: 0 $sp-3;
+  background: $c-surface;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+}
+
+.today-check-item {
+  @include tap;
+  display: flex;
+  align-items: center;
+  gap: $sp-0;
+  padding-right: $sp-2;
+  color: $c-muted;
+}
+
+.today-check-item.done {
+  color: $c-primary-dark;
+}
+
+.today-check-mark {
+  font-size: $fs-small;
+}
+
+.today-check-label {
+  font-size: $fs-small;
+}
+
+.today-check-streak {
+  margin-left: auto;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.today-del {
+  @include tap;
+  display: flex;
+  align-items: center;
+  padding-left: $sp-2;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
