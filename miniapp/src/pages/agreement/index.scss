@@ -1,30 +1,28 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
+/* 文档切换：与问答/互助一致的下划线标签 */
 .ag-tabs {
   display: flex;
-  gap: $sp-2;
-  padding: $sp-3 $sp-4 0;
+  gap: $sp-4;
+  padding: 0 $sp-3;
+  border-bottom: 1rpx solid $c-line;
 }
 
 .ag-tab {
   @include tap;
-  flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-surface;
-  color: $c-ink-2;
-  font-size: $fs-body;
-}
+  padding: 0 $sp-1;
+  color: $c-muted;
+  border-bottom: 4rpx solid transparent;
+  margin-bottom: -1rpx;
+  transition: color $dur-fast $ease, border-color $dur-fast $ease;
 
-.ag-tab.on {
-  border-color: $c-primary;
-  background: $c-primary-light;
-  color: $c-primary-dark;
-  font-weight: 700;
+  &.on {
+    color: $c-primary-dark;
+    border-bottom-color: $c-primary;
+  }
 }
 
 .ag-updated {

@@ -64,7 +64,7 @@ const SOURCE_PILL: Record<PhysioRecord['source'], PillTone> = {
  */
 const SOURCE_NOTE: Record<PhysioRecord['source'], string> = {
   device: '由已登记的蓝牙设备同步。',
-  simulated: '这些是模拟数据，用于展示系统效果，不是设备的真实测量结果。',
+  simulated: '这是用于功能演示的合成数据，不是真实测量结果。',
   manual: '这是您手动填写的记录，不是设备测量。',
 }
 

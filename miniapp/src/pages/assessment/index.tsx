@@ -379,6 +379,11 @@ export default function AssessmentPage() {
           <Text className="as-advice-note">
             结果不是诊断，也不能替代医生或心理咨询师的专业评估。
           </Text>
+          <Text className="as-advice-followup">
+            {result.level === 'green'
+              ? '可在一个月后复测，观察趋势即可。'
+              : '建议两周后复测；若持续没有缓解，请联系专业人员。'}
+          </Text>
         </Card>
 
         {result.flag ? (

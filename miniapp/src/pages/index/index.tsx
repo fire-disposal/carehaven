@@ -507,7 +507,7 @@ export default function HomePage() {
             </View>
             {physio?.source === 'simulated' ? (
               <Text className="source-note">
-                这些是模拟数据，用于展示系统效果，不是设备的真实测量结果。
+                这是用于功能演示的合成数据，不是真实测量结果。
               </Text>
             ) : null}
           </>

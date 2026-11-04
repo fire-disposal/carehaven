@@ -64,5 +64,11 @@
 }
 
 .ui-btn.is-disabled {
-  opacity: 0.45;
+  opacity: 0.9;
+  background: $c-primary-light;
+  border-color: $c-line;
+
+  .ui-btn__label {
+    color: $c-muted;
+  }
 }

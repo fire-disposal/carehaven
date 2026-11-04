@@ -4,7 +4,7 @@ import Icon from '@/components/Icon'
 import { Button, Card, PageHead, TopBar } from '@/components/ui'
 import { THEME } from '@/lib/theme'
 import type { IconName } from '@/lib/icons'
-import { APP_NAME, APP_VERSION } from '@/lib/appInfo'
+import { APP_NAME, APP_UPDATED_AT, APP_VERSION } from '@/lib/appInfo'
 import './index.scss'
 
 const FEATURES: { icon: IconName; title: string; desc: string }[] = [
@@ -35,7 +35,9 @@ export default function AboutPage() {
             title={APP_NAME}
             note="陪照护者一起，把压力说出来、接住、放下。"
           />
-          <Text className="ab-version">版本 {APP_VERSION}</Text>
+          <Text className="ab-version">
+            版本 {APP_VERSION} · 更新 {APP_UPDATED_AT}
+          </Text>
         </View>
 
         <Card className="ab-block">
@@ -74,10 +76,25 @@ export default function AboutPage() {
         </Card>
 
         <Card className="ab-block">
-          <Text className="ab-title">数据说明</Text>
+          <Text className="ab-title">数据与您的权利</Text>
           <Text className="ab-text">
-            生理数据会标注来源：设备采集、手动录入或模拟数据。模拟数据用于展示系统效果，
+            生理数据会标注来源：设备采集、手动录入或合成数据。合成数据仅用于功能演示，
             页面会明确标注，不会冒充真实测量。
+          </Text>
+          <Text className="ab-text">
+            数据存储在境内服务器，仅供本服务使用。您可以在「我的 - 我的数据」导出全部记录或注销账号；
+            参与研究需要单独同意，且可随时撤回，未同意的记录不会进入研究数据集。
+          </Text>
+        </Card>
+
+        <Card className="ab-block">
+          <Text className="ab-title">服务边界</Text>
+          <Text className="ab-text">
+            本服务面向成年家庭照护者，用于自我了解与相互支持，不是医疗器械，不提供诊断、处方或急救服务。
+            量表结果为筛查提示，压力指数为分层参考，均不能替代医生、心理咨询师或精神科的专业评估。
+          </Text>
+          <Text className="ab-text">
+            互助区采用受控表达：内容由平台词库拼接，不含用户自由文本；违规内容可举报，复核后隐藏。
           </Text>
         </Card>
 
@@ -101,6 +118,14 @@ export default function AboutPage() {
           <Button
             variant="ghost"
             block
+            ariaLabel="用户协议"
+            onClick={() => Taro.navigateTo({ url: '/pages/agreement/index?type=terms' })}
+          >
+            用户协议
+          </Button>
+          <Button
+            variant="ghost"
+            block
             ariaLabel="隐私政策"
             onClick={() => Taro.navigateTo({ url: '/pages/agreement/index?type=privacy' })}
           >
@@ -109,7 +134,10 @@ export default function AboutPage() {
         </View>
 
         <Text className="ab-footer">
-          图标来自 Font Awesome Free 7，图标采用 CC BY 4.0 许可，字体采用 SIL OFL 1.1 许可。
+          © 2026 {APP_NAME} · 由项目组维护 · 功能与说明以本页及协议的最新版本为准
+        </Text>
+        <Text className="ab-footer">
+          图标来自 Font Awesome Free 7（CC BY 4.0），字体采用 SIL OFL 1.1 许可。
         </Text>
       </View>
     </View>
