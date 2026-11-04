@@ -170,6 +170,15 @@ system(角色与红线) → L3 事实(≤8条) → L2 最近摘要(≤2条) → 
 | 计费 | 每次调用记录 `tokens_in/out` 与按 `agent_pricing` 估算的 `cost_yuan`，写 `qa_sessions`；管理页按日与按用户汇总 |
 | 运营 | `/admin/#/agent`：可用状态、密钥是否配置、今日用量与费用、近 7 天、Top 用户（邮箱脱敏） |
 | 降级 | 未配置密钥 → 503 + 前端回退；上游失败 → 502 + 回退；两种都在气泡上标注"本条为知识库检索结果" |
+| Token 估算 | **DeepSeek 官方 tokenizer** 侧车（官方 `deepseek_v3_tokenizer.zip`，固定 sha256），调用前估算、调用后校核；不可用时退回启发式并在返回里标注 `estimate.source` |
+| 预算投影 | 调用前按「已用 + 本次估算 + 600 输出」判断日 token / 费用额度，超限直接 429，不浪费一次上游调用 |
+
+### 12.1 Tokenizer 侧车
+
+- 镜像：`tokenizer/`（Python + 官方 `tokenizers` 库），构建时从 `https://cdn.deepseek.com/api-docs/deepseek_v3_tokenizer.zip` 下载并校验 sha256；仓库不存 7.8MB 模型文件。
+- 服务：`GET /health`、`POST /tokenize {texts}`；仅内网，无持久化，内存上限 256MB。
+- 接入：`TOKENIZER_URL`（compose 默认 `http://tokenizer:8301`）。`/tokenize` 与官方参考实现逐条一致（`Hello!`=2、`我今天状态怎么样？`=4）。
+- 回退：侧车不可用或超时 → 启发式（中文 0.62 token/字 + 英文 0.3/字符），返回中标注 `estimate.source=heuristic`。
 
 未做：多轮记忆压缩/事实抽取（P2）、写工具（P3）、流式输出、模型评测集。
 

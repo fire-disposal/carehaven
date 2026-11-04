@@ -10,6 +10,10 @@ services:
     container_name: carehaven
     restart: unless-stopped
 
+    depends_on:
+      tokenizer:
+        condition: service_healthy
+
     volumes:
       # 全部应用状态都在这里（SQLite + 上传文件 + 备份）
       - carehaven_data:/pb/pb_data
@@ -36,6 +40,8 @@ services:
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-flash}
       DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      # 官方 tokenizer 侧车：用于调用前的 token 估算与配额判断
+      TOKENIZER_URL: http://tokenizer:8301
 
     # 资源上限：留出余量但不与宿主机其他服务抢
     mem_limit: 256m
@@ -55,6 +61,26 @@ services:
       options:
         max-size: '10m'
         max-file: '3'
+
+  # DeepSeek 官方 tokenizer 侧车：内存小、无外网出口、无持久化
+  tokenizer:
+    image: __TOKENIZER_IMAGE__
+    container_name: carehaven-tokenizer
+    restart: unless-stopped
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8301/health', timeout=2)"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: '5m'
+        max-file: '2'
 
 volumes:
   carehaven_data:

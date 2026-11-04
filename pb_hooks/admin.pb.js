@@ -442,6 +442,7 @@ routerAdd(
     return e.json(200, {
       enabled: agent.isEnabled(),
       key_configured: Boolean($os.getenv('DEEPSEEK_API_KEY')),
+      tokenizer: agent.tokenizerHealth(),
       model: String($os.getenv('DEEPSEEK_MODEL') || 'deepseek-flash'),
       limits: agent.limits(),
       pricing: agent.pricing(),

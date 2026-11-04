@@ -105,6 +105,13 @@ routerAdd(
     try {
       result = agent.chat(userId, message, conversationId)
     } catch (err) {
+      const code = err && err.code ? String(err.code) : ''
+      if (code === 'projected_tokens' || code === 'projected_budget') {
+        return e.json(429, {
+          message: code === 'projected_budget' ? '预计超出今日费用额度，明天会自动恢复' : '预计超出今日 token 额度，明天会自动恢复',
+          reason: code,
+        })
+      }
       $app.logger().error('助手调用失败', 'error', String(err))
       return e.json(502, { message: '助手暂时不可用，已切换到知识库检索' })
     }
@@ -138,6 +145,7 @@ routerAdd(
       tools: result.tools_used,
       usage: result.usage,
       remaining_requests: Math.max(0, Number(result.limits.requests_per_day) - after.requests),
+      estimate: result.estimate,
       model: result.model,
       safety: false,
     })

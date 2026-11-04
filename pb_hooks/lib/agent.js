@@ -134,6 +134,74 @@ function pricing() {
   return config('agent_pricing', DEFAULT_PRICING)
 }
 
+function tokenizerUrl() {
+  return String($os.getenv('TOKENIZER_URL') || '').replace(/\/$/, '')
+}
+
+/** 调用官方 tokenizer 侧车；不可用时返回 null，由调用方退回启发式 */
+function tokenize(texts) {
+  const url = tokenizerUrl()
+  if (!url || !texts || texts.length === 0) return null
+  try {
+    const res = $http.send({
+      url: url + '/tokenize',
+      method: 'POST',
+      timeout: 3,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts: texts }),
+    })
+    if (res.statusCode !== 200) return null
+    const data = res.json
+    if (!data || !Array.isArray(data.counts) || data.counts.length !== texts.length) return null
+    return data.counts
+  } catch (err) {
+    return null
+  }
+}
+
+function tokenizerHealth() {
+  const url = tokenizerUrl()
+  if (!url) return { ok: false, reason: 'TOKENIZER_URL 未配置' }
+  try {
+    const res = $http.send({ url: url + '/health', method: 'GET', timeout: 2 })
+    if (res.statusCode !== 200) return { ok: false, reason: '状态码 ' + res.statusCode }
+    const data = res.json
+    return { ok: Boolean(data && data.ok), vocab: data ? data.vocab : null }
+  } catch (err) {
+    return { ok: false, reason: String(err && err.message ? err.message : err) }
+  }
+}
+
+/** 粗估兜底：中文约 0.62 token/字，英文约 0.3 token/字符 */
+function heuristicTokens(text) {
+  const s = String(text || '')
+  let cjk = 0
+  for (let i = 0; i < s.length; i += 1) {
+    const code = s.charCodeAt(i)
+    if (code >= 0x4e00 && code <= 0x9fff) cjk += 1
+  }
+  const other = s.length - cjk
+  return Math.ceil(cjk * 0.62 + other * 0.3)
+}
+
+/** 统计一组消息的 prompt token：优先官方 tokenizer，失败则启发式 */
+function countMessages(messages) {
+  const texts = []
+  for (let i = 0; i < messages.length; i += 1) {
+    const msg = messages[i]
+    if (msg && typeof msg.content === 'string' && msg.content.length > 0) texts.push(msg.content)
+  }
+  const counts = tokenize(texts)
+  if (counts) {
+    let sum = 0
+    for (let i = 0; i < counts.length; i += 1) sum += Number(counts[i]) || 0
+    return { tokens: sum + 200, source: 'deepseek-official' }
+  }
+  let sum = 0
+  for (let i = 0; i < texts.length; i += 1) sum += heuristicTokens(texts[i])
+  return { tokens: sum + 200, source: 'heuristic' }
+}
+
 function dayStart() {
   const now = new Date()
   return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
@@ -404,6 +472,25 @@ function chat(userId, message, conversationId) {
   for (let i = 0; i < past.length; i += 1) messages.push(past[i])
   messages.push({ role: 'user', content: message })
 
+  // 调用前用官方 tokenizer 估算，避免单次请求直接冲破日额度
+  const estimate = countMessages(messages)
+  const mine = usageToday(userId)
+  const projectedTokens = mine.tokens + estimate.tokens + 600
+  const projectedCost =
+    mine.cost +
+    (estimate.tokens / 1000000) * Number(pricingCfg.input_per_million) +
+    (600 / 1000000) * Number(pricingCfg.output_per_million)
+  if (projectedTokens > Number(cfg.tokens_per_day)) {
+    const err = new Error('预计超出今日 token 额度')
+    err.code = 'projected_tokens'
+    throw err
+  }
+  if (projectedCost > Number(cfg.budget_yuan_per_day)) {
+    const err = new Error('预计超出今日费用额度')
+    err.code = 'projected_budget'
+    throw err
+  }
+
   let tokensIn = 0
   let tokensOut = 0
   const toolsUsed = []
@@ -454,6 +541,13 @@ function chat(userId, message, conversationId) {
 
   if (!answer) throw new Error('模型没有给出最终回答')
 
+  // provider 未返回 usage 时，用官方 tokenizer 补齐
+  if (!tokensIn) tokensIn = estimate.tokens
+  if (!tokensOut) {
+    const outCounts = tokenize([answer])
+    tokensOut = outCounts ? Number(outCounts[0]) || 0 : heuristicTokens(answer)
+  }
+
   const cost =
     (tokensIn / 1000000) * Number(pricingCfg.input_per_million) +
     (tokensOut / 1000000) * Number(pricingCfg.output_per_million)
@@ -466,6 +560,7 @@ function chat(userId, message, conversationId) {
       tokens_out: tokensOut,
       cost_yuan: Math.round(cost * 10000) / 10000,
     },
+    estimate: estimate,
     model: model,
     limits: cfg,
   }
@@ -488,6 +583,8 @@ module.exports = {
   checkQuota: checkQuota,
   chat: chat,
   hasCrisis: hasCrisis,
+  tokenizerHealth: tokenizerHealth,
+  tokenize: tokenize,
   crisisReply: crisisReply,
   TOOL_DEFS: TOOL_DEFS,
 }

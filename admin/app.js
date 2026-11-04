@@ -214,6 +214,7 @@ async function pageAgent() {
         ${metric('今日 token', data.today.tokens, `单人上限 ${data.limits.tokens_per_day}`)}
         ${metric('今日估算费用', `¥${Number(data.today.cost).toFixed(4)}`, `单人预算 ¥${data.limits.budget_yuan_per_day}/日`)}
         ${metric('全站 token 上限', data.limits.global_tokens_per_day, '防止单用户耗尽总资源')}
+        ${metric('官方 tokenizer', data.tokenizer && data.tokenizer.ok ? '在线' : '不可用', data.tokenizer && data.tokenizer.ok ? `词表 ${data.tokenizer.vocab}` : (data.tokenizer && data.tokenizer.reason) || '未配置')}
       </div>
 
       <h2>近 7 天用量</h2>

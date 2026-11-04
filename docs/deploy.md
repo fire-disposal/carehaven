@@ -81,6 +81,7 @@ ssh <SSH_ALIAS> 'printf "SUPERUSER_EMAIL=admin@<PROD_DOMAIN>\nSUPERUSER_PASSWORD
 | `SUPERUSER_EMAIL` / `SUPERUSER_PASSWORD` | 备份脚本与后台登录（`docker/deploy.sh`、`docker/backup.sh` 读取） |
 | `WECHAT_APP_ID` / `WECHAT_APP_SECRET` | 微信一键登录；留空则接口返回 503 并说明缺少哪个变量（详见 docs/wechat-onboarding.md） |
 | `DEEPSEEK_API_KEY` / `DEEPSEEK_MODEL` / `DEEPSEEK_BASE_URL` | 助手；密钥留空则助手不可用，前端自动回退知识库检索 |
+| `TOKENIZER_URL`（compose 固定 `http://tokenizer:8301`） | 官方 tokenizer 侧车；随部署自动拉起，缺失时估算退回启发式 |
 
 compose 会自动读取同目录 `.env` 做变量插值，**改完 `.env` 后 `docker compose up -d` 即生效**（无需重建镜像）。
 
@@ -147,7 +148,15 @@ PocketBase 内置 cron 是**进程内**的：只做定时触发，**停机错过
 - [ ] 备份恢复演练过一次
 - [ ] 容器资源上限（256MB / 1 CPU）在真实负载下复核
 
-## 九、运营台
+## 九、tokenizer 侧车
+
+`docker-compose.yml` 里的 `tokenizer` 服务与 app 同机运行，镜像由 CI 构建为 `<repo>-tokenizer:sha-<commit>`，不对公网暴露。
+
+- 用途：调用模型前用 DeepSeek 官方 tokenizer 估算 prompt token，配合日额度做预算投影；
+- 来源：官方 zip（sha256 固定），构建时下载，仓库不存模型文件；
+- 故障：侧车不可用时助手仍工作，但估算退回启发式，管理中会显示「官方 tokenizer 不可用」。
+
+## 十、运营台
 
 镜像内已包含 `/admin/`（静态页，无独立服务）。部署后使用超级管理员账号登录 `https://<PROD_DOMAIN>/admin/`：
 

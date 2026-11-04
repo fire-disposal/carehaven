@@ -92,7 +92,10 @@ fi
 # ---------- 3. 切换镜像并启动 ----------
 log "拉取镜像 ..."
 docker pull "$IMAGE"
-sed -i "s|^\(\s*image:\s*\).*|\1$IMAGE|" "$COMPOSE_FILE"
+sed -i "s|^\\(\\s*image:\\s*\\)__IMAGE__|\\1$IMAGE|" "$COMPOSE_FILE"
+if [ -n "${TOKENIZER_IMAGE:-}" ]; then
+  sed -i "s|^\\(\\s*image:\\s*\\)__TOKENIZER_IMAGE__|\\1$TOKENIZER_IMAGE|" "$COMPOSE_FILE"
+fi
 
 log "启动容器 ..."
 docker compose -f "$COMPOSE_FILE" up -d --remove-orphans

@@ -71,6 +71,7 @@ jobs:
     outputs:
       image: ${{ steps.vars.outputs.image }}
       tag: ${{ steps.vars.outputs.tag }}
+      tokenizer_image: ${{ steps.vars.outputs.tokenizer_image }}
     steps:
       - uses: actions/checkout@v4
 
@@ -86,6 +87,7 @@ jobs:
         id: vars
         run: |
           echo "image=${REGISTRY}/${IMAGE_NAME,,}" >> "$GITHUB_OUTPUT"
+          echo "tokenizer_image=${REGISTRY}/${IMAGE_NAME,,}-tokenizer" >> "$GITHUB_OUTPUT"
           echo "tag=sha-$(git rev-parse --short=8 HEAD)" >> "$GITHUB_OUTPUT"
 
       - uses: docker/build-push-action@v6
@@ -101,8 +103,24 @@ jobs:
           provenance: false
           sbom: false
 
+      - name: 构建并推送 tokenizer 侧车
+        uses: docker/build-push-action@v6
+        with:
+          context: ./tokenizer
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.vars.outputs.tokenizer_image }}:${{ steps.vars.outputs.tag }}
+            ${{ steps.vars.outputs.tokenizer_image }}:latest
+          cache-from: type=gha,scope=tokenizer
+          cache-to: type=gha,mode=max,scope=tokenizer
+          provenance: false
+          sbom: false
+
       - name: 输出结果
-        run: echo "镜像 ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}"
+        run: |
+          echo "镜像 ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}"
+          echo "侧车 ${{ steps.vars.outputs.tokenizer_image }}:${{ steps.vars.outputs.tag }}"
 
   # ---------------------------------------------------------------------------
   # 部署到服务器：上传 compose + 部署脚本，再由脚本完成
@@ -139,4 +157,4 @@ jobs:
       - name: 执行部署
         run: |
           ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "cd /srv/carehaven && IMAGE='${{ needs.build.outputs.image }}:${{ needs.build.outputs.tag }}' REQUIRE_BACKUP=1 bash deploy.sh"
+            "cd /srv/carehaven && IMAGE='${{ needs.build.outputs.image }}:${{ needs.build.outputs.tag }}' TOKENIZER_IMAGE='${{ needs.build.outputs.tokenizer_image }}:${{ needs.build.outputs.tag }}' REQUIRE_BACKUP=1 bash deploy.sh"
