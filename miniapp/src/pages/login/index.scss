@@ -1,30 +1,46 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
-// 登录页：纸上的一个抬头 + 两个下划线输入框。
-// 不放印章、不放卡片、不放分隔说明，减少首屏噪音。
+// ============================================================================
+// 登录 / 注册页
+//
+// 结构：品牌抬头 → (小程序端)微信一键登录 → 邮箱表单 → 切换入口 → 协议脚注。
+// 视觉：浅木底上一张纸色表单；品牌区居中，表单左对齐，两者之间留 $sp-6。
+// 桌面宽屏的阅读栏由 app.scss 的 .page 规则统一收口，这里只做本页对齐。
+// ============================================================================
 
+// ---- 页面容器 ---------------------------------------------------------------
 .login {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 0 $sp-6 $sp-7;
-  background: $c-paper;
+  align-items: center;
+  min-height: 100vh;
+  padding: $sp-7 $page-gutter;
+  background: $c-bg;
   box-sizing: border-box;
 }
 
+// ---- 品牌区 ------------------------------------------------------------------
+// 本页用的是本地的 .lg-head（不是 PageHead 组件），所以样式写在这里；
+// 与 .ui-head--brand 保持同一套排版：衬线品牌名居中 + 一句说明。
 .lg-head {
-  margin-bottom: $sp-7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: $reading-width;
+  margin-bottom: $sp-6;
+  text-align: center;
 }
 
 .lg-name {
   display: block;
-  font-family: $font-sans;
-  font-size: 56rpx;
+  font-family: $font-serif;
+  font-size: 64rpx;
   font-weight: 600;
-  letter-spacing: 1rpx;
-  line-height: 1.2;
+  letter-spacing: 2rpx;
+  line-height: $lh-tight;
   color: $c-ink;
 }
 
@@ -32,25 +48,33 @@
   display: block;
   margin-top: $sp-2;
   font-size: $fs-small;
+  line-height: $lh-body;
+  letter-spacing: 0.5rpx;
   color: $c-muted;
-  letter-spacing: 1rpx;
 }
 
+// ---- 微信一键登录（仅小程序端）------------------------------------------------
 .lg-wechat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: $reading-width;
   margin-bottom: $sp-4;
 }
 
 .lg-or {
   display: block;
-  margin-top: $sp-2;
+  margin-top: $sp-3;
   font-size: $fs-tiny;
+  letter-spacing: 1rpx;
   color: $c-muted;
-  text-align: center;
 }
 
+// ---- 表单 --------------------------------------------------------------------
 .lg-form {
-  display: block;
-  max-width: 520rpx;
+  width: 100%;
+  max-width: $reading-width;
 }
 
 .lg-field {
@@ -63,68 +87,82 @@
   margin-bottom: $sp-1;
 }
 
-.lg-field:focus-within .lg-input {
-  border-bottom-color: $c-primary;
-}
-
+// 输入框：M3 outlined 圆角（20rpx）+ 96rpx 高 + 左右 $sp-4。
+// 内层才是原生 input，聚焦环由 field 的 :focus-within 负责。
 .lg-input {
+  @include field;
+  display: flex;
+  align-items: center;
   width: 100%;
-  height: 88rpx;
-  padding: 0;
-  border: 0;
-  border-bottom: 1rpx solid $c-line-strong;
-  background: transparent;
+  height: 96rpx;
+  padding: 0 $sp-4;
+  border-radius: $radius;
   font-size: $fs-body;
   color: $c-ink;
   box-sizing: border-box;
 }
 
+// ---- 错误行 ------------------------------------------------------------------
+// 只有出错时才渲染，占一行的高度由 line-height 撑开，不做固定占位。
 .lg-error {
   display: block;
-  min-height: 44rpx;
   margin-bottom: $sp-2;
-  font-size: $fs-small;
-  line-height: 44rpx;
+  padding: $sp-2 $sp-3;
+  border-radius: $radius-sm;
+  background: $c-red-bg;
   color: $c-red;
+  font-size: $fs-small;
+  line-height: $lh-tight;
 }
 
+// ---- 主按钮（外形由 ui Button 提供，这里只定宽度与间距）------------------------
 .lg-submit {
-  margin-top: $sp-3;
-  height: 96rpx;
+  margin-top: $sp-2;
 }
 
+// ---- 登录 / 注册切换 ---------------------------------------------------------
 .lg-switch {
   @include tap;
   display: flex;
   align-items: center;
-  margin-top: $sp-2;
+  justify-content: center;
+  width: 100%;
+  max-width: $reading-width;
+  margin-top: $sp-3;
+  padding: 0 $sp-4;
+  border-radius: $radius-pill;
   font-size: $fs-small;
-  color: $c-primary;
+  color: $c-primary-dark;
+  transition:
+    background-color $dur-fast $ease,
+    color $dur-fast $ease;
 }
 
+.lg-switch:active {
+  background: $c-primary-light;
+  color: $c-on-primary-container;
+}
+
+// ---- 协议脚注 ----------------------------------------------------------------
 .lg-foot {
   display: block;
+  max-width: $reading-width;
   margin-top: $sp-6;
+  padding: 0 $sp-2;
+  text-align: center;
   font-size: $fs-tiny;
-  line-height: 1.9;
+  line-height: $lh-body;
   color: $c-muted;
 }
 
+// 链接本身是 inline Text，嵌在脚注里：只给下划线，不加高，避免打断行高。
 .lg-link {
-  color: $c-ink-2;
+  color: $c-primary-dark;
   text-decoration: underline;
   text-underline-offset: 4rpx;
+  transition: color $dur-fast $ease;
 }
 
-@media screen and (min-width: 700px) {
-  .login {
-    max-width: 480PX;
-    margin: 0 auto;
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .lg-name {
-    font-size: 44PX;
-  }
+.lg-link:active {
+  color: $c-primary;
 }

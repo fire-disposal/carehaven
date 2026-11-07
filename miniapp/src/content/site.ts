@@ -33,4 +33,6 @@ export const PAGE_TITLES = {
   login: '登录',
   checkin: '记录此刻',
   guide: '引导练习',
+  records: '我的记录',
+  account: '数据与来源',
 } as const

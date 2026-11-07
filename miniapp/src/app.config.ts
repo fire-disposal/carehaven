@@ -14,12 +14,14 @@ export default defineAppConfig({
     'pages/agreement/index',
     'pages/checkin/index',
     'pages/guide/index',
+    'pages/records/index',
+    'pages/account/index',
   ],
   window: {
     backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#1F5A50',
+    navigationBarBackgroundColor: '#3E5F4B',
     navigationBarTitleText: SITE.name,
     navigationBarTextStyle: 'white',
-    backgroundColor: '#F4EFE5',
+    backgroundColor: '#F1ECE3',
   },
 })

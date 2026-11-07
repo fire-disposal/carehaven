@@ -1,35 +1,40 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
-// 「压力管理」页样式。
-// 卡片 / 按钮 / 标签 / 栏目头 / 三态全部走 components/ui，这里只保留本页独有的排版。
+// ============================================================================
+// 压力管理：当前状态 → 为您推荐 → 全部工具 → 最近完成记录
+//
+// 卡片 / 按钮 / 标签 / 栏目头 / 三态都由 components/ui 提供；本文件只写：
+// - 四段内容的节奏与间距
+// - HPS 大数字与分层区间条
+// - 干预卡片的头部排版、分类小节标题、完成记录行
+// 所有卡片统一左右铺满、等高顶部对齐，不出现半宽错位。
+// ============================================================================
 
-/* ---------- 状态提示 ---------- */
+// ---- 页面节奏：段落之间统一留白 ----------------------------------------------
 
 .mg-error {
-  margin-bottom: $sp-2;
-}
-
-
-
-/* ---------- 1. 当前分层卡 ---------- */
-
-/* Card 已提供纸底、发丝线与内边距，这里只加顶部 6rpx 的层级色条 */
-.mg-hero {
   margin-bottom: $sp-3;
-  border-top: 6rpx solid $c-line;
 }
 
-.mg-hero.level-green {
-  border-top-color: $c-green;
-}
+// ---- 1. 当前状态卡 ----------------------------------------------------------
 
-.mg-hero.level-yellow {
-  border-top-color: $c-yellow;
-}
+// Card 已给出纸底 + 24rpx 圆角 + 描边；这里只加顶部层级色条
+.mg-hero {
+  margin-bottom: $sp-4;
+  border-top: 6rpx solid $c-line; // level-none：未评估时不示意任何层级
 
-.mg-hero.level-red {
-  border-top-color: $c-red;
+  &.level-green {
+    border-top-color: $c-green;
+  }
+
+  &.level-yellow {
+    border-top-color: $c-yellow;
+  }
+
+  &.level-red {
+    border-top-color: $c-red;
+  }
 }
 
 .mg-hero-head {
@@ -42,13 +47,16 @@
 .mg-hero-label {
   font-size: $fs-h2;
   font-weight: 600;
-  color: $c-text;
+  line-height: $lh-tight;
+  color: $c-ink;
 }
 
+// 大数字：衬线等宽，避免数值刷新时左右跳动
 .mg-hps {
   display: flex;
   align-items: baseline;
-  margin: $sp-2 0 $sp-1;
+  gap: $sp-1;
+  margin: $sp-2 0 $sp-0;
 }
 
 .mg-hps-value {
@@ -56,32 +64,37 @@
   font-size: $fs-display;
   font-weight: 600;
   line-height: $lh-tight;
-  color: $c-text;
+  color: $c-ink;
 }
 
+.mg-hps-unit {
+  font-size: $fs-small;
+  line-height: $lh-tight;
+  color: $c-muted;
+}
+
+// 数字跟随层级取色：同一份层级信息，不再另画色块
 .level-green .mg-hps-value {
   color: $c-green;
 }
+
 .level-yellow .mg-hps-value {
   color: $c-yellow;
 }
+
 .level-red .mg-hps-value {
   color: $c-red;
 }
 
-.mg-hps-unit {
-  margin-left: $sp-1;
-  font-size: $fs-small;
-  color: $c-text-2;
-}
-
 .mg-hero-desc {
   display: block;
+  margin-top: $sp-2;
   font-size: $fs-body;
-  color: $c-text-2;
   line-height: $lh-body;
+  color: $c-ink-2;
 }
 
+// 红色层级：唯一允许出现的「现在就做」提示条
 .mg-urgent {
   margin-top: $sp-3;
   padding: $sp-3;
@@ -93,21 +106,22 @@
 .mg-urgent-title {
   display: flex;
   align-items: center;
-  gap: $sp-0;
-  font-size: $fs-h2;
-  font-weight: 700;
-  color: $c-red;
+  gap: $sp-1;
   margin-bottom: $sp-1;
+  font-size: $fs-body;
+  font-weight: 700;
+  line-height: $lh-tight;
+  color: $c-red;
 }
 
 .mg-urgent-text {
   display: block;
-  font-size: $fs-body;
-  color: $c-text;
+  font-size: $fs-small;
   line-height: $lh-body;
+  color: $c-ink;
 }
 
-/* 分层刻度条：12 段刻度，靠宽度表达阈值 */
+// ---- 分层区间条：绿 / 黄 / 红三段 + 指针 + 图例 -------------------------------
 
 .mg-scale {
   margin-top: $sp-3;
@@ -118,93 +132,90 @@
 .mg-scale-bar {
   position: relative;
   display: flex;
-  height: $sp-1;
+  height: $sp-2;
+  border-radius: $radius-pill;
+  overflow: hidden; // 三段拼成一个圆头轨道
+  background: $c-surface-dim;
 }
 
 .mg-seg {
   height: 100%;
+
+  &.seg-green {
+    background: $c-green-line;
+  }
+
+  &.seg-yellow {
+    background: $c-yellow-line;
+  }
+
+  &.seg-red {
+    background: $c-red-line;
+  }
 }
 
-.seg-green {
-  background: $c-green;
-  border-radius: $radius-xs 0 0 $radius-xs;
-}
-.seg-yellow {
-  background: $c-yellow;
-}
-.seg-red {
-  background: $c-red;
-  border-radius: 0 $radius-xs $radius-xs 0;
-}
-
+// 指针：竖条跨出轨道上下，落在当前 HPS 位置
 .mg-pointer {
   position: absolute;
   top: -$sp-1;
+  bottom: -$sp-1;
   width: 6rpx;
-  height: $sp-3;
   margin-left: -3rpx;
   background: $c-ink;
-  border: 1rpx solid $c-surface;
+  border-radius: $radius-pill;
+  box-shadow: 0 0 0 2rpx $c-surface; // 深浅段上都能看清
 }
 
 .mg-legend {
   display: flex;
   flex-wrap: wrap;
-  margin-top: $sp-1;
+  gap: $sp-1 $sp-4;
+  margin-top: $sp-2;
+  font-size: $fs-tiny;
+  color: $c-ink-2;
 }
 
 .mg-legend-item {
   display: flex;
   align-items: center;
-  margin: $sp-0 $sp-3 $sp-0 0;
-  font-size: $fs-small;
-  color: $c-text-2;
+  gap: $sp-1;
 }
 
 .mg-dot {
+  flex: none;
   width: $sp-2;
   height: $sp-2;
-  border-radius: 50%;
-  margin-right: $sp-1;
+  border-radius: $radius-pill;
+
+  &.dot-green {
+    background: $c-green;
+  }
+
+  &.dot-yellow {
+    background: $c-yellow;
+  }
+
+  &.dot-red {
+    background: $c-red;
+  }
 }
 
-.dot-green {
-  background: $c-green;
-}
-.dot-yellow {
-  background: $c-yellow;
-}
-.dot-red {
-  background: $c-red;
-}
+// ---- 2/3. 干预卡片 ----------------------------------------------------------
 
-
-
-/* ---------- 2/3. 方案卡片 ---------- */
-
+// Card flush：卡片本身无内边距，内部头/体自己排
 .mg-it {
   margin-bottom: $sp-3;
 }
 
 .mg-it-head {
   display: flex;
-  align-items: center;
-  gap: $sp-2;
-  min-height: 96rpx;
+  align-items: flex-start;
+  gap: $sp-3;
   padding: $sp-3;
-  box-sizing: border-box;
 }
 
 .mg-it-icon {
-  flex: none;
-  width: 72rpx;
-  height: 72rpx;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-paper;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include icon-tile(72rpx, $c-surface-dim);
 }
 
 .mg-it-main {
@@ -216,140 +227,74 @@
   display: block;
   font-size: $fs-body;
   font-weight: 600;
-  color: $c-text;
   line-height: $lh-tight;
+  color: $c-ink;
 }
 
+// 分类 Pill + 时长一行
 .mg-it-meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: $sp-1;
-  margin-top: $sp-0;
+  margin-top: $sp-1;
 }
 
 .mg-duration {
   font-size: $fs-tiny;
-  color: $c-text-2;
+  line-height: 1.5;
+  color: $c-muted;
 }
 
 .mg-it-summary {
   @include clamp(2);
-  margin-top: $sp-0;
-  font-size: $fs-small;
-  color: $c-text-2;
-  line-height: $lh-body;
-}
-
-/* 「详情 / 收起」是整行可点的一部分，本身不再单独设触控区 */
-.mg-toggle {
-  @include tap;
-  flex: none;
-  display: flex;
-  align-items: center;
-  padding-left: $sp-2;
-  font-size: $fs-small;
-  font-weight: 600;
-  color: $c-primary-dark;
-}
-
-.mg-it-body {
-  padding: 0 $sp-3 $sp-3;
-  border-top: 1rpx solid $c-line;
-}
-
-.mg-desc {
-  display: block;
-  padding: $sp-3 0;
-  font-size: $fs-body;
-  color: $c-text-2;
-  line-height: $lh-body;
-}
-
-.mg-start {
   margin-top: $sp-1;
-}
-
-/* 完成表单 */
-
-.mg-form {
-  padding-top: $sp-3;
-  border-top: 1rpx solid $c-line;
-}
-
-.mg-hint {
-  display: block;
-  margin-bottom: $sp-3;
   font-size: $fs-small;
-  color: $c-text-2;
-  line-height: $lh-body;
+  line-height: 1.7;
+  color: $c-ink-2;
 }
 
-.mg-field {
-  margin-bottom: $sp-3;
+// 主按钮：外观由 components/ui/Button 决定，这里控制卡片内缩与更紧凑的尺寸。
+// width:auto 是必须的：block 的 width:100% 叠加左右 margin 会把按钮推出卡片。
+.mg-it .mg-start {
+  width: auto;
+  min-height: 80rpx;
+  margin: 0 $sp-3 $sp-3;
 }
 
-.mg-label {
-  display: block;
+.mg-start .ui-btn__label {
   font-size: $fs-small;
-  color: $c-text-2;
 }
 
-.mg-input {
-  @include tap;
-  width: 100%;
-  margin-top: $sp-1;
-  padding: 0 $sp-3;
-  background: $c-paper;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  font-size: $fs-body;
-  color: $c-text;
-  box-sizing: border-box;
-}
-
-.mg-stars {
-  margin-top: $sp-1;
-}
-
-.mg-form-actions {
-  display: flex;
-  gap: $sp-2;
-  margin-top: $sp-3;
-}
-
-.mg-action {
-  flex: 1;
-}
-
-/* 工具分类标题 */
+// ---- 分类小节：图标 + 名称 + 计数 --------------------------------------------
 
 .mg-group-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: $sp-2;
-  margin: $sp-3 0 $sp-2;
+  margin: $sp-4 0 $sp-2;
 }
 
 .mg-group-name {
   display: flex;
   align-items: center;
-  gap: $sp-0;
+  gap: $sp-1;
   font-size: $fs-body;
   font-weight: 600;
-  color: $c-text;
+  line-height: $lh-tight;
+  color: $c-ink;
 }
 
-/* ---------- 4. 最近完成记录 ---------- */
+// ---- 4. 最近完成记录 --------------------------------------------------------
 
 .mg-log {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $sp-2;
-  min-height: 96rpx;
-  margin-bottom: $sp-3;
+  gap: $sp-3;
+  margin-bottom: $sp-2;
+  padding: $sp-3 $sp-4;
 }
 
 .mg-log-main {
@@ -361,15 +306,20 @@
   display: block;
   font-size: $fs-body;
   font-weight: 600;
-  color: $c-text;
   line-height: $lh-tight;
+  color: $c-ink;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mg-log-meta {
+  @include num;
   display: block;
   margin-top: $sp-0;
   font-size: $fs-tiny;
-  color: $c-text-2;
+  line-height: $lh-body;
+  color: $c-muted;
 }
 
 .mg-log-stars {
@@ -379,14 +329,14 @@
 
 .mg-log-star-icons {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: $sp-0;
-  line-height: $lh-tight;
 }
 
 .mg-log-star-label {
   display: block;
   margin-top: $sp-0;
-  font-size: $fs-tiny;
-  color: $c-text-2;
+  font-size: $fs-label;
+  color: $c-muted;
 }

@@ -16,7 +16,101 @@ const ALL_CATEGORY = '全部'
 const UNKNOWN_CATEGORY = '未分类'
 
 // 快捷问题：措辞已逐条在实际知识库中验证过，点下去都能命中对应条目
-const QUICK_QUESTIONS = ['晚上不睡觉', '拒绝洗澡', '动手打人', '患者走失了怎么办', '我自己撑不住了']
+const QUICK_QUESTIONS = [
+  '晚上不睡觉',
+  '拒绝洗澡',
+  '动手打人',
+  '患者走失了怎么办',
+  '吃不下饭',
+  '总是重复问同一件事',
+  '我自己撑不住了',
+]
+
+// ---- 图谱几何 ----------------------------------------------------------------
+// 画布按「可用宽度」等比缩放：中心节点 + 一圈分类节点，半径由图元尺寸推出来，
+// 而不是写死一个 600rpx 的画布再让它横向溢出（390px 屏只有约 686rpx 可用）。
+const KG_NODE_W = 128 // 分类节点参照宽（设计稿单位，与 .kg-node min-width 一致）
+const KG_NODE_H = 100 // 分类节点参照高（同上，与 min-height 一致）
+const KG_CENTER = 152 // 中心圆直径参照值（与 .kg-node--center 一致）
+/** 连线离圆心的可视角：用来保证线不会穿过中心节点的字 */
+const KG_LINE_START = 58
+/** 节点边缘与画布边框之间留的空，给 pressable 缩放下沉留余量 */
+const KG_PAD = 12
+/** 给 ScrollView 的溢出判据留一点余量，免得画布刚好卡在临界值上抖出横向滚动 */
+const KG_SCROLLBAR = 8
+
+const sceneWidth = (): number => {
+  try {
+    return Taro.getSystemInfoSync().windowWidth || 375
+  } catch (e) {
+    return 375
+  }
+}
+
+// 设计稿单位 → 真实像素：字号与触控尺寸必须用 px 才能保底，画布坐标反过来要跟屏宽等比。
+// 模块级算一次即可，页面固定竖屏、不跟随旋转。
+const RPX = sceneWidth() / 750
+
+interface GraphNode {
+  name: string
+  count: number
+  left: number
+  top: number
+  /** 连线长度，从中心节点边缘之外起步 */
+  line: number
+  deg: number
+}
+
+interface GraphLayout {
+  width: number
+  height: number
+  center: number
+  nodes: GraphNode[]
+}
+
+/**
+ * 半径由「节点自身尺寸」反推：分类节点外接圆半径 r = hypot(w, h) / 2，
+ * 再按角度间距算相邻节点不重叠所需半径，然后把整体压进可用宽度。
+ */
+function layoutGraph(names: string[], counts: number[], availWidth: number): GraphLayout {
+  const count = names.length
+  const radius = Math.min(Math.hypot(KG_NODE_W, KG_NODE_H) / 2, KG_NODE_H / 2)
+  let ring = KG_CENTER / 2 + radius + 28
+  if (count > 1) {
+    const step = (2 * Math.PI) / count
+    ring = Math.max(ring, radius / Math.sin(step / 2) + 10)
+  }
+  // 左右各留 r + KG_PAD，否则转过 90° 的节点会被裁掉一半
+  const limit = Math.max(KG_CENTER / 2 + 48, availWidth / 2 - radius - KG_PAD)
+  ring = Math.min(ring, limit)
+  const size = Math.ceil(Math.max(KG_CENTER + 2 * KG_PAD, (ring + radius + KG_PAD) * 2))
+  const center = size / 2
+  const start = count % 2 === 1 ? -90 : -180 / count - 90
+  return {
+    width: size,
+    height: size,
+    center,
+    nodes: names.map((name, index) => {
+      const deg = start + (360 / count) * index
+      const rad = (deg * Math.PI) / 180
+      return {
+        name,
+        count: counts[index] ?? 0,
+        left: center + ring * Math.cos(rad),
+        top: center + ring * Math.sin(rad),
+        line: ring - KG_LINE_START,
+        deg,
+      }
+    }),
+  }
+}
+
+/** 条目摘要：正文去掉换行与多余空白，卡片收起时只露两行 */
+function entrySummary(entry: KbEntry): string {
+  const content = String(entry.content ?? '')
+  if (!content) return '这条内容暂时没有正文，展开也看不到更多。'
+  return content.replace(/\s+/g, ' ').trim()
+}
 
 interface Source {
   id: string
@@ -29,7 +123,13 @@ interface Turn {
   id: string
   question: string
   answer: string
+  /**
+   * 来源条目。实时回答只带标题与分类，自建历史记录能对出正文；
+   * 渲染时再按标题回填知识库正文，这样新老两种记录共用一套展开逻辑。
+   */
   sources: Source[]
+  /** 历史记录里只在正文中留下标题：渲染时据此回填 */
+  sourceTitles?: string[]
   status: 'pending' | 'ok' | 'error'
   error: string
   created: string
@@ -112,17 +212,13 @@ function dayStamp(turn: Turn, previous: Turn | undefined): string {
   return `${dayLabel(date)} ${clockLabel(date)}`
 }
 
-/** 历史记录只存了回答正文，可由正文里的【条目标题】与知识库对上来源 */
-function deriveSources(answer: string, entries: KbEntry[]): Source[] {
+/** 历史记录只存了回答正文，可由正文里出现的【条目标题】与知识库对上来源 */
+function deriveSourceTitles(answer: string, entries: KbEntry[]): string[] {
   if (!answer) return []
   return entries
     .filter((entry) => !!entry && !!entry.title && answer.indexOf(entry.title) >= 0)
     .sort((a, b) => answer.indexOf(a.title) - answer.indexOf(b.title))
-    .map((entry) => ({
-      id: typeof entry.id === 'string' ? entry.id : '',
-      title: entry.title,
-      category: typeof entry.category === 'string' ? entry.category : '',
-    }))
+    .map((entry) => entry.title)
 }
 
 function toTurn(item: QaSession, index: number, entries: KbEntry[]): Turn {
@@ -131,7 +227,8 @@ function toTurn(item: QaSession, index: number, entries: KbEntry[]): Turn {
     id: `h${index}-${String(item.id ?? '')}`,
     question: String(item.question ?? ''),
     answer,
-    sources: deriveSources(answer, entries),
+    sources: [],
+    sourceTitles: deriveSourceTitles(answer, entries),
     status: answer.trim() ? 'ok' : 'error',
     error: '这条历史记录没有保存下回答内容，可以重新提问。',
     created: String(item.created ?? ''),
@@ -168,8 +265,15 @@ export default function QaPage() {
   const [openEntry, setOpenEntry] = useState('')
   const [graphCategory, setGraphCategory] = useState('')
   const [graphEntry, setGraphEntry] = useState('')
+  const [query, setQuery] = useState('')
   const [anchorTick, setAnchorTick] = useState(0)
   const seq = useRef(0)
+  /**
+   * 输入框要不要立刻弹键盘。H5 上带焦点重绘 = 直接聚焦（浏览器只允许在用户手势里这么做，
+   * 而发送/点 chip 本身就是手势）；小程序里 focus 属性是「拉起键盘」的一次性信号，
+   * 所以挂载时给 false，之后每次发送才抬成 true，页面别处重渲染也不会重新弹键盘。
+   */
+  const [composerFocus, setComposerFocus] = useState(false)
 
   // 锚点 id 每次变化都会把滚动视图带到目标位置：问答看最新一条，知识库回到列表顶部
   const anchor =
@@ -184,9 +288,38 @@ export default function QaPage() {
     return list
   }, [entries])
 
+  /** 搜索词按空白拆成多段，每段都要命中；大小写不敏感，标题/摘要/正文/关键词/来源一起搜 */
+  const searchTerms = useMemo(
+    () =>
+      query
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean),
+    [query]
+  )
+
+  /** 命中的条目：过滤后保留知识库里的原始序号，列表键与「第 n / 共 m 条」都还指向同一条 */
+  const matched = useMemo(() => {
+    if (searchTerms.length === 0) return entries.map((entry, index) => ({ entry, index }))
+    const hits: { entry: KbEntry; index: number; score: number }[] = []
+    entries.forEach((entry, index) => {
+      const title = String(entry.title ?? '').toLowerCase()
+      const body = [title, entry.content, entry.keywords, entry.source]
+        .map((value) => String(value ?? '').toLowerCase())
+        .join('\n')
+      if (!searchTerms.every((term) => body.indexOf(term) >= 0)) return
+      // 标题命中排在前面，其余按知识库顺序，避免搜索结果每次检索都跳来跳去
+      hits.push({ entry, index, score: searchTerms.filter((term) => title.indexOf(term) >= 0).length })
+    })
+    return hits
+      .sort((a, b) => b.score - a.score || a.index - b.index)
+      .map((hit) => ({ entry: hit.entry, index: hit.index }))
+  }, [entries, searchTerms])
+
   const groups = useMemo(() => {
     const result: KbGroup[] = []
-    for (const entry of entries) {
+    for (const { entry } of matched) {
       const name = String(entry.category ?? '').trim() || UNKNOWN_CATEGORY
       if (category !== ALL_CATEGORY && name !== category) continue
       const group = result.find((item) => item.category === name)
@@ -194,7 +327,7 @@ export default function QaPage() {
       else result.push({ category: name, items: [entry] })
     }
     return result
-  }, [entries, category])
+  }, [matched, category])
 
   const shownCount = useMemo(() => groups.reduce((sum, group) => sum + group.items.length, 0), [groups])
   const kbReady = entries.length > 0
@@ -355,49 +488,119 @@ export default function QaPage() {
         created: new Date().toISOString(),
       },
     ])
+    // 发完这句话接着问下一句：清空输入框并把焦点留在原地
     setDraft('')
+    setComposerFocus(true)
     setAnchorTick((tick) => tick + 1)
-    void runAsk(id, question)
+  }
+
+  /** 知识库搜索无结果时把关键词带到助手：切 tab + 填进输入框 + 聚焦，用户按发送即可 */
+  function askWithQuery() {
+    const keyword = query.trim()
+    setDraft(keyword)
+    setMode('chat')
+    setComposerFocus(true)
+    setAnchorTick((tick) => tick + 1)
   }
 
   function switchMode(next: 'chat' | 'kb' | 'graph') {
     setMode(next)
+    if (next !== 'chat') setComposerFocus(false)
     setAnchorTick((tick) => tick + 1)
   }
 
-  function renderSource(turn: Turn, source: Source) {
+  // 来源行：整行都是按钮，收起时露两行摘要，展开后是全文。列表里显式的「收起」让人知道还能再点。
+  // 实时回答只带回标题与分类，正文按标题回知识库里取；取不到就退化成说明文字。
+  function renderSource(turn: Turn, source: Source, order: number) {
     const key = `${turn.id}:${source.id || source.title}`
     const open = openSource === key
-    const entry = source.id ? entries.find((item) => item.id === source.id) : undefined
+    const entry = entries.find(
+      (item) => (source.id && item.id === source.id) || (!!source.title && item.title === source.title)
+    )
     return (
-      <View className="src-item" key={key} ariaRole="button" ariaLabel={`${source.title}，展开或收起全文`} onClick={() => setOpenSource(open ? '' : key)}>
+      <View
+        className={`src-item${open ? ' open' : ''}`}
+        key={key}
+        ariaRole="button"
+        ariaLabel={`来源 ${order}：${source.title}，${open ? '收起' : '展开'}全文`}
+        onClick={() => setOpenSource(open ? '' : key)}
+      >
         <View className="src-head">
-          {source.category ? (
-            <Pill tone="primary" className="src-cat">
-              {source.category}
-            </Pill>
-          ) : null}
+          <View className="src-order">
+            <Text className="src-order-text">{order}</Text>
+          </View>
           <Text className="src-title">{source.title}</Text>
-          <Text className="src-toggle">{open ? '收起' : '全文'}</Text>
+          <Icon name="chevron-down" size={24} className={`src-caret${open ? ' open' : ''}`} color={THEME.primary} />
+        </View>
+        <View className="src-cats">
+          {source.category ? <Pill tone="primary">{source.category}</Pill> : null}
+          {entry && entry.source ? <Pill tone="quiet">{entry.source}</Pill> : null}
         </View>
         {open ? (
           <View className="src-body">
             {entry ? (
-              <Text className="src-content">{String(entry.content ?? '')}</Text>
+              <>
+                <Text className="src-content">{String(entry.content ?? '')}</Text>
+                {entry.keywords ? <Text className="src-from">关键词：{entry.keywords}</Text> : null}
+              </>
             ) : (
               <Text className="src-content">这条内容的全文暂时取不到，可以切到「知识库」按分类查看。</Text>
             )}
-            {entry && entry.source ? <Text className="src-from">依据：{entry.source}</Text> : null}
           </View>
-        ) : null}
+        ) : entry ? (
+          <Text className="src-teaser">{entrySummary(entry)}</Text>
+        ) : (
+          <Text className="src-teaser">这篇原文没有随回答带回来，展开也取不到正文时可以到「知识库」里找。</Text>
+        )}
       </View>
     )
+  }
+
+  // 首屏：图标 + 标题 + 说明 + 两列常见问题。空态不是「什么都没有」，而是直接给出能点的入口。
+  function renderChatEmpty() {
+    return (
+      <View className="qa-hero">
+        <View className="qa-hero-mark">
+          <Icon name="comment-dots" size={56} color={THEME.primary} />
+        </View>
+        <Text className="qa-hero-title">问一个照护问题</Text>
+        <Text className="qa-hero-desc">
+          说清当下的情况，比如时间、行为和您已经试过的办法。回答会检索照护知识库并列出出处。
+        </Text>
+
+        <Text className="qa-hero-caption">常见问题</Text>
+        <View className="qa-hero-grid">
+          {QUICK_QUESTIONS.map((item) => (
+            <View
+              className="qa-hero-chip"
+              key={item}
+              ariaRole="button"
+              ariaLabel={`提问：${item}`}
+              onClick={() => send(item)}
+            >
+              <Text className="qa-hero-chip-text">{item}</Text>
+              <Icon name="arrow-right" size={24} color={THEME.muted} />
+            </View>
+          ))}
+        </View>
+      </View>
+    )
+  }
+
+  /** 历史记录只留了正文标题，按标题回知识库补分类 */
+  function displaySources(turn: Turn): Source[] {
+    if (turn.sources.length > 0) return turn.sources
+    return (turn.sourceTitles || []).map((title) => {
+      const entry = entries.find((item) => item.title === title)
+      return { id: entry ? entry.id : '', title, category: entry ? String(entry.category ?? '') : '' }
+    })
   }
 
   function renderChat() {
     if (booting) {
       return <StateBlock variant="loading" title="正在读取问答记录…" />
     }
+    const empty = turns.length === 0
     return (
       <View className="qa-thread">
         {chatError ? (
@@ -409,31 +612,28 @@ export default function QaPage() {
           />
         ) : null}
 
-        {turns.length === 0 ? (
-          <StateBlock
-            variant="empty"
-            icon="comment-dots"
-            title="输入您的问题"
-            desc="系统会从照护知识库里检索相关内容，并列出出处。"
-          />
-        ) : null}
+        {empty ? renderChatEmpty() : null}
 
-        <View className="qa-suggest-block">
-          <Text className="qa-suggest-title">{turns.length === 0 ? '常见问题' : '继续提问'}</Text>
-          <View className="qa-suggest-chips">
-            {QUICK_QUESTIONS.map((item) => (
-              <View
-                className="qa-suggest-chip"
-                key={item}
-                ariaRole="button"
-                ariaLabel={`提问：${item}`}
-                onClick={() => send(item)}
-              >
-                <Text className="qa-suggest-chip-text">{item}</Text>
+        {!empty ? (
+          <View className="qa-suggest-block">
+            <Text className="qa-suggest-title">继续提问</Text>
+            <ScrollView className="qa-suggest-scroll" scrollX enableFlex>
+              <View className="qa-suggest-row">
+                {QUICK_QUESTIONS.map((item) => (
+                  <View
+                    className="qa-suggest-chip"
+                    key={item}
+                    ariaRole="button"
+                    ariaLabel={`提问：${item}`}
+                    onClick={() => send(item)}
+                  >
+                    <Text className="qa-suggest-chip-text">{item}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            </ScrollView>
           </View>
-        </View>
+        ) : null}
 
         {turns.map((turn, index) => {
           const stamp = dayStamp(turn, turns[index - 1])
@@ -453,19 +653,19 @@ export default function QaPage() {
 
               <View className="msg-row msg-row-ai">
                 {turn.status === 'pending' ? (
-                  <View className="bubble bubble-ai bubble-pending">
+                  <View className="bubble bubble-ai bubble-pending" ariaRole="status" ariaLabel="正在检索知识库">
                     <View className="dots">
                       <View className="dot" />
                       <View className="dot" />
                       <View className="dot" />
                     </View>
-                    <Text className="pending-text">正在检索…</Text>
+                    <Text className="pending-text">正在检索知识库…</Text>
                   </View>
                 ) : null}
 
                 {turn.status === 'error' ? (
                   <View className="bubble bubble-ai bubble-error">
-                    <View className="bubble-error-text inline-alert">
+                    <View className="bubble-error-text inline-alert" ariaRole="alert">
                       <Icon name="triangle-exclamation" size={28} color={THEME.red} />
                       <Text>{turn.error || '没能取到回答'}</Text>
                     </View>
@@ -482,11 +682,15 @@ export default function QaPage() {
 
                 {turn.status === 'ok' ? (
                   <View className="bubble bubble-ai">
-                    <Text className="bubble-text">{turn.answer}</Text>
-                    {turn.sources.length > 0 ? (
+                    <Text className="bubble-text">
+                      {turn.answer.replace(/\n[ \t]*(?=\n)/g, '')}
+                    </Text>
+                    {displaySources(turn).length > 0 ? (
                       <View className="src-list">
-                        <Text className="src-caption">来源 {turn.sources.length} 条 · 点标题看全文</Text>
-                        {turn.sources.map((source) => renderSource(turn, source))}
+                        <Text className="src-caption">
+                          来源 {displaySources(turn).length} 条 · 点一行看全文
+                        </Text>
+                        {displaySources(turn).map((source, order) => renderSource(turn, source, order + 1))}
                       </View>
                     ) : kbReady && !turn.meta ? (
                       <Text className="src-note">
@@ -517,8 +721,17 @@ export default function QaPage() {
                           ariaLabel="这个回答有帮助"
                           onClick={() => void markHelpful(turn, 'up')}
                         >
-                          <Icon name="thumbs-up" size={26} />
+                          <Icon
+                            name="thumbs-up"
+                            size={28}
+                            color={turn.helpful === 'up' ? THEME.onPrimaryContainer : THEME.ink2}
+                          />
                           <Text className="qa-helpful-text">有用</Text>
+                          <Icon
+                            name={turn.helpful === 'up' ? 'circle-check' : 'circle-question'}
+                            size={24}
+                            color={turn.helpful === 'up' ? THEME.onPrimaryContainer : THEME.muted}
+                          />
                         </View>
                         <View
                           className={`qa-helpful-btn${turn.helpful === 'down' ? ' on' : ''}`}
@@ -526,7 +739,17 @@ export default function QaPage() {
                           ariaLabel="这个回答没帮助"
                           onClick={() => void markHelpful(turn, 'down')}
                         >
+                          <Icon
+                            name="face-meh"
+                            size={28}
+                            color={turn.helpful === 'down' ? THEME.onPrimaryContainer : THEME.ink2}
+                          />
                           <Text className="qa-helpful-text">没用</Text>
+                          <Icon
+                            name={turn.helpful === 'down' ? 'circle-check' : 'circle-question'}
+                            size={24}
+                            color={turn.helpful === 'down' ? THEME.onPrimaryContainer : THEME.muted}
+                          />
                         </View>
                       </View>
                     ) : null}
@@ -558,91 +781,165 @@ export default function QaPage() {
       return <StateBlock variant="empty" icon="book-open" title="知识库还没有内容" desc="内容补充后，这里会按分类展开。" />
     }
 
-    // 版面：以中心节点为圆心，分类节点按角度均匀分布
-    const SIZE = 600
-    const CENTER = SIZE / 2
-    const RADIUS = 152
-    const nodes = categories.map((name, index) => {
-      const angle = (-90 + (360 / categories.length) * index) * (Math.PI / 180)
-      const group = groups.find((g) => g.category === name)
-      return {
-        name: name,
-        count: group ? group.items.length : 0,
-        x: CENTER + RADIUS * Math.cos(angle),
-        y: CENTER + RADIUS * Math.sin(angle),
-        deg: (-90 + (360 / categories.length) * index),
-      }
+    // 画布宽度按「屏宽 - 页面留白 - 滚动条」算，再等比缩进去；左对齐 + 负边距把画布边距借回来，
+    // 否则 390px 屏上 600rpx 的固定画布会横向溢出。
+    const avail = Math.max(220, sceneWidth() - 2 * 32 * RPX - KG_SCROLLBAR)
+    const counts = categories.map((name) => {
+      const group = groups.find((item) => item.category === name)
+      return group ? group.items.length : 0
     })
-    const activeGroup = groups.find((g) => g.category === graphCategory)
+    const layout = layoutGraph(categories, counts, avail)
+    const centerNode = layout.nodes.find((node) => node.name === graphCategory)
+    const centerEntries = graphCategory
+      ? entries.filter((entry) => (String(entry.category ?? '').trim() || UNKNOWN_CATEGORY) === graphCategory)
+      : []
+    const maxCount = counts.reduce((max, value) => Math.max(max, value), 1)
 
     return (
       <View className="kg">
         <View className="qa-anchor" id={`graph-anchor-${anchorTick}`} />
-        <View className="kg-canvas" style={{ width: Taro.pxTransform(SIZE), height: Taro.pxTransform(SIZE), margin: '0 auto' }}>
-          {nodes.map((node, index) => (
-            <View
-              key={`line-${node.name}`}
-              className="kg-line"
-              style={{
-                left: Taro.pxTransform(CENTER),
-                top: Taro.pxTransform(CENTER),
-                width: Taro.pxTransform(RADIUS),
-                transform: `rotate(${node.deg}deg)`,
-                animationDelay: `${index * 40}ms`,
-              }}
-            />
-          ))}
-
-          <View className="kg-node kg-node--center" style={{ left: Taro.pxTransform(CENTER), top: Taro.pxTransform(CENTER) }}>
-            <Text className="kg-center-title">知识库</Text>
-            <Text className="kg-center-count">{entries.length} 条</Text>
-          </View>
-
-          {nodes.map((node, index) => {
-            const on = graphCategory === node.name
-            return (
-              <View
-                key={node.name}
-                className={`kg-node ${on ? 'on' : ''}`}
-                style={{ left: Taro.pxTransform(node.x), top: Taro.pxTransform(node.y), animationDelay: `${index * 40}ms` }}
-                onClick={() => {
-                  setGraphCategory(on ? '' : node.name)
-                  setGraphEntry('')
-                }}
-                ariaRole="button"
-                ariaLabel={`查看分类：${node.name}`}
-              >
-                <Text className="kg-node-title">{node.name}</Text>
-                <Text className="kg-node-count">{node.count}</Text>
-              </View>
-            )
-          })}
+        <View className="kg-head">
+          <SectionHeader
+            title="知识图谱"
+            eyebrow="照护知识库"
+            action={
+              <Text className="muted">
+                {categories.length} 个分类 · {entries.length} 条
+              </Text>
+            }
+          />
         </View>
 
+        <ScrollView className="kg-scroll" scrollX={layout.width > avail} enableFlex>
+          <View className="kg-stage" style={{ width: `${layout.width}px` }}>
+            <View
+              className="kg-canvas"
+              style={{ width: `${layout.width}px`, height: `${layout.height}px` }}
+            >
+              {layout.nodes.map((node, index) => (
+                <View
+                  key={`line-${node.name}`}
+                  className={`kg-line${graphCategory === node.name ? ' on' : ''}`}
+                  style={{
+                    left: `${layout.center}px`,
+                    top: `${layout.center}px`,
+                    width: `${node.line}px`,
+                    transform: `rotate(${node.deg}deg)`,
+                    animationDelay: `${index * 40}ms`,
+                  }}
+                />
+              ))}
+
+              {/* 圆点放在连线终点：让「线指向节点」而不是插进节点 */}
+              {layout.nodes.map((node) => (
+                <View
+                  key={`dot-${node.name}`}
+                  className={`kg-dot${graphCategory === node.name ? ' on' : ''}`}
+                  style={{
+                    left: `${layout.center + node.line * Math.cos((node.deg * Math.PI) / 180)}px`,
+                    top: `${layout.center + node.line * Math.sin((node.deg * Math.PI) / 180)}px`,
+                  }}
+                />
+              ))}
+
+              <View
+                className="kg-node kg-node--center"
+                style={{ left: `${layout.center}px`, top: `${layout.center}px` }}
+                ariaRole="status"
+                ariaLabel={`知识库共 ${entries.length} 条，${categories.length} 个分类`}
+              >
+                <Text className="kg-center-title">知识库</Text>
+                <Text className="kg-center-count">{entries.length} 条</Text>
+              </View>
+
+              {layout.nodes.map((node, index) => {
+                const on = graphCategory === node.name
+                // 字号只做轻微加权：16→19px，避免条目多的分类把卡片撑得和别的不一样大
+                const weight = Math.round(16 + (node.count / maxCount) * 3)
+                return (
+                  <View
+                    key={node.name}
+                    className={`kg-node${on ? ' on' : ''}`}
+                    style={{
+                      left: `${node.left}px`,
+                      top: `${node.top}px`,
+                      fontSize: `${weight}px`,
+                      animationDelay: `${index * 40}ms`,
+                    }}
+                    onClick={() => {
+                      setGraphCategory(on ? '' : node.name)
+                      setGraphEntry('')
+                      setAnchorTick((tick) => tick + 1)
+                    }}
+                    ariaRole="button"
+                    ariaLabel={`查看分类：${node.name}，${node.count} 条${on ? '，已展开' : ''}`}
+                  >
+                    <Text className="kg-node-title">{node.name}</Text>
+                    <Text className="kg-node-count">{node.count} 条</Text>
+                  </View>
+                )
+              })}
+            </View>
+          </View>
+        </ScrollView>
+
         <Text className="kg-hint">
-          {graphCategory ? `「${graphCategory}」下的条目` : '点分类节点查看条目'}
+          {graphCategory
+            ? `已选中「${graphCategory}」，共 ${centerEntries.length} 条`
+            : '点一个分类，看里面的条目'}
         </Text>
 
-        {activeGroup ? (
-          <Card flush className="kg-panel">
-            {activeGroup.items.map((entry) => {
-              const open = graphEntry === entry.id
-              return (
-                <View className="kg-entry" key={entry.id}>
-                  <View
-                    className="kg-entry-head"
-                    onClick={() => setGraphEntry(open ? '' : entry.id)}
-                    ariaRole="button"
-                    ariaLabel={`${String(entry.title || '')}，${open ? '收起' : '展开'}全文`}
-                  >
-                    <Text className="kg-entry-title">{String(entry.title || '')}</Text>
-                    <Text className="kg-entry-more">{open ? '收起' : '展开'}</Text>
+        {centerNode ? (
+          <View className="kg-panel">
+            <View className="kg-panel-head">
+              <View className="kg-panel-title-wrap">
+                <Text className="kg-panel-title">{graphCategory}</Text>
+                <Text className="kg-panel-count">{centerEntries.length} 条</Text>
+              </View>
+              <View
+                className="kg-panel-close"
+                ariaRole="button"
+                ariaLabel="收起分类列表"
+                onClick={() => {
+                  setGraphCategory('')
+                  setGraphEntry('')
+                }}
+              >
+                <Text className="kg-panel-close-text">收起列表</Text>
+              </View>
+            </View>
+
+            <Card flush className="kg-panel-body">
+              {centerEntries.map((entry) => {
+                const open = graphEntry === String(entry.id)
+                return (
+                  <View className={`kg-entry${open ? ' open' : ''}`} key={entry.id}>
+                    <View
+                      className="kg-entry-head"
+                      onClick={() => setGraphEntry(open ? '' : String(entry.id))}
+                      ariaRole="button"
+                      ariaLabel={`${String(entry.title || '')}，${open ? '收起' : '展开'}全文`}
+                    >
+                      <Text className="kg-entry-title">{String(entry.title || '')}</Text>
+                      <Icon
+                        name="chevron-down"
+                        size={24}
+                        className={`kg-entry-caret${open ? ' open' : ''}`}
+                        color={THEME.primary}
+                      />
+                    </View>
+                    <Text className="kg-entry-text">{entrySummary(entry)}</Text>
+                    {open ? (
+                      <View className="kg-entry-body">
+                        <Text className="kg-entry-full">{String(entry.content || '')}</Text>
+                        {entry.source ? <Text className="kg-entry-from">来源：{entry.source}</Text> : null}
+                      </View>
+                    ) : null}
                   </View>
-                  <Text className={`kg-entry-text ${open ? 'open' : ''}`}>{String(entry.content || '')}</Text>
-                </View>
-              )
-            })}
-          </Card>
+                )
+              })}
+            </Card>
+          </View>
         ) : null}
       </View>
     )
@@ -672,6 +969,7 @@ export default function QaPage() {
         />
       )
     }
+    const searching = searchTerms.length > 0
     return (
       <View className="kb-wrap">
         <View className="qa-anchor" id={`kb-anchor-${anchorTick}`} />
@@ -684,6 +982,40 @@ export default function QaPage() {
             onAction={() => void load()}
           />
         ) : null}
+
+        <View className="kb-search">
+          <Icon name="magnifying-glass" size={32} color={THEME.muted} />
+          <Input
+            className="kb-search-input"
+            ariaLabel="搜索知识库"
+            value={query}
+            placeholder="搜索标题、摘要或正文"
+            placeholderStyle={`color:${THEME.muted}`}
+            confirmType="search"
+            onInput={(e) => setQuery(e.detail.value)}
+          />
+          {query ? (
+            <View
+              className="kb-search-clear"
+              ariaRole="button"
+              ariaLabel="清空搜索"
+              onClick={() => setQuery('')}
+            >
+              <Icon name="circle-xmark" size={32} color={THEME.muted} />
+            </View>
+          ) : null}
+        </View>
+
+        <View className="kb-count-row">
+          <Text className="kb-count">
+            {searching ? `「${query.trim()}」命中 ${matched.length} 条` : `共 ${entries.length} 条`}
+          </Text>
+          {/* 右侧是「当前筛选下实际显示的条数」，搜索与分类两重过滤同时生效时也能对账 */}
+          <Text className="kb-count-sub">
+            {searching ? `当前分类 ${shownCount} 条` : `${categories.length} 个分类`}
+          </Text>
+        </View>
+
         <View className="kb-filter">
           {[ALL_CATEGORY, ...categories].map((name) => (
             <View
@@ -697,12 +1029,25 @@ export default function QaPage() {
             </View>
           ))}
         </View>
-        <Text className="kb-count">
-          共 {shownCount} 条 · {categories.length} 个分类
-        </Text>
 
-        {groups.length === 0 ? (
-          <Text className="kb-note">这个分类下暂时没有条目。</Text>
+        {matched.length === 0 ? (
+          <StateBlock
+            variant="empty"
+            icon="magnifying-glass"
+            title="没有匹配的内容"
+            desc="换个关键词试试，或者直接去问助手。"
+            actionLabel="换个关键词，或到助手提问"
+            onAction={askWithQuery}
+          />
+        ) : groups.length === 0 ? (
+          <StateBlock
+            variant="empty"
+            icon="book-open"
+            title="这个分类下没有匹配的条目"
+            desc="切到「全部」看看其他分类，或者换个关键词。"
+            actionLabel="看全部分类"
+            onAction={() => setCategory(ALL_CATEGORY)}
+          />
         ) : (
           groups.map((group) => (
             <View key={group.category}>
@@ -714,21 +1059,38 @@ export default function QaPage() {
                 const open = openEntry === entry.id
                 return (
                   <View
-                    className="kb-card"
+                    className={`kb-card${open ? ' open' : ''}`}
                     key={entry.id}
                     ariaRole="button"
-                    ariaLabel={`${String(entry.title ?? '')}，展开或收起全文`}
+                    ariaLabel={`${String(entry.title ?? '')}，${open ? '收起' : '展开'}全文`}
                     onClick={() => setOpenEntry(open ? '' : entry.id)}
                   >
                     <View className="kb-head">
                       <Text className="kb-title">{String(entry.title ?? '')}</Text>
-                      <Text className="kb-toggle">{open ? '收起' : '展开'}</Text>
+                      <Icon
+                        name="chevron-down"
+                        size={28}
+                        className={`kb-caret${open ? ' open' : ''}`}
+                        color={THEME.primary}
+                      />
+                    </View>
+                    <Text className="kb-summary">{entrySummary(entry)}</Text>
+                    <View className="kb-meta">
+                      {entry.category ? <Pill tone="primary">{String(entry.category)}</Pill> : null}
+                      {entry.source ? (
+                        <Text className="kb-meta-text">依据：{String(entry.source)}</Text>
+                      ) : null}
                     </View>
                     {open ? (
                       <View className="kb-body">
                         <Text className="kb-content">{String(entry.content ?? '')}</Text>
-                        {entry.source ? <Text className="kb-from">来源：{entry.source}</Text> : null}
-                        {entry.keywords ? <Text className="kb-keywords">关键词：{entry.keywords}</Text> : null}
+                        {entry.keywords ? (
+                          <Text className="kb-keywords">关键词：{entry.keywords}</Text>
+                        ) : null}
+                        <View className="kb-fold" ariaRole="button" ariaLabel="收起全文">
+                          <Icon name="chevron-down" size={24} color={THEME.primary} className="kb-fold-icon" />
+                          <Text className="kb-fold-text">收起</Text>
+                        </View>
                       </View>
                     ) : null}
                   </View>
@@ -778,36 +1140,55 @@ export default function QaPage() {
       </ScrollView>
 
       {mode === 'graph' ? null : (
-      <View className="qa-composer">
-        <Text className="qa-disclaimer">
-          {agent && agent.enabled
-            ? `助手回答仅供参考，不替代医生建议${agent.remaining_requests >= 0 ? ` · 今日剩余 ${agent.remaining_requests} 次` : ''}`
-            : '内容来自照护知识库，不能替代医生建议'}
-        </Text>
-        {mode === 'chat' ? (
-          <View className="qa-input-row">
-            <Input
-              className="qa-input"
-              ariaLabel="输入照护问题"
-              value={draft}
-              maxlength={MAX_QUESTION}
-              confirmType="send"
-              placeholder="输入问题，例如：晚上不睡觉"
-              placeholderStyle={`color:${THEME.ink2}`}
-              onInput={(e) => setDraft(e.detail.value)}
-              onConfirm={() => send(draft)}
-            />
-            <Button
-              className="qa-send"
-              onClick={() => send(draft)}
-              disabled={!draft.trim()}
-              ariaLabel="发送问题"
+        <View className="qa-composer">
+          {/* 免责声明 + 剩余次数挤在同一行：拆两行会把输入区顶掉 */}
+          <Text className="qa-disclaimer">
+            {agent && agent.enabled
+              ? `助手回答仅供参考，不替代医生建议${
+                  agent.remaining_requests >= 0 ? ` · 今日剩余 ${agent.remaining_requests} 次` : ''
+                }`
+              : '内容来自照护知识库，不能替代医生建议'}
+          </Text>
+          {mode === 'chat' ? (
+            <View className="qa-input-row">
+              <View className="qa-field">
+                <Input
+                  className="qa-input"
+                  ariaLabel="输入照护问题"
+                  value={draft}
+                  maxlength={MAX_QUESTION}
+                  confirmType="send"
+                  focus={composerFocus}
+                  placeholder="输入问题，例如：晚上不睡觉"
+                  placeholderStyle={`color:${THEME.muted}`}
+                  onInput={(e) => setDraft(e.detail.value)}
+                  onConfirm={() => send(draft)}
+                />
+              </View>
+              <Button
+                className="qa-send"
+                onClick={() => send(draft)}
+                disabled={!draft.trim()}
+                ariaLabel="发送问题"
+              >
+                发送
+              </Button>
+            </View>
+          ) : (
+            <View
+              className="qa-kb-shortcut"
+              ariaRole="button"
+              ariaLabel="去助手提问"
+              onClick={askWithQuery}
             >
-              发送
-            </Button>
-          </View>
-        ) : null}
-      </View>
+              <Icon name="comment-dots" size={32} color={THEME.primary} />
+              <Text className="qa-kb-shortcut-text">
+                {query.trim() ? `带着「${query.trim()}」去问助手` : '有问题？直接问助手'}
+              </Text>
+              <Icon name="arrow-right" size={28} color={THEME.primary} />
+            </View>
+          )}
+        </View>
       )}
 
       <BottomNav active="qa" />

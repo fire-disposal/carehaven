@@ -1,8 +1,14 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
-/* ---------- 页头 ---------- */
+// ============================================================================
+// 首页：页头 → 压力卡 → 今日完成度 → 支持工具 → 今日记录 → 身体状态
+//
+// 页面只写排版；卡片 / 按钮 / 标签 / 数值单元 / 栏目头 / 状态块全部来自
+// components/ui。颜色与尺寸一律取 tokens，本文件不出现十六进制。
+// ============================================================================
 
+// ---- 页头：日期 eyebrow + 问候大标题 + 右上头像 -------------------------------
 .home-head {
   display: flex;
   align-items: flex-start;
@@ -12,6 +18,7 @@
 }
 
 .home-hello {
+  flex: 1;
   min-width: 0;
 }
 
@@ -19,51 +26,36 @@
   margin-bottom: $sp-1;
 }
 
-.home-avatar {
-  width: 96rpx;
-  height: 96rpx;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-lg;
-  background: $c-primary-light;
-  flex: none;
-}
-
 .hello-name {
   display: block;
+  font-family: $font-serif;
   font-size: $fs-h1;
   font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.5rpx;
+  line-height: 1.25;
+  letter-spacing: 1rpx;
   color: $c-ink;
 }
 
-
-
-
-
-/* ---------- 压力状态卡片 ---------- */
-
-.stress-card {
-  position: relative;
-  background: $c-surface;
+.home-avatar {
+  @include tap;
+  @include pressable(0.96);
+  flex: none;
+  width: 96rpx;
+  height: 96rpx;
   border: 1rpx solid $c-line;
-  border-top: 6rpx solid $c-line;
-  border-radius: $radius-lg;
-  padding: $sp-4;
-  margin-bottom: $sp-3;
+  border-radius: $radius-pill;
+  background: $c-primary-light;
   box-sizing: border-box;
 }
 
-.stress-card.level-green {
-  border-top-color: $c-green;
-}
-.stress-card.level-yellow {
-  border-top-color: $c-yellow;
-}
-.stress-card.level-red {
-  border-top-color: $c-red;
+// ---- 压力状态卡：大数字 + 状态 + 建议 + 三分量 --------------------------------
+.stress-card {
+  @include card;
+  margin-bottom: $sp-3;
+  padding: $sp-4;
 }
 
+// 状态色只落在数值上，卡片本身保持纸面，不整块染色
 .stress-head {
   display: flex;
   align-items: center;
@@ -74,38 +66,41 @@
 
 .stress-body {
   display: flex;
-  align-items: baseline;
-  margin: $sp-1 0 $sp-2;
+  align-items: flex-end;
+  gap: $sp-2;
 }
 
 .stress-value {
   @include num;
   font-size: $fs-display;
   font-weight: 600;
-  line-height: 1;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
   color: $c-ink;
 }
 
 .stress-card.level-green .stress-value {
   color: $c-green;
 }
+
 .stress-card.level-yellow .stress-value {
   color: $c-yellow;
 }
+
 .stress-card.level-red .stress-value {
   color: $c-red;
 }
 
 .stress-unit-wrap {
-  margin-left: $sp-3;
-  padding-bottom: 8rpx;
+  flex: 1;
   min-width: 0;
+  padding-bottom: $sp-1;
 }
 
 .stress-unit {
   display: block;
   font-size: $fs-small;
-  line-height: 1.4;
+  line-height: $lh-tight;
   color: $c-ink-2;
 }
 
@@ -119,15 +114,16 @@
 
 .stress-advice {
   display: block;
-  min-height: 98rpx;
+  margin-top: $sp-3;
   font-size: $fs-small;
   line-height: 1.75;
   color: $c-ink-2;
 }
 
+// 三分量：等宽小柱，标签在上、条在下
 .stress-bars {
   display: flex;
-  gap: $sp-3;
+  gap: $sp-4;
   margin-top: $sp-4;
   padding-top: $sp-3;
   border-top: 1rpx solid $c-line;
@@ -136,20 +132,22 @@
 .stress-bar-item {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-1;
 }
 
 .bar-track {
-  height: 6rpx;
-  margin-top: $sp-1;
-  background: $c-line;
-  border-radius: $radius-xs;
+  height: 8rpx;
+  background: $c-surface-dim;
+  border-radius: $radius-pill;
   overflow: hidden;
 }
 
 .bar-fill {
   height: 100%;
+  border-radius: $radius-pill;
   background: $c-primary;
-  border-radius: $radius-xs;
   transition: width $dur $ease;
 }
 
@@ -157,7 +155,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $sp-2;
+  gap: $sp-3;
   margin-top: $sp-4;
   padding-top: $sp-3;
   border-top: 1rpx solid $c-line;
@@ -166,114 +164,139 @@
 .stress-checkin-state {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: $sp-1;
   flex: 1;
   min-width: 0;
-  font-size: $fs-label;
+  font-size: $fs-small;
+  line-height: $lh-tight;
+  color: $c-ink-2;
+}
+
+// 只控宽度与间距，视觉交给 ui-btn
+.stress-cta {
+  flex: none;
+  min-width: 224rpx;
+  padding: 0 $sp-4;
+}
+
+// ---- 今日安排：打卡 / 生理 / 量表三行引导，完成的打勾 ---------------------------
+.plan {
+  margin-bottom: $sp-5;
+}
+
+.plan-row {
+  @include tap;
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-3 $sp-4;
+  border-bottom: 1rpx solid $c-line;
+  transition: background-color $dur-fast $ease;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:active {
+    background: $c-primary-light;
+  }
+}
+
+.plan-icon {
+  @include icon-tile(72rpx, $c-surface-dim);
+  color: $c-primary-dark;
+}
+
+.plan-row.is-done .plan-icon {
+  background: $c-green-bg;
+  color: $c-green;
+}
+
+.plan-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-title {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-ink;
+}
+
+.plan-sub {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $fs-tiny;
   line-height: 1.5;
   color: $c-muted;
 }
 
-.stress-cta {
-  flex: none;
-  min-width: 216rpx;
-  height: 88rpx;
-  padding: 0 $sp-3;
-}
-
-.form-title {
-  font-size: $fs-h3;
-  font-weight: 600;
-  line-height: 1.4;
-  color: $c-ink;
-}
-
-.action {
-  flex: 1;
-}
-
-/* ---------- 次级入口 ---------- */
-
+// ---- 支持工具：三张等宽卡片一行 -----------------------------------------------
 .tool-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12rpx;
-  margin: 0 0 $sp-5;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $sp-2;
+  margin-bottom: $sp-5;
 }
 
 .tool-tile {
-  flex: 1 1 calc(50% - 6rpx);
-  min-width: 0;
-  background: $c-surface;
-  border: 1rpx solid $c-line;
-  border-radius: $radius;
-  padding: $sp-3;
-  box-sizing: border-box;
-}
-
-.tool-wide {
-  flex-basis: 100%;
+  @include card;
+  @include pressable(0.98);
+  @include tap;
   display: flex;
-  align-items: center;
-  gap: $sp-3;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $sp-1;
+  padding: $sp-3;
+  border-radius: $radius;
+  transition:
+    transform $dur-fast $ease,
+    background-color $dur-fast $ease,
+    border-color $dur-fast $ease;
+
+  &:active {
+    background: $c-primary-light;
+    border-color: $c-primary;
+  }
 }
 
 .tool-icon {
-  width: 56rpx;
-  height: 56rpx;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-paper;
-  color: $c-primary;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: $sp-2;
-  flex: none;
-}
-
-.tool-wide .tool-icon {
-  margin-bottom: 0;
+  @include icon-tile(72rpx, $c-primary-light);
+  color: $c-primary-dark;
 }
 
 .tool-icon.tint-warm {
   background: $c-yellow-bg;
-  border-color: $c-yellow-line;
   color: $c-yellow;
 }
 
 .tool-icon.tint-info {
   background: $c-info-bg;
-  border-color: $c-line;
   color: $c-info;
-}
-
-.tool-main {
-  flex: 1;
-  min-width: 0;
 }
 
 .tool-title {
   display: block;
-  font-size: 30rpx;
+  font-size: $fs-small;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: $lh-tight;
   color: $c-ink;
 }
 
 .tool-sub {
-  display: block;
+  @include clamp(2);
   margin-top: 2rpx;
   font-size: $fs-label;
-  line-height: 1.55;
+  line-height: 1.5;
   color: $c-muted;
 }
 
-/* ---------- 今日记录 ---------- */
-
+// ---- 今日记录：一张卡片，行间发丝线 -------------------------------------------
 .today-list {
-  padding: 0 $sp-3;
   margin-bottom: $sp-3;
+  padding: 0 $sp-4;
 }
 
 .today-item {
@@ -282,22 +305,15 @@
   gap: $sp-2;
   padding: $sp-3 0;
   border-bottom: 1rpx solid $c-line;
-}
 
-.today-item:last-child {
-  border-bottom: none;
+  &:last-child {
+    border-bottom: 0;
+  }
 }
 
 .today-icon {
-  width: 56rpx;
-  height: 56rpx;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-paper;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  @include icon-tile(64rpx, $c-primary-light);
+  color: $c-primary;
 }
 
 .today-main {
@@ -309,7 +325,7 @@
   display: block;
   font-size: $fs-small;
   font-weight: 600;
-  line-height: 1.5;
+  line-height: $lh-tight;
   color: $c-ink;
 }
 
@@ -317,21 +333,38 @@
   display: block;
   margin-top: 2rpx;
   font-size: $fs-label;
-  line-height: 1.55;
+  line-height: 1.5;
   color: $c-muted;
 }
 
-/* ---------- 身体状态 ---------- */
-
-.physio-grid {
+.today-del {
+  @include tap;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  padding: 0 $sp-1;
+  margin-left: $sp-1;
+  border-radius: $radius-sm;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  transition:
+    color $dur-fast $ease,
+    background-color $dur-fast $ease;
+
+  &:active {
+    background: $c-red-bg;
+    color: $c-red;
+  }
+}
+
+// ---- 身体状态：2×2 数值瓦片 ---------------------------------------------------
+.physio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: $sp-2;
   margin-bottom: $sp-2;
 }
 
 .physio-tile {
-  width: calc(50% - #{$sp-1});
   padding: $sp-3;
 }
 
@@ -342,8 +375,8 @@
 }
 
 .physio-icon {
-  margin-top: $sp-0;
   flex: none;
+  margin-top: $sp-0;
 }
 
 .physio-stat {
@@ -353,56 +386,8 @@
 
 .source-note {
   display: block;
+  padding: 0 $sp-0 $sp-2;
   font-size: $fs-label;
   line-height: 1.65;
-  color: $c-muted;
-  padding: 0 4rpx $sp-2;
-}
-
-// 今日完成度：打卡 / 生理 / 量表，一眼看到还缺什么
-.today-check {
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-  margin-bottom: $sp-3;
-  padding: 0 $sp-3;
-  background: $c-surface;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-}
-
-.today-check-item {
-  @include tap;
-  display: flex;
-  align-items: center;
-  gap: $sp-0;
-  padding-right: $sp-2;
-  color: $c-muted;
-}
-
-.today-check-item.done {
-  color: $c-primary-dark;
-}
-
-.today-check-mark {
-  font-size: $fs-small;
-}
-
-.today-check-label {
-  font-size: $fs-small;
-}
-
-.today-check-streak {
-  margin-left: auto;
-  font-size: $fs-tiny;
-  color: $c-muted;
-}
-
-.today-del {
-  @include tap;
-  display: flex;
-  align-items: center;
-  padding-left: $sp-2;
-  font-size: $fs-tiny;
   color: $c-muted;
 }

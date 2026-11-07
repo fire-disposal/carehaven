@@ -15,7 +15,7 @@
 ## 当前状态
 
 - 原型链路已跑通：打卡/生理 → HPS → 分层干预 → 量表/问答/TTS；单机部署与备份已落地。
-- 视觉基座已落地：「纸本 · 松烟」+ 组件基座，见 [design-direction.md](design-direction.md)。
+- 视觉基座已落地：「木质 · 淡叶」（M3 控件语言）+ 组件基座，见 [design-direction.md](design-direction.md)。
 - 未对外开放注册；自由文本社群已下线，互助以词元拼句回归；AI 问答仍是检索式，HPS 未校准。
 
 ## 里程碑

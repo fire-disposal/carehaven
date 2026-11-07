@@ -7,7 +7,7 @@ import { Button, Card, PageHead, Pill, SectionHeader, StateBlock } from '@/compo
 import type { IconName } from '@/lib/icons'
 import { LEVEL_TITLE } from '@/content/glossary'
 import { levelDesc, levelTone } from '@/lib/level'
-import { scriptForIntervention } from '@/lib/guide'
+import { ctaForIntervention, scriptForIntervention } from '@/lib/guide'
 import { THEME } from '@/lib/theme'
 import {
   api,
@@ -138,11 +138,15 @@ export default function ManagePage() {
   const hps = score && Number.isFinite(score.hps) ? Math.min(100, Math.max(0, Math.round(score.hps))) : null
   const { t_green, t_red } = thresholds
 
+  // 推荐区最多两条，且不再在下方「全部工具」里重复出现
+  const featured = recommended.slice(0, 2)
+  const featuredIds = new Set(featured.map((item) => item.id))
+
   const groups: { category: string; icon: IconName; items: Intervention[] }[] = [
     ...CATEGORIES.map((category) => ({
       category,
       icon: CATEGORY_ICON[category],
-      items: allItems.filter((item) => item.category === category),
+      items: allItems.filter((item) => item.category === category && !featuredIds.has(item.id)),
     })),
     {
       category: '其他',
@@ -178,7 +182,7 @@ export default function ManagePage() {
           </View>
         </View>
         <Button variant="primary" block className="mg-start" onClick={() => startGuide(item)} ariaLabel={`开始：${item.title || '未命名方案'}`}>
-          {`开始 · ${scriptForIntervention(item).title}`}
+          {ctaForIntervention(item)}
         </Button>
       </Card>
     )
@@ -267,7 +271,7 @@ export default function ManagePage() {
         {loading ? (
           <StateBlock variant="loading" title="正在加载推荐方案…" />
         ) : recommended.length > 0 ? (
-          <View>{recommended.map((item) => renderIntervention(item, 'rec', false))}</View>
+          <View>{featured.map((item) => renderIntervention(item, 'rec', false))}</View>
         ) : (
           <StateBlock
             variant="empty"
@@ -280,7 +284,7 @@ export default function ManagePage() {
         )}
 
         {/* ---------- 3. 全部工具 ---------- */}
-        <SectionHeader title="全部工具" action={<Text className="muted">{allItems.length} 项</Text>} />
+        <SectionHeader title="全部工具" action={<Text className="muted">{allItems.length - featured.length} 项</Text>} />
 
         {loading ? (
           <StateBlock variant="loading" title="正在加载工具库…" />

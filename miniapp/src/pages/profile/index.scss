@@ -1,14 +1,17 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
-// 「我的」页样式。
-// 目标用户是中老年失智症家庭照护者：正文 ≥32rpx、辅助信息 ≥24rpx、
-// 可点区域 ≥88rpx、浅底上的文字统一用 $c-text-2 及以上对比度。
-// 卡片 / 按钮 / 标签 / 栏目头 / 三态 / 星级 / 数值单元全部走 components/ui，
-// 这里只保留本页独有的排版。类名统一加 pf- 前缀，避免 H5 打包后互相覆盖。
+// ============================================================================
+// 「我的」页：用户卡 → 微信绑定 → 趋势图 → 近 30 天摘要 → 菜单 → 退出登录 → 头像面板
+//
+// 打卡记录 / 干预记录见 pages/records，生理数据来源 / 研究参与 / 我的数据
+// 见 pages/account，各自的样式随块搬走。
+//
+// 类名统一 pf- 前缀。卡片 / 按钮 / 标签 / 栏目头 / 三态 / 数值单元
+// 全部来自 components/ui，这里只保留本页独有的排版。
+// ============================================================================
 
-/* ---------- 通用两栏 ---------- */
-
+// ---- 通用两栏 ---------------------------------------------------------------
 .pf-row {
   display: flex;
   align-items: center;
@@ -16,8 +19,7 @@
   gap: $sp-2;
 }
 
-/* ---------- 用户卡 ---------- */
-
+// ---- 用户卡 -----------------------------------------------------------------
 .pf-user-card {
   margin-bottom: $sp-3;
 }
@@ -25,19 +27,19 @@
 .pf-user-top {
   display: flex;
   align-items: center;
+  gap: $sp-3;
 }
 
-
-
-
-
 .pf-avatar {
-  width: 96rpx;
-  height: 96rpx;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-lg;
-  background: $c-primary-light;
+  @include tap;
+  @include pressable(0.96);
   flex: none;
+  width: 112rpx;
+  height: 112rpx;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-pill;
+  background: $c-primary-light;
+  box-sizing: border-box;
 }
 
 .pf-user-info {
@@ -47,89 +49,22 @@
 
 .pf-user-name {
   display: block;
+  font-family: $font-serif;
   font-size: $fs-h1;
-  font-weight: 700;
-  color: $c-text;
+  font-weight: 600;
   line-height: $lh-tight;
+  color: $c-ink;
 }
 
 .pf-user-email {
   display: block;
   margin-top: $sp-0;
   font-size: $fs-small;
-  color: $c-text-2;
+  color: $c-muted;
   word-break: break-all;
 }
 
-/* ---------- 菜单行（帮助与支持 / 我的数据共用） ---------- */
-
-.pf-menu {
-  padding: 0 $sp-3;
-  margin-bottom: $sp-3;
-}
-
-.pf-data {
-  padding: 0 $sp-3;
-}
-
-.pf-menu-item,
-.pf-data-item {
-  @include tap;
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-  padding: $sp-2 0;
-  border-bottom: 1rpx solid $c-line;
-}
-
-.pf-menu-item:last-child,
-.pf-data-item:last-child {
-  border-bottom: none;
-}
-
-.pf-menu-icon {
-  width: $sp-5;
-  height: $sp-5;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-paper;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-}
-
-.pf-menu-icon-danger {
-  background: $c-red-bg;
-  border-color: $c-red-line;
-}
-
-.pf-menu-label-danger {
-  color: $c-red;
-}
-
-.pf-menu-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.pf-menu-label {
-  display: block;
-  font-size: $fs-body;
-  font-weight: 600;
-  color: $c-text;
-  line-height: $lh-tight;
-}
-
-.pf-menu-desc {
-  display: block;
-  margin-top: $sp-0;
-  font-size: $fs-tiny;
-  color: $c-muted;
-}
-
-/* ---------- 微信绑定（仅小程序端） ---------- */
-
+// ---- 微信绑定（仅小程序端） ---------------------------------------------------
 .pf-wechat {
   margin-bottom: $sp-3;
 }
@@ -142,45 +77,85 @@
 
 .pf-wechat-title {
   display: block;
-  font-size: $fs-h2;
+  font-size: $fs-h3;
   font-weight: 600;
-  color: $c-text;
-  margin-bottom: $sp-0;
+  line-height: $lh-tight;
+  color: $c-ink;
 }
 
 .pf-wechat-desc {
   display: block;
+  margin-top: $sp-0;
   font-size: $fs-small;
-  color: $c-text-2;
   line-height: $lh-body;
+  color: $c-ink-2;
 }
 
 .pf-wechat-btn {
   margin-top: $sp-3;
 }
 
-.pf-success-line {
-  display: block;
-  color: $c-green;
-  background: $c-green-bg;
-  font-size: $fs-small;
-  line-height: $lh-body;
+// ---- 菜单行（记录 / 数据 / 帮助 / 退出登录共用） --------------------------------
+.pf-menu {
+  margin-bottom: $sp-3;
+  padding: 0 $sp-4;
+}
+
+.pf-menu-item {
+  @include tap;
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-2 0;
+  border-bottom: 1rpx solid $c-line;
+  transition: background-color $dur-fast $ease;
   border-radius: $radius-sm;
-  padding: $sp-2 $sp-3;
-  margin-top: $sp-2;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:active {
+    background: $c-primary-light;
+  }
 }
 
-.pf-note-line {
+.pf-menu-icon {
+  @include icon-tile(72rpx, $c-primary-light);
+  color: $c-primary-dark;
+}
+
+.pf-menu-icon-danger {
+  background: $c-red-bg;
+  color: $c-red;
+}
+
+.pf-menu-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-menu-label {
   display: block;
-  margin-top: $sp-3;
-  font-size: $fs-small;
-  color: $c-text-2;
-  line-height: $lh-body;
+  font-size: $fs-body;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-ink;
 }
 
-/* ---------- 30 天压力柱状图（纯 CSS，无图表库 / canvas / svg） ---------- */
+.pf-menu-label-danger {
+  color: $c-red;
+}
 
-/* 几何常量与 index.tsx 里 Taro.pxTransform 的计算保持一致：36rpx 数值行 + 240rpx 轨道 */
+.pf-menu-desc {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  line-height: 1.5;
+  color: $c-muted;
+}
+
+// ---- 压力趋势卡（图由 components/TrendChart 绘制） -----------------------------
 .pf-chart-card {
   margin-bottom: $sp-3;
 }
@@ -190,217 +165,129 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: $sp-2;
-  margin-bottom: $sp-2;
+  margin-bottom: $sp-3;
 }
 
 .pf-chart-title {
   display: block;
-  font-size: $fs-h2;
-  font-weight: 700;
-  color: $c-text;
+  font-size: $fs-h3;
+  font-weight: 600;
   line-height: $lh-tight;
+  color: $c-ink;
 }
 
 .pf-chart-sub {
   display: block;
-  margin-top: $sp-0;
+  margin-top: 2rpx;
   font-size: $fs-tiny;
   color: $c-muted;
 }
 
 .pf-range {
   display: flex;
-  gap: $sp-0;
   flex: none;
+  gap: $sp-0;
+  padding: 4rpx;
+  border-radius: $radius-pill;
+  background: $c-surface-dim;
 }
 
 .pf-range-item {
   @include tap;
+  @include pressable(0.97);
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 72rpx;
   padding: 0 $sp-3;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
   font-size: $fs-small;
-  color: $c-text-2;
-  background: $c-paper;
-}
+  color: $c-ink-2;
+  transition:
+    background-color $dur-fast $ease,
+    color $dur-fast $ease;
 
-.pf-range-item.on {
-  background: $c-surface;
-  border-color: $c-primary;
-  color: $c-primary-dark;
-  font-weight: 700;
+  &.on {
+    background: $c-surface;
+    color: $c-primary-dark;
+    font-weight: 600;
+  }
 }
 
 .pf-chart-active {
   display: flex;
   align-items: center;
-  gap: $sp-1;
+  gap: $sp-2;
   margin-bottom: $sp-2;
+  padding: $sp-2 $sp-3;
+  border-radius: $radius-sm;
+  background: $c-primary-light;
 }
 
 .pf-chart-active-date {
   font-size: $fs-small;
-  color: $c-text-2;
+  color: $c-ink-2;
 }
 
 .pf-chart-active-value {
   @include num;
-  font-size: $fs-h1;
-  font-weight: 700;
-  color: $c-text;
-}
-
-.pf-chart-scroll {
-  width: 100%;
-  height: 360rpx;
-  white-space: nowrap;
-}
-
-.pf-chart-inner {
-  display: inline-block;
-  position: relative;
-}
-
-.pf-chart-inner.range-7 {
-  display: flex;
-  width: 100%;
-}
-
-/* 每一列都是可点区域：宽 88rpx，满足触控下限 */
-.pf-chart-col {
-  display: inline-block;
-  width: 88rpx;
-  text-align: center;
-  vertical-align: top;
-  position: relative;
-  z-index: 1;
-}
-
-.range-7 .pf-chart-col {
-  flex: 1;
-  width: auto;
-}
-
-.pf-bar-val {
-  display: block;
-  height: 36rpx;
-  line-height: 36rpx;
-  font-size: $fs-tiny;
-  color: $c-text-2;
-}
-
-.pf-bar-track {
-  height: 240rpx;
-  margin-top: $sp-0;
-  background: $c-paper;
-  border-radius: $radius-xs;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  overflow: hidden;
-}
-
-.pf-bar-fill {
-  width: 100%;
-  border-radius: 0;
-}
-
-.pf-bar-fill.lv-green {
-  background: $c-green;
-}
-
-.pf-bar-fill.lv-yellow {
-  background: $c-yellow;
-}
-
-.pf-bar-fill.lv-red {
-  background: $c-red;
-}
-
-.pf-bar-date {
-  display: block;
-  height: 36rpx;
-  line-height: 36rpx;
-  font-size: $fs-tiny;
-  color: $c-text-2;
-}
-
-.pf-chart-col.is-peak .pf-bar-val {
-  color: $c-red;
-  font-weight: 700;
-}
-
-.pf-chart-col.is-peak .pf-bar-track {
-  border: 1rpx solid $c-red-line;
-}
-
-.pf-chart-col.is-active .pf-bar-val {
-  color: $c-primary-dark;
-  font-weight: 700;
-}
-
-.pf-chart-col.is-active .pf-bar-track {
-  border: 1rpx solid $c-primary;
-}
-
-.pf-chart-col.is-active .pf-bar-date {
-  color: $c-primary-dark;
+  font-size: $fs-h2;
   font-weight: 600;
-}
-
-.pf-avg-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  border-top: 1rpx dashed $c-line-strong;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.pf-avg-label {
-  position: absolute;
-  right: 0;
-  top: -$sp-4;
-  padding: 0 $sp-0;
-  background: $c-surface;
-  font-size: $fs-label;
-  color: $c-text-2;
-  line-height: $lh-tight;
+  line-height: 1;
+  color: $c-primary-dark;
 }
 
 .pf-chart-hint {
   display: block;
-  margin-top: $sp-2;
   font-size: $fs-small;
-  color: $c-text-2;
   line-height: $lh-body;
-  text-align: center;
+  color: $c-muted;
+}
+
+.pf-chart-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $sp-1 $sp-3;
+  margin-top: $sp-2;
+}
+
+.pf-chart-delta {
+  @include num;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.pf-chart-delta.up {
+  color: $c-red;
+}
+
+.pf-chart-delta.down {
+  color: $c-green;
 }
 
 .pf-legend {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  gap: $sp-1 $sp-3;
   margin-top: $sp-2;
-  padding-top: $sp-2;
+  padding-top: $sp-3;
   border-top: 1rpx solid $c-line;
 }
 
 .pf-legend-item {
   display: flex;
   align-items: center;
-  margin: $sp-0 $sp-2 0 0;
+  gap: $sp-1;
 }
 
 .pf-legend-dot {
+  flex: none;
   width: $sp-2;
   height: $sp-2;
-  border-radius: 50%;
-  margin-right: $sp-1;
-  flex: none;
+  border-radius: $radius-pill;
 }
 
 .pf-dot-green {
@@ -417,31 +304,30 @@
 
 .pf-legend-text {
   font-size: $fs-tiny;
-  color: $c-text-2;
+  color: $c-ink-2;
 }
 
-/* ---------- 近 30 天摘要 ---------- */
-
+// ---- 近 30 天摘要：2 列网格，两格宽的瓦片单独跨列 -----------------------------
 .pf-stat-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: $sp-2;
+  margin-bottom: $sp-3;
 }
 
 .pf-stat-tile {
-  width: calc(50% - #{$sp-1});
-  background: $c-surface;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-1;
   padding: $sp-3;
-  box-sizing: border-box;
 }
 
 .pf-stat-tile.wide {
-  width: 100%;
+  grid-column: 1 / -1;
 }
 
-/* 只有「三色天数分布」这一格没有单一数值，用与 Stat 标签一致的排版 */
+// 「三色天数分布」没有单一数值，标签沿用 Stat 的小标签排版
 .pf-stat-name {
   @include label;
   display: block;
@@ -449,402 +335,35 @@
 
 .pf-stat-hint {
   display: block;
-  margin-top: $sp-1;
   font-size: $fs-tiny;
-  color: $c-text-2;
-  line-height: $lh-body;
+  line-height: 1.5;
+  color: $c-muted;
 }
 
 .pf-stat-pills {
   display: flex;
   flex-wrap: wrap;
   gap: $sp-1;
-  margin-top: $sp-2;
-}
-
-/* ---------- 干预记录 ---------- */
-
-.pf-log-card {
-  padding: $sp-2 $sp-4;
-  margin-bottom: $sp-3;
-}
-
-.pf-log-item {
-  display: flex;
-  align-items: flex-start;
-  gap: $sp-2;
-  padding: $sp-3 0;
-}
-
-.pf-log-item + .pf-log-item {
-  border-top: 1rpx solid $c-line;
-}
-
-.pf-log-icon {
-  width: $sp-5;
-  height: $sp-5;
-  border-radius: $radius-sm;
-  background: $c-primary-light;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-}
-
-.pf-log-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.pf-log-title {
-  display: block;
-  font-size: $fs-body;
-  font-weight: 600;
-  color: $c-text;
-  line-height: $lh-tight;
-}
-
-.pf-log-meta {
-  display: block;
   margin-top: $sp-0;
-  font-size: $fs-small;
-  color: $c-text-2;
 }
 
-.pf-log-feel {
-  display: inline-block;
-  margin-top: $sp-1;
-  padding: $sp-0 $sp-2;
-  background: $c-primary-light;
-  color: $c-primary-dark;
-  border-radius: $radius-xs;
-  font-size: $fs-tiny;
-}
-
-.pf-expand-row {
-  @include tap;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: $fs-small;
-  font-weight: 600;
-  color: $c-primary;
-}
-
-/* ---------- 星级反馈 ---------- */
-
-.pf-form-title {
-  display: block;
-  font-size: $fs-h2;
-  font-weight: 600;
-  color: $c-text;
-  line-height: $lh-tight;
-}
-
-.pf-stars {
-  margin-top: $sp-3;
-}
-
-.pf-star-note {
-  display: block;
-  margin-top: $sp-2;
-  font-size: $fs-body;
-  color: $c-text-2;
-}
-
-.pf-form-label {
-  display: block;
-  margin-top: $sp-3;
-  font-size: $fs-small;
-  color: $c-text-2;
-}
-
-.pf-textarea {
-  width: 100%;
-  min-height: $sp-7 * 2;
-  margin-top: $sp-1;
-  padding: $sp-2 $sp-3;
-  background: $c-paper;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  font-size: $fs-body;
-  line-height: $lh-body;
-  box-sizing: border-box;
-}
-
-.pf-submit {
-  margin-top: $sp-3;
-}
-
-.pf-rating-list {
-  margin-top: $sp-3;
-  padding-top: $sp-1;
-  border-top: 1rpx solid $c-line;
-}
-
-.pf-rating-item {
-  padding: $sp-3 0;
-}
-
-.pf-rating-item + .pf-rating-item {
-  border-top: 1rpx solid $c-line;
-}
-
-.pf-rating-stars {
-  display: flex;
-  gap: $sp-0;
-}
-
-.pf-rating-meta {
-  font-size: $fs-tiny;
-  color: $c-text-2;
-}
-
-.pf-rating-comment {
-  display: block;
-  margin-top: $sp-1;
-  font-size: $fs-body;
-  color: $c-text;
-  line-height: $lh-body;
-}
-
-/* ---------- 生理数据来源 ---------- */
-
-.pf-source-state {
-  font-size: $fs-h2;
-  font-weight: 600;
-  color: $c-text;
-}
-
-.pf-source-desc {
-  display: block;
-  margin-top: $sp-2;
-  font-size: $fs-body;
-  color: $c-text-2;
-  line-height: $lh-body;
-}
-
-.pf-source-note {
-  display: block;
-  margin-top: $sp-2;
-  padding: $sp-2 $sp-3;
-  border-radius: $radius-sm;
-  font-size: $fs-small;
-  line-height: $lh-body;
-}
-
-.pf-source-note.note-device {
-  background: $c-green-bg;
-  color: $c-green;
-}
-
-.pf-source-note.note-simulated {
-  background: $c-yellow-bg;
-  color: $c-yellow;
-}
-
-.pf-source-note.note-manual {
-  background: $c-primary-light;
-  color: $c-primary-dark;
-}
-
-.pf-physio-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $sp-2;
-  margin-top: $sp-3;
-}
-
-.pf-physio-cell {
-  width: calc(50% - #{$sp-1});
-  padding: $sp-2 $sp-3;
-  background: $c-paper;
-  border-radius: $radius-sm;
-  box-sizing: border-box;
-}
-
-.pf-form-block {
-  margin-top: $sp-3;
-  padding-top: $sp-3;
-  border-top: 1rpx solid $c-line;
-}
-
-.pf-form-desc {
-  display: block;
-  margin-top: $sp-1;
-  font-size: $fs-body;
-  color: $c-text-2;
-  line-height: $lh-body;
-}
-
-.pf-num-row {
-  display: flex;
-  gap: $sp-2;
-  margin-top: $sp-3;
-}
-
-.pf-num-field {
-  flex: 1;
-  min-width: 0;
-}
-
-.pf-num-input {
-  @include tap;
-  width: 100%;
-  margin-top: $sp-1;
-  padding: 0 $sp-3;
-  background: $c-paper;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  font-size: $fs-body;
-  color: $c-text;
-  box-sizing: border-box;
-}
-
-// 数据不足的那一天：柱子弱化，不参与三色语义
-.pf-bar-fill.lv-unknown {
-  background: $c-line-strong;
-}
-
-/* 带开关的行不能整行点击（Toggle 自己接收事件），去掉右侧箭头留白 */
-.pf-data-item-static {
-  cursor: default;
-}
-
-/* 研究参与：研究码入组与分组概况 */
-.pf-study-row {
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-  margin-top: $sp-2;
-}
-
-.pf-study-input {
-  flex: 1;
-  height: 88rpx;
-  padding: 0 $sp-3;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-paper;
-  font-size: $fs-body;
-  color: $c-ink;
-  box-sizing: border-box;
-}
-
-.pf-study-btn {
-  flex: none;
-  min-width: 168rpx;
-}
-
-.pf-study-title {
-  display: block;
-  font-size: $fs-h3;
-  font-weight: 600;
-  color: $c-ink;
-}
-
-.pf-study-sub {
-  display: block;
-  margin-top: $sp-0;
-  font-size: $fs-tiny;
-  color: $c-muted;
-}
-
-.pf-study-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $sp-3;
-  margin: $sp-3 0 $sp-1;
-}
-
-.pf-study-grid > * {
-  flex: 1 1 30%;
-  min-width: 140rpx;
-}
-
-.pf-study-window {
-  display: block;
-  margin-top: $sp-1;
-  font-size: $fs-tiny;
-  color: $c-ink-2;
-}
-
-.pf-study-actions {
-  margin-top: $sp-3;
-}
-
-/* 打卡记录：自查用，按行分隔，不做卡片嵌套 */
-.pf-checkins {
-  margin-bottom: $sp-3;
-}
-
-.pf-checkin {
-  display: flex;
-  align-items: flex-start;
-  gap: $sp-2;
-  padding: $sp-3;
-  border-bottom: 1rpx solid $c-line;
-
-  &:last-child {
-    border-bottom: 0;
-  }
-}
-
-.pf-checkin-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.pf-checkin-title {
-  display: block;
-  font-size: $fs-small;
-  color: $c-ink;
-  line-height: $lh-body;
-}
-
-.pf-checkin-meta {
-  display: block;
-  margin-top: $sp-0;
-  font-size: $fs-tiny;
-  color: $c-muted;
-  line-height: $lh-body;
-}
-
-/* 从首页「生理」跳进来时的高亮：只闪一次，用来定位，不做持续动画 */
-@keyframes pf-focus-flash {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(31, 90, 80, 0);
-  }
-  35% {
-    box-shadow: 0 0 0 6rpx rgba(31, 90, 80, 0.18);
-  }
-}
-
-.pf-physio-focus {
-  border-color: $c-primary;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .pf-physio-focus {
-    animation: pf-focus-flash 1.6s $ease 1;
-  }
-}
-
+// ---- 头像选择面板 -------------------------------------------------------------
 .pf-sheet-mask {
   position: fixed;
   inset: 0;
   z-index: 200;
   display: flex;
   align-items: flex-end;
-  background: rgba(30, 36, 33, 0.42);
+  background: rgba(36, 40, 36, 0.4);
 }
 
 .pf-sheet {
   width: 100%;
   padding: $sp-4 $sp-4 calc(#{$sp-4} + env(safe-area-inset-bottom));
-  background: $c-surface;
+  border-radius: $radius-lg $radius-lg 0 0;
   border-top: 1rpx solid $c-line;
+  background: $c-surface;
+  box-sizing: border-box;
 }
 
 .pf-sheet-title {
@@ -862,36 +381,46 @@
 }
 
 .pf-avatar-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: $sp-3;
   margin-top: $sp-4;
 }
 
 .pf-avatar-option {
-  width: calc(33.33% - #{$sp-2});
-  padding: $sp-2;
-  border: 1rpx solid $c-line;
-  border-radius: $radius;
-  background: $c-paper;
+  @include tap;
+  @include pressable(0.97);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: $sp-1;
+  padding: $sp-2;
+  border: 1rpx solid $c-line;
+  border-radius: $radius;
+  background: $c-surface;
+  transition:
+    transform $dur-fast $ease,
+    background-color $dur-fast $ease,
+    border-color $dur-fast $ease;
 
   &.on {
     border-color: $c-primary;
-    background: $c-primary-light;
+    background: $c-primary-container;
   }
 }
 
 .pf-avatar-img {
   width: 112rpx;
   height: 112rpx;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
 }
 
 .pf-avatar-label {
   font-size: $fs-tiny;
   color: $c-ink-2;
+}
+
+.pf-avatar-option.on .pf-avatar-label {
+  color: $c-on-primary-container;
+  font-weight: 600;
 }

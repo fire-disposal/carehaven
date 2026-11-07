@@ -38,7 +38,7 @@
   padding: 0 $sp-4;
   min-width: 260rpx;
   border: 1rpx solid $c-primary;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
   color: $c-primary;
 }
 
@@ -69,8 +69,7 @@
 .ui-state__bar {
   height: 28rpx;
   border-radius: $radius-xs;
-  background: $c-line;
-  opacity: 0.7;
+  background: $c-surface-dim;
   width: 100%;
 }
 

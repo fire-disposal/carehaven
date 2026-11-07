@@ -1,14 +1,30 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
+// ============================================================================
+// 引导课：开始屏 / 进行屏 / 结束屏
+//
+// 整页 fixed 满屏（不使用 .page 的底部留白），氛围交给 SceneBackdrop，
+// 内容层 .gd-body 负责垂直节奏。按钮宽度只在这里控制，视觉交给 ui-btn。
+// ============================================================================
+
 .gd-page {
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   background: $c-paper;
   color: $c-ink;
-  overflow: hidden;
+}
+
+// TopBar 在氛围层之上
+.gd-page .ui-topbar {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border-bottom: 0;
+  backdrop-filter: none;
 }
 
 .gd-body {
@@ -16,108 +32,139 @@
   z-index: 1;
   flex: 1;
   min-height: 0;
-  padding: $sp-5 $sp-4 calc(#{$sp-5} + env(safe-area-inset-bottom));
+  padding: $sp-5 $sp-5 calc(#{$sp-5} + env(safe-area-inset-bottom));
   overflow-y: auto;
   box-sizing: border-box;
 }
 
-.gd-start,
-.gd-done {
+// ---- 开始屏：标题 / 副标题 / 时长 / 主按钮，居中偏上 --------------------------
+.gd-start {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   justify-content: center;
-  gap: $sp-2;
+  gap: $sp-3;
+  padding-bottom: $sp-7;
 }
-
-
 
 .gd-title {
   font-family: $font-serif;
-  font-size: 56rpx;
+  font-size: 64rpx;
+  font-weight: 600;
   line-height: 1.2;
+  letter-spacing: 2rpx;
   color: $c-ink;
-}
-
-.gd-minutes {
-  font-family: $font-num;
-  font-size: $fs-h2;
-  color: $c-primary-dark;
 }
 
 .gd-sub {
   font-size: $fs-body;
-  line-height: $lh-body;
+  line-height: 1.75;
   color: $c-ink-2;
 }
 
+.gd-minutes {
+  @include num;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: $sp-1;
+  padding: $sp-0 $sp-3;
+  border-radius: $radius-pill;
+  background: $c-primary-container;
+  font-size: $fs-small;
+  font-weight: 600;
+  color: $c-on-primary-container;
+}
 
+.gd-start .ui-btn {
+  margin-top: $sp-4;
+}
 
-
-
-
-
-
-
-
-
+// ---- 进行屏 ----------------------------------------------------------------
 .gd-live {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: $sp-3;
+  gap: $sp-4;
+  text-align: center;
 }
 
+// 提示卡（非呼吸课）：阶段名 + 说明 + 剩余秒数
 .gd-prompt {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $sp-3;
-  padding: $sp-6 0 $sp-4;
+  gap: $sp-2;
+  width: 100%;
+  padding: $sp-6 $sp-4;
   text-align: center;
 }
 
 .gd-prompt-label {
   font-family: $font-serif;
   font-size: $fs-h1;
+  font-weight: 600;
+  line-height: $lh-tight;
+  letter-spacing: 2rpx;
   color: $c-primary-dark;
 }
 
 .gd-prompt-detail {
-  font-size: $fs-body;
-  line-height: $lh-body;
-  color: $c-ink-2;
   max-width: 560rpx;
+  font-size: $fs-body;
+  line-height: 1.75;
+  color: $c-ink-2;
 }
 
 .gd-prompt-remain {
-  font-family: $font-num;
-  font-size: $fs-h3;
+  @include num;
+  font-size: $fs-small;
   color: $c-muted;
 }
 
-
-
 .gd-clock {
-  font-family: $font-num;
+  @include num;
   font-size: 64rpx;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: $c-primary-dark;
 }
 
+// 三个控制按钮等距一排；视觉全由 ui-btn 提供
 .gd-controls {
   display: flex;
+  width: 100%;
   gap: $sp-2;
-  margin-top: $sp-4;
+  margin-top: $sp-2;
+
+  .ui-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 0 $sp-2;
+  }
+
+  .ui-btn__label {
+    font-size: $fs-small;
+  }
+}
+
+// ---- 结束屏 ----------------------------------------------------------------
+.gd-done {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: $sp-3;
 }
 
 .gd-done-title {
   font-family: $font-serif;
   font-size: $fs-h1;
+  font-weight: 600;
+  letter-spacing: 2rpx;
   text-align: center;
+  color: $c-ink;
 }
-
-
 
 .gd-rate {
   display: flex;
@@ -127,6 +174,7 @@
 
 .gd-rate-title {
   font-size: $fs-body;
+  line-height: $lh-tight;
   color: $c-ink-2;
 }
 
@@ -143,18 +191,19 @@
 }
 
 .gd-duration-input {
-  width: 160rpx;
-  height: 72rpx;
+  @include field;
+  @include tap;
+  flex: none;
+  width: 200rpx;
   padding: 0 $sp-2;
-  border: 1rpx solid $c-line;
-  border-radius: $radius;
-  background: $c-paper;
   font-family: $font-num;
   font-size: $fs-h3;
   text-align: center;
 }
 
 .gd-error {
-  color: $c-red;
+  display: block;
   font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-red;
 }

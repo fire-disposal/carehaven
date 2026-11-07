@@ -8,6 +8,7 @@ import { THEME } from '@/lib/theme'
 import { usePageReadAloud } from '@/lib/readAloud'
 import { api, isLoggedIn, type AssessmentRecord } from '@/lib/api'
 import { backOrSwitchTab } from '@/lib/nav'
+import { getReminderConfig, subscribeReminder, type ReminderConfig } from '@/lib/remind'
 import { SCALES, type ScaleDef } from '@/lib/scales'
 import './index.scss'
 
@@ -29,13 +30,15 @@ export default function AssessmentPage() {
   const [active, setActive] = useState<ScaleDef | null>(null)
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<number[]>([])
-  const [advancing, setAdvancing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<AssessmentRecord | null>(null)
   const [history, setHistory] = useState<AssessmentRecord[]>([])
   const [historyError, setHistoryError] = useState('')
   const [historyLoading, setHistoryLoading] = useState(true)
+  // 订阅提醒：开关由服务端下发（模板写在 app_config），H5 端 config 恒为 disabled
+  const [remindConfig, setRemindConfig] = useState<ReminderConfig>({ enabled: false, template_id: '' })
+  const [remindState, setRemindState] = useState<'idle' | 'busy' | 'done'>('idle')
 
   const loadHistory = useCallback(async () => {
     if (!isLoggedIn()) {
@@ -54,6 +57,7 @@ export default function AssessmentPage() {
 
   useDidShow(() => {
     void loadHistory()
+    void getReminderConfig().then(setRemindConfig)
   })
 
   const latestByScale = useMemo(() => {
@@ -97,7 +101,6 @@ export default function AssessmentPage() {
     setActive(def)
     setAnswers([])
     setIndex(0)
-    setAdvancing(false)
     setSaving(false)
     setError('')
     setResult(null)
@@ -105,13 +108,29 @@ export default function AssessmentPage() {
   }
 
   function quit() {
+    // 已作答但未提交：退出前确认，避免误触丢答案
+    if (mode === 'quiz' && answers.some((a) => a !== undefined)) {
+      void Taro.showModal({
+        title: '退出量表？',
+        content: '已填写的内容不会保存。',
+        confirmText: '退出',
+        cancelText: '继续作答',
+      }).then((res) => {
+        if (res.confirm) {
+          setMode('list')
+          setActive(null)
+          setError('')
+        }
+      })
+      return
+    }
     setMode('list')
     setActive(null)
     setError('')
   }
 
   function backQuestion() {
-    if (saving || advancing) return
+    if (saving) return
     setError('')
     if (index <= 0) {
       quit()
@@ -136,27 +155,50 @@ export default function AssessmentPage() {
   }
 
   function choose(value: number) {
-    if (!active || advancing || saving) return
+    if (!active || saving) return
     const next = answers.slice()
     next[index] = value
     setAnswers(next)
     setError('')
+  }
 
-    if (index >= active.items.length - 1) {
-      void submit(active, next)
+  // 显式推进：长者可以慢慢看、改了再走；末题按钮变成「提交并查看结果」
+  function nextQuestion() {
+    if (!active || saving) return
+    if (answers[index] === undefined) {
+      setError('请先选择最接近的一项')
       return
     }
-
-    setAdvancing(true)
-    setTimeout(() => {
-      setIndex((prev) => prev + 1)
-      setAdvancing(false)
-    }, 160)
+    setError('')
+    if (index >= active.items.length - 1) {
+      void submit(active, answers)
+      return
+    }
+    setIndex(index + 1)
   }
 
   function retrySubmit() {
     if (!active || answers.length !== active.items.length) return
     void submit(active, answers)
+  }
+
+  // 一次性订阅：授权成功才登记；拒绝与失败都给出温和提示，不进二次弹窗
+  async function turnOnReminder() {
+    if (remindState === 'busy') return
+    setRemindState('busy')
+    const outcome = await subscribeReminder('assessment_review', remindConfig.template_id)
+    if (outcome.status === 'accept') {
+      setRemindState('done')
+      return
+    }
+    setRemindState('idle')
+    if (outcome.status === 'rejected' && outcome.notice) {
+      void Taro.showToast({ title: outcome.notice, icon: 'none', duration: 2500 })
+    } else if (outcome.status === 'decline' || outcome.status === 'ban') {
+      void Taro.showToast({ title: '未开启提醒', icon: 'none' })
+    } else if (outcome.status === 'unknown') {
+      void Taro.showToast({ title: '授权成功，但提醒登记失败，请重试', icon: 'none', duration: 2500 })
+    }
   }
 
   const backHome = () => {
@@ -293,26 +335,31 @@ export default function AssessmentPage() {
     const question = active.items[index]
     const progress = ((index + 1) / active.items.length) * 100
     const selected = answers[index]
+    const lastQuestion = index >= active.items.length - 1
 
     return (
-      <View className="page">
+      <View className="page as-quiz-page">
         <TopBar
-          title={`${active.name} · ${index + 1} / ${active.items.length}`}
+          title={active.name}
           onBack={backQuestion}
           backLabel={index === 0 ? '退出量表' : '上一题'}
         />
 
         <View className="as-progress">
-          <View className="as-progress-fill" style={{ width: `${progress}%` }} />
+          <View className="as-progress-track">
+            <View className="as-progress-fill" style={{ width: `${progress}%` }} />
+          </View>
+          <Text className="as-progress-text">
+            第 {index + 1} 题 / 共 {active.items.length} 题
+          </Text>
         </View>
 
         <View className="as-quiz-scroll">
           <View className="as-quiz-body">
-            <Text className="as-quiz-index">第 {index + 1} 题</Text>
             <Text className="as-quiz-question">{question}</Text>
-            <Text className="as-quiz-hint">选择最接近的一项，自动进入下一题</Text>
+            <Text className="as-quiz-hint">选择最接近的一项，再点「下一题」</Text>
 
-            <View className="as-options" ariaRole="radiogroup" ariaLabel="选项">
+            <View className="as-options" ariaRole="radiogroup" ariaLabel={`第 ${index + 1} 题选项`}>
               {active.options.map((opt) => (
                 <View
                   key={opt.value}
@@ -322,10 +369,10 @@ export default function AssessmentPage() {
                   ariaLabel={opt.label}
                   ariaChecked={selected === opt.value}
                 >
+                  <View className="as-option-radio" ariaHidden>
+                    {selected === opt.value ? <View className="as-option-dot" /> : null}
+                  </View>
                   <Text className="as-option-label">{opt.label}</Text>
-                  {selected === opt.value ? (
-                    <Icon name="check" size={32} color={THEME.primary} />
-                  ) : null}
                 </View>
               ))}
             </View>
@@ -341,6 +388,21 @@ export default function AssessmentPage() {
               />
             ) : null}
           </View>
+        </View>
+
+        <View className="as-quiz-actions">
+          <Button variant="ghost" className="as-quiz-prev" onClick={backQuestion} ariaLabel={index === 0 ? '退出量表' : '上一题'}>
+            {index === 0 ? '退出' : '上一题'}
+          </Button>
+          <Button
+            variant="primary"
+            className="as-quiz-next"
+            loading={saving}
+            onClick={nextQuestion}
+            ariaLabel={lastQuestion ? '提交并查看结果' : '下一题'}
+          >
+            {lastQuestion ? '提交并查看结果' : '下一题'}
+          </Button>
         </View>
       </View>
     )
@@ -423,6 +485,11 @@ export default function AssessmentPage() {
           <Button variant="primary" block onClick={() => start(resultDef)}>
             再测一次
           </Button>
+          {remindConfig.enabled ? (
+            <Button variant="secondary" block disabled={remindState === 'done'} onClick={turnOnReminder}>
+              {remindState === 'done' ? '已开启，一周前提醒你' : '一周后提醒我复测'}
+            </Button>
+          ) : null}
         </View>
 
         {error ? <StateBlock variant="error" compact title={error} /> : null}

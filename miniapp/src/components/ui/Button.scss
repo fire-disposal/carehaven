@@ -1,18 +1,18 @@
 @use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
 
+// M3 按钮：胶囊外形 + 状态层反馈；filled / tonal / outlined / danger 四档。
 .ui-btn {
+  @include pressable(0.98);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 88rpx;
-  padding: 0 $sp-4;
+  gap: $sp-1;
+  min-height: 96rpx;
+  padding: 0 $sp-5;
   border: 1rpx solid transparent;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
   box-sizing: border-box;
-  transition:
-    background-color $dur-fast $ease,
-    border-color $dur-fast $ease,
-    opacity $dur-fast $ease;
 }
 
 .ui-btn__label {
@@ -30,23 +30,38 @@
   .ui-btn__label {
     color: $c-surface;
   }
+
+  &:active {
+    background: $c-primary-dark;
+    border-color: $c-primary-dark;
+  }
 }
 
+// Filled tonal：次级行动，container 底而不是白底描边
 .ui-btn--secondary {
-  background: $c-surface;
-  border-color: $c-line-strong;
+  background: $c-primary-container;
+  border-color: $c-primary-container;
 
   .ui-btn__label {
-    color: $c-ink;
+    color: $c-on-primary-container;
+  }
+
+  &:active {
+    background: $c-primary-light;
+    border-color: $c-primary-light;
   }
 }
 
 .ui-btn--ghost {
   background: transparent;
-  border-color: $c-primary;
+  border-color: $c-outline;
 
   .ui-btn__label {
     color: $c-primary;
+  }
+
+  &:active {
+    background: $c-primary-light;
   }
 }
 
@@ -57,16 +72,22 @@
   .ui-btn__label {
     color: $c-surface;
   }
+
+  &:active {
+    background: #7a443d;
+    border-color: #7a443d;
+  }
 }
 
 .ui-btn--block {
   width: 100%;
 }
 
+// M3 disabled：tonal 灰底 + 低对比文字，不靠透明度
 .ui-btn.is-disabled {
-  opacity: 0.9;
-  background: $c-primary-light;
-  border-color: $c-line;
+  background: $c-surface-dim;
+  border-color: $c-surface-dim;
+  transform: none;
 
   .ui-btn__label {
     color: $c-muted;

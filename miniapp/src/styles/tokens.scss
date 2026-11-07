@@ -1,83 +1,90 @@
-// 设计令牌 —— 「纸本 · 松烟」
+// ============================================================================
+// 设计令牌 —— 「木质 · 淡叶」
 //
-// 方向：暖纸、墨绿、发丝线、近直角。舒适感来自留白、字重、行高与暖色，
-// 不来自大圆角和阴影。面向中老年照护者：正文 ≥32rpx、关键数字超大、
-// 浅底文字对比度 ≥ WCAG AA。
+// 配色：浅木底 + 淡叶绿 + 低饱和状态色（植物感，不用鲜艳色）。
+// 几何：M3 的柔和控件语言（胶囊按钮、24rpx 卡片、填充式选中态）。
+// 约束：正文 ≥32rpx、触控 ≥88rpx、浅底文字对比度 ≥ WCAG AA。
 //
-// 只放变量，不放选择器。
+// 本文件只放变量 / map / 函数，不放选择器。所有页面与组件从这里取值，
+// 不允许在别处写十六进制颜色或魔法尺寸。
+// ============================================================================
 
-// ---- 纸与墨 ----
-$c-paper: #f4efe5; // 页面底色（暖纸）
-$c-surface: #fffcf6; // 卡片/浮层（比纸更亮一档）
-$c-ink: #1e2421; // 主文字（近黑墨绿）
-$c-ink-2: #44504a; // 次级文字
-$c-muted: #626b65; // 辅助文字（纸底 4.8:1）
-$c-line: #ded5c5; // 发丝线
-$c-line-strong: #c9bda9;
+@use 'sass:map';
 
-// ---- 主色 ----
-$c-primary: #1f5a50; // 松烟绿（纸底 6.9:1）
-$c-primary-light: #e4ede7;
-$c-primary-dark: #16443c;
+// ---- 色板：木与叶 -----------------------------------------------------------
+$c-paper: #f1ece3; // 页面底色（浅木）
+$c-surface: #fbf8f2; // 卡片/浮层（比木底亮一档）
+$c-surface-dim: #e9e2d6; // 未选中控件、轨道等次级底
+$c-ink: #242824; // 主文字（暖黑）
+$c-ink-2: #49514a; // 次级文字
+$c-muted: #61675f; // 辅助文字（木底 ≥4.5:1）
+$c-line: #dcd4c4; // 分隔线
+$c-line-strong: #c6bba6; // 描边（M3 outline）
 
-// ---- 三色压力分层 ----
-$c-green: #2c6a4e;
-$c-green-bg: #e6efe7;
-$c-green-line: #b9d2c0;
+$c-primary: #3e5f4b; // 苔藓绿主色
+$c-primary-light: #e6ebdf; // 浅叶底（hover / 聚焦环）
+$c-primary-dark: #2e4738; // 主色文字 / 按下态
+$c-primary-container: #dce5d4; // M3 primary container（选中填充）
+$c-on-primary-container: #1f3527; // container 上的文字
 
-$c-yellow: #7a5310;
-$c-yellow-bg: #f6ead3;
-$c-yellow-line: #e3c894;
+$c-green: #47684f;
+$c-green-bg: #e3eada;
+$c-green-line: #c3d1b6;
 
-$c-red: #963b33;
-$c-red-bg: #f5e3df;
-$c-red-line: #ddb3ac;
+$c-yellow: #77602f;
+$c-yellow-bg: #efe6cf;
+$c-yellow-line: #dac99f;
 
-// ---- 辅助色 ----
-$c-accent: #9c4833; // 柿红，用于极少数强调
-$c-accent-soft: #f2e2da;
-$c-info: #3d5a6c;
-$c-star-off: #cfc6b6; // 星级未选中（弱化但不消失）
-$c-info-bg: #e8eef1;
+$c-red: #8a5048;
+$c-red-bg: #f0e0d8;
+$c-red-line: #d9bbb0;
 
-// ---- 兼容旧变量名（页面逐步迁移，避免一次性改动全部选择器）----
+$c-accent: #8c5b3f; // 木色强调，极少数位置
+$c-accent-soft: #eee0d2;
+$c-info: #4d6260;
+$c-info-bg: #e4e9e4;
+$c-star-off: #cfc7b8; // 星级未选中
+
+// 旧变量名保留为别名：页面只引用，不再新增
 $c-bg: $c-paper;
 $c-card: $c-surface;
 $c-text: $c-ink;
 $c-text-2: $c-ink-2;
 $c-border: $c-line;
+$c-outline: $c-line-strong;
 
-// ---- 字体 ----
-// 正文用系统黑体；品牌字与关键数字用衬线，形成「纸本」气质。
-// 不下载网络字体：小程序包体与首屏都不适合塞中文字库。
+// 状态色 map：pill / 标签 / 提示条用 @each 生成，保证同一套三色
+$tones: (
+  'green': ($c-green, $c-green-bg),
+  'yellow': ($c-yellow, $c-yellow-bg),
+  'red': ($c-red, $c-red-bg),
+  'primary': ($c-on-primary-container, $c-primary-container),
+  'quiet': ($c-muted, transparent),
+);
+
+// ---- 字体 -------------------------------------------------------------------
 $font-sans:
   -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC',
   'Source Han Sans SC', 'Microsoft YaHei', sans-serif;
 $font-serif: 'Songti SC', 'STSong', 'Noto Serif CJK SC', 'Source Han Serif SC', 'SimSun', serif;
-$font-num: Georgia, 'Times New Roman', 'Songti SC', 'Noto Serif CJK SC', serif;
+// 数字（HPS、统计值、滑杆读数）用系统黑体 + 等宽数字，不用高对比衬线。
+$font-num: $font-sans;
 
-// ---- 字号 ----
-$fs-display: 112rpx; // 关键数值（HPS 等）
+// ---- 字号（750 设计稿 rpx）--------------------------------------------------
+$fs-display: 112rpx; // 关键数值（HPS）
 $fs-h1: 48rpx;
 $fs-h2: 36rpx;
 $fs-h3: 32rpx;
 $fs-body: 32rpx;
 $fs-small: 28rpx;
 $fs-tiny: 24rpx;
-$fs-label: 22rpx; // 小标签 / eyebrow
+$fs-label: 22rpx;
 
-// ---- 图标尺寸 ----
-$icon-nav: 36rpx;
-$icon-sm: 36rpx;
-$icon-card: 44rpx;
-$icon-empty: 56rpx;
-$icon-hero: 72rpx;
+// ---- 行高 -------------------------------------------------------------------
+$lh-body: 1.65;
+$lh-tight: 1.4;
 
-// ---- 行高 ----
-$lh-body: 1.65; // 正文
-$lh-tight: 1.4; // 标题/数字
-
-// ---- 间距 ----
+// ---- 间距：8 的倍数节奏 ------------------------------------------------------
 $sp-0: 4rpx; // 只用于图标与文字之间的微调
 $sp-1: 8rpx;
 $sp-2: 16rpx;
@@ -87,18 +94,47 @@ $sp-5: 48rpx;
 $sp-6: 64rpx;
 $sp-7: 80rpx;
 
-// ---- 圆角：近直角，只保留一点点柔化 ----
-$radius-xs: 2rpx;
-$radius-sm: 4rpx;
-$radius: 6rpx;
-$radius-lg: 8rpx;
-$radius-pill: 4rpx; // 状态标签也走小圆角，不再用胶囊
+$space: (
+  0: $sp-0,
+  1: $sp-1,
+  2: $sp-2,
+  3: $sp-3,
+  4: $sp-4,
+  5: $sp-5,
+  6: $sp-6,
+  7: $sp-7,
+);
 
-// ---- 阴影：纸本不用投影，层级靠线与底色 ----
-$shadow: none;
-$shadow-lg: none;
+@function space($step) {
+  @return map.get($space, $step);
+}
 
-// ---- 动效 ----
+// ---- 圆角：M3 柔和几何 -------------------------------------------------------
+$radius-xs: 8rpx; // 小标签
+$radius-sm: 16rpx; // chip / 小控件（M3 8dp）
+$radius: 20rpx; // 输入框、气泡
+$radius-lg: 24rpx; // 卡片（M3 12dp）
+$radius-pill: 999rpx; // 胶囊按钮、导航指示器
+
+// ---- 阴影：只给浮层与悬浮控件 -------------------------------------------------
+$shadow: 0 2rpx 8rpx rgba(36, 40, 36, 0.06);
+$shadow-lg: 0 16rpx 40rpx rgba(36, 40, 36, 0.16);
+
+// ---- 图标尺寸 ----------------------------------------------------------------
+$icon-nav: 36rpx;
+$icon-sm: 36rpx;
+$icon-card: 44rpx;
+$icon-empty: 56rpx;
+$icon-hero: 72rpx;
+
+// ---- 布局常量 ----------------------------------------------------------------
+$nav-height: 132rpx; // 底部导航（不含安全区）
+$page-gutter: 32rpx; // 页面左右留白
+$page-bottom: 200rpx; // 页面底部留白（导航 + 呼吸位）
+$reading-width: 720PX; // 大写 PX：Taro 只转小写 px，阅读栏必须是真实像素 // H5 桌面阅读栏宽
+$reading-breakpoint: 700px;
+
+// ---- 动效 -------------------------------------------------------------------
 $ease: cubic-bezier(0.2, 0.7, 0.3, 1);
 $dur-fast: 120ms;
 $dur: 180ms;

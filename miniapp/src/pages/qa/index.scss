@@ -1,167 +1,348 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
-/* ---------- 页面骨架：顶部切换 + 可滚动正文 + 底部固定输入 ---------- */
+// ============================================================================
+// 问答页 —— 助手对话 / 知识库 / 知识图谱 三合一
+//
+// 版面：整页 fixed（顶部 tab + 可滚动正文 + 底部输入），滚的是 .qa-scroll，
+// 不是文档；宽屏归位交给 app.scss，这里只管页内网格。
+// 视觉：木底 + 卡片 + 苔藓绿主色；气泡用小角区分说话人。
+// ============================================================================
 
+// ---- 页面骨架 ----------------------------------------------------------------
 .page.qa-page {
   display: flex;
   flex-direction: column;
   position: fixed;
   inset: 0;
   min-height: 0;
-  /* 底部导航高度 + 安全区；不足时输入框会被导航盖住 */
-  padding-bottom: 128rpx; /* 给底部导航留位 */
+  // 底部导航高度 + 安全区（导航 132rpx + 缓冲），否则输入框会被导航盖住
+  padding-bottom: 148rpx;
   overflow: hidden;
 }
 
-/* 顶部切换：与互助页一致的下划线标签，不再用好几个大边框盒子 */
+// ---- 顶部切换：图标 + 文字，选中用主色下划线 ------------------------------------
 .qa-top {
   display: flex;
+  flex: none;
   gap: $sp-4;
   padding: 0 $sp-3;
-  background: $c-bg;
+  background: $c-paper;
   border-bottom: 1rpx solid $c-line;
 }
 
 .qa-tab {
   @include tap;
+  @include pressable(0.97);
   display: flex;
+  flex: none;
   align-items: center;
   gap: $sp-1;
   padding: 0 $sp-1;
-  color: $c-muted;
-  border-bottom: 4rpx solid transparent;
+  border-bottom: 6rpx solid transparent;
   margin-bottom: -1rpx;
-  transition: color $dur-fast $ease, border-color $dur-fast $ease;
+  color: $c-muted;
+  transition:
+    color $dur-fast $ease,
+    border-color $dur-fast $ease;
 
   &.on {
-    color: $c-primary-dark;
     border-bottom-color: $c-primary;
+    color: $c-primary-dark;
+
+    .qa-tab-text {
+      font-weight: 600;
+    }
+  }
+
+  &:active {
+    color: $c-primary-dark;
   }
 }
 
 .qa-tab-text {
-  font-size: $fs-body;
+  font-size: $fs-small;
+  line-height: $lh-tight;
   color: currentColor;
 }
 
-.qa-tab.on .qa-tab-text {
-  font-weight: 600;
-}
-
+// ---- 滚动区 ------------------------------------------------------------------
 .qa-scroll {
   flex: 1;
   min-height: 0;
-  background: $c-bg;
+  background: $c-paper;
 }
 
 .qa-thread {
-  padding: $sp-3 $sp-3 $sp-5;
+  padding: $sp-3 $page-gutter $sp-5;
 }
 
-/* 滚动锚点：始终位于对话末尾，id 变化即触发滚动到底部 */
+// 滚动锚点：始终贴在内容末尾，id 变化即滚到底
 .qa-anchor {
   height: 1rpx;
 }
 
-/* ---------- 对话流 ---------- */
-
-.day-stamp {
+// ---- 首屏：图标 + 标题 + 说明 + 两列常见问题 -----------------------------------
+// 空态不是「什么都没有」，而是直接把能点的入口摆出来；网格等宽两列，窄屏一列，
+// 不再用居中 flex-wrap 堆出参差的换行。
+.qa-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $sp-5 $sp-1 $sp-4;
   text-align: center;
-  margin: $sp-2 0 $sp-3;
+}
+
+.qa-hero-mark {
+  @include icon-tile(120rpx, $c-primary-container);
+  border-radius: 50%;
+  margin-bottom: $sp-3;
+
+  .icon {
+    line-height: 1;
+  }
+}
+
+.qa-hero-title {
+  display: block;
+  font-size: $fs-h2;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-ink;
+}
+
+.qa-hero-desc {
+  display: block;
+  max-width: 34em;
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-muted;
+}
+
+.qa-hero-caption {
+  @include label;
+  align-self: flex-start;
+  margin: $sp-5 0 $sp-2;
+  color: $c-muted;
+}
+
+// 两列 vs 一列由「剩余宽度够不够两个 320rpx 的 chip」决定，用 auto-fit 交给布局自己算：
+// 不用屏幕断点（宽屏归位由 app.scss 管），也不依赖容器查询的兼容性。
+// 窄屏每列不足 320rpx 只剩一列，宽屏自动铺两列且两侧等宽。
+.qa-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320rpx, 1fr));
+  gap: $sp-2;
+  width: 100%;
+}
+
+.qa-hero-chip {
+  @include tap;
+  @include pressable(0.98);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-2;
+  min-width: 0;
+  padding: 0 $sp-3;
+  background: $c-surface;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+  text-align: left;
+
+  &:active {
+    background: $c-primary-container;
+    border-color: $c-primary;
+
+    .qa-hero-chip-text,
+    .icon {
+      color: $c-on-primary-container;
+    }
+  }
+}
+
+.qa-hero-chip-text {
+  flex: 1;
+  min-width: 0;
+  font-size: $fs-small;
+  line-height: $lh-tight;
+  color: $c-ink-2;
+}
+
+// ---- 已有对话时的「继续提问」：单行横滑 -----------------------------------------
+.qa-suggest-block {
+  margin-bottom: $sp-3;
+}
+
+.qa-suggest-title {
+  @include label;
+  display: block;
+  margin-bottom: $sp-1;
+  color: $c-muted;
+}
+
+.qa-suggest-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.qa-suggest-row {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding-bottom: $sp-1;
+}
+
+.qa-suggest-chip {
+  @include tap;
+  @include pressable(0.97);
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 $sp-3;
+  background: $c-surface;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-pill;
+  color: $c-ink-2;
+
+  &:active {
+    background: $c-primary-container;
+    border-color: $c-primary;
+    color: $c-on-primary-container;
+  }
+}
+
+// chip 本体是 flex 容器：文字包一层，让它按文字行盒排版而不是被拉伸成 flex 项
+.qa-suggest-chip-text {
+  display: block;
+  font-size: $fs-small;
+  line-height: $lh-tight;
+  color: inherit;
+}
+
+// ---- 对话流 ------------------------------------------------------------------
+.day-stamp {
+  display: flex;
+  justify-content: center;
+  margin: $sp-3 0 $sp-2;
 }
 
 .day-stamp-text {
+  padding: 4rpx $sp-2;
+  background: $c-surface-dim;
+  border-radius: $radius-pill;
   font-size: $fs-tiny;
-  color: $c-text-2;
-  background: rgba(30, 36, 33, 0.06);
-  padding: 6rpx 20rpx;
-  border-radius: $radius-xs;
+  color: $c-muted;
 }
 
 .msg-row {
   display: flex;
+  margin-bottom: $sp-2;
 }
 
 .msg-row-user {
   justify-content: flex-end;
-  margin-bottom: $sp-2;
 }
 
+// AI 气泡比用户气泡宽，因为里面要装来源列表
 .msg-row-ai {
   justify-content: flex-start;
-  margin-bottom: $sp-3;
+  margin-bottom: $sp-4;
 }
 
 .bubble {
+  box-sizing: border-box;
   max-width: 82%;
-  padding: $sp-3;
-  border-radius: $radius;
+  padding: $sp-2 $sp-3;
+  border-radius: $radius-lg;
 }
 
-.bubble-user {
-  background: $c-primary-dark;
-  border-bottom-right-radius: 8rpx;
-}
-
-.bubble-user .bubble-text {
-  color: #ffffff;
-}
-
-.bubble-ai {
-  max-width: 92%;
-  background: $c-card;
-  border: 1rpx solid $c-line;
-  border-bottom-left-radius: 8rpx;
-  box-shadow: $shadow;
-}
-
+// 长回答：行高统一 1.75（与 Markdown 正文同规格），段间多留一口气；
+// 助手有时会带回空行，pre-wrap 之下那些空行本来就撑出了段距，这里只补首尾的呼吸位。
 .bubble-text {
+  display: block;
   font-size: $fs-body;
   line-height: 1.75;
-  color: $c-text;
+  color: $c-ink;
   white-space: pre-wrap;
   word-break: break-word;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
-/* 检索占位气泡 */
+// 用户：实色胶囊感，右下角收小
+.bubble-user {
+  background: $c-primary-dark;
+  border-bottom-right-radius: $radius-xs;
+  color: $c-surface;
+
+  .bubble-text {
+    color: $c-surface;
+  }
+}
+
+// AI：标准卡片，左下角收小
+.bubble-ai {
+  @include card;
+  max-width: 92%;
+  border-bottom-left-radius: $radius-xs;
+  // 长回答把气泡撑得比屏幕还高时，气泡内部的段落节奏也要稳
+  padding: $sp-3;
+}
+
+// ---- 待答：三点 + 正在检索 ---------------------------------------------------
 .bubble-pending {
   display: flex;
   align-items: center;
+  gap: $sp-2;
+  min-height: 88rpx;
 }
 
 .dots {
   display: flex;
   align-items: center;
-  margin-right: $sp-2;
+  gap: $sp-0;
 }
 
 .dot {
-  width: 14rpx;
-  height: 14rpx;
-  margin-right: 10rpx;
+  width: 12rpx;
+  height: 12rpx;
   border-radius: 50%;
   background: $c-primary;
-  animation: qa-blink 1.2s infinite ease-in-out;
+  animation: qa-dot 1.2s infinite $ease;
+
+  &:nth-child(2) {
+    animation-delay: 0.16s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.32s;
+  }
 }
 
-.dot:nth-child(2) {
-  animation-delay: 0.2s;
+.pending-text {
+  font-size: $fs-small;
+  color: $c-muted;
 }
 
-.dot:nth-child(3) {
-  margin-right: 0;
-  animation-delay: 0.4s;
-}
-
-@keyframes qa-blink {
+@keyframes qa-dot {
   0%,
   80%,
   100% {
-    opacity: 0.25;
+    opacity: 0.28;
+    transform: scale(0.86);
   }
   40% {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -172,12 +353,7 @@
   }
 }
 
-.pending-text {
-  font-size: $fs-small;
-  color: $c-text-2;
-}
-
-/* 单条失败：错误写在气泡内，附重试入口 */
+// ---- 单条失败：气泡内报错 + 胶囊重试 ------------------------------------------
 .bubble-error {
   background: $c-red-bg;
   border-color: $c-red-line;
@@ -186,61 +362,105 @@
 .bubble-error-text {
   display: block;
   font-size: $fs-small;
-  line-height: 1.7;
+  line-height: $lh-body;
   color: $c-red;
+  word-break: break-word;
 }
 
 .retry-btn {
-  margin-top: $sp-2;
-  width: 220rpx;
-  height: 88rpx;
+  @include tap;
+  @include pressable(0.97);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: $c-red;
-  border-radius: $radius-sm;
+  width: 168rpx;
+  margin-top: $sp-2;
+  padding: 0 $sp-4;
+  background: transparent;
+  border: 1rpx solid $c-red;
+  border-radius: $radius-pill;
+  transition:
+    background-color $dur-fast $ease,
+    border-color $dur-fast $ease;
+
+  &:active {
+    background: $c-red-line;
+    border-color: $c-red;
+  }
 }
 
 .retry-btn-text {
-  font-size: $fs-body;
+  font-size: $fs-small;
   font-weight: 600;
-  color: #ffffff;
+  color: $c-red;
 }
 
-/* ---------- 来源标签 ---------- */
+// 内联提示行（图标 + 文本）
+.inline-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-1;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: inherit;
+}
 
+// ---- 来源列表：整行可点，收起两行摘要，展开全文 -------------------------------
 .src-list {
-  margin-top: $sp-2;
+  margin-top: $sp-3;
   padding-top: $sp-2;
   border-top: 1rpx solid $c-line;
 }
 
 .src-caption {
   display: block;
+  margin-bottom: $sp-1;
   font-size: $fs-tiny;
-  color: $c-text-2;
+  line-height: $lh-tight;
+  color: $c-muted;
 }
 
+// 整行都是触控区：序号 + 标题 + 「全文」一行，下面接分类与两行摘要。
 .src-item {
+  @include tap;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 88rpx;
-  margin-top: $sp-2;
-  padding: $sp-2;
-  background: $c-bg;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
+  gap: $sp-1;
+  padding: $sp-2 0;
+  border-bottom: 1rpx solid $c-line;
+  transition: background-color $dur-fast $ease;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:active {
+    background: $c-primary-light;
+  }
+
+  &.open {
+    background: $c-primary-light;
+  }
 }
 
 .src-head {
   display: flex;
   align-items: center;
+  gap: $sp-2;
+  min-height: 48rpx;
 }
 
-.src-cat {
-  flex: none;
-  margin-right: $sp-2;
+// 序号：小圆牌，让「来源 1、2、3」在长回答里也数得清
+.src-order {
+  @include icon-tile(40rpx, $c-primary-container);
+  border-radius: 50%;
+}
+
+.src-order-text {
+  @include num;
+  font-size: $fs-label;
+  color: $c-on-primary-container;
 }
 
 .src-title {
@@ -248,396 +468,668 @@
   min-width: 0;
   font-size: $fs-small;
   font-weight: 600;
-  line-height: 1.5;
-  color: $c-text;
+  line-height: $lh-tight;
+  color: $c-ink;
 }
 
-.src-toggle {
+// 展开/收起的方向指示：收起时朝下，展开后转上去
+.src-caret {
   flex: none;
-  margin-left: $sp-2;
+  transition: transform $dur $ease;
+
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+.src-cats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $sp-1;
+}
+
+.src-teaser {
+  @include clamp(2);
   font-size: $fs-small;
-  font-weight: 600;
-  color: $c-primary-dark;
+  line-height: 1.7;
+  color: $c-ink-2;
+  word-break: break-word;
 }
 
 .src-body {
-  margin-top: $sp-2;
+  margin-top: $sp-1;
   padding-top: $sp-2;
   border-top: 1rpx solid $c-line;
 }
 
 .src-content {
   display: block;
-  font-size: $fs-body;
-  line-height: 1.8;
-  color: $c-text-2;
+  font-size: $fs-small;
+  line-height: 1.75;
+  color: $c-ink-2;
   white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .src-from {
   display: block;
-  margin-top: $sp-2;
+  margin-top: $sp-1;
   font-size: $fs-tiny;
-  color: $c-text-2;
+  line-height: $lh-tight;
+  color: $c-muted;
 }
 
-/* 检索无结果时的说明 */
+// 检索无结果的说明
 .src-note {
   display: block;
   margin-top: $sp-2;
   padding-top: $sp-2;
   border-top: 1rpx solid $c-line;
   font-size: $fs-small;
-  line-height: 1.7;
-  color: $c-text-2;
-}
-
-/* ---------- 首屏引导 ---------- */
-
-.qa-suggest-block {
-  margin-bottom: $sp-3;
-}
-
-.qa-suggest-title {
-  display: block;
-  margin: $sp-2 0 $sp-1;
-  text-align: center;
-  font-size: $fs-small;
-  font-weight: 600;
-  color: $c-text-2;
-}
-
-.qa-suggest-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.qa-suggest-chip {
-  min-height: 88rpx;
-  margin: $sp-1;
-  padding: 0 $sp-3;
-  display: flex;
-  align-items: center;
-  background: $c-card;
-  border: 1rpx solid $c-primary;
-  border-radius: $radius-xs;
-}
-
-.qa-suggest-chip-text {
-  font-size: $fs-small;
-  font-weight: 600;
-  color: $c-primary-dark;
-}
-
-/* ---------- 加载 / 空 / 失败 ---------- */
-
-.inline-alert {
-  display: flex;
-  align-items: flex-start;
-  gap: 6rpx;
-}
-
-/* ---------- 知识库 ---------- */
-
-.kb-wrap {
-  padding: $sp-3 $sp-3 $sp-5;
-}
-
-.kb-filter {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 (-$sp-1);
-}
-
-.kb-chip {
-  min-height: 88rpx;
-  margin: $sp-1;
-  padding: 0 $sp-3;
-  display: flex;
-  align-items: center;
-  background: $c-card;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-xs;
-}
-
-.kb-chip-text {
-  font-size: $fs-small;
-  color: $c-text-2;
-}
-
-.kb-chip.on {
-  background: $c-primary-light;
-  border-color: $c-primary;
-}
-
-.kb-chip.on .kb-chip-text {
-  color: $c-primary-dark;
-  font-weight: 700;
-}
-
-.kb-count {
-  display: block;
-  margin: $sp-2 0 $sp-1;
-  font-size: $fs-small;
-  color: $c-text-2;
-}
-
-.kb-note {
-  display: block;
-  padding: $sp-4 $sp-2;
-  text-align: center;
-  font-size: $fs-small;
-  color: $c-text-2;
-}
-
-.kb-card {
-  background: $c-card;
-  border-radius: $radius;
-  border-left: 8rpx solid $c-primary-light;
-  padding: $sp-3;
-  margin-bottom: $sp-2;
-  box-shadow: $shadow;
-}
-
-.kb-head {
-  display: flex;
-  align-items: flex-start;
-}
-
-.kb-title {
-  flex: 1;
-  min-width: 0;
-  font-size: $fs-h2;
-  font-weight: 600;
-  line-height: 1.5;
-  color: $c-text;
-}
-
-.kb-toggle {
-  flex: none;
-  margin-left: $sp-2;
-  font-size: $fs-small;
-  font-weight: 600;
-  color: $c-primary-dark;
-}
-
-.kb-body {
-  margin-top: $sp-2;
-  padding-top: $sp-2;
-  border-top: 1rpx solid $c-line;
-}
-
-.kb-content {
-  display: block;
-  font-size: $fs-body;
-  line-height: 1.8;
-  color: $c-text-2;
-  white-space: pre-wrap;
-}
-
-.kb-from {
-  display: block;
-  margin-top: $sp-2;
-  font-size: $fs-tiny;
-  color: $c-text-2;
-}
-
-.kb-keywords {
-  display: block;
-  margin-top: 4rpx;
-  font-size: $fs-tiny;
-  color: $c-text-2;
-}
-
-/* ---------- 底部固定输入区 ---------- */
-
-.qa-composer {
-  flex: none;
-  background: $c-card;
-  border-top: 1rpx solid $c-line;
-  padding: $sp-2 $sp-3;
-}
-
-.qa-disclaimer {
-  display: block;
-  min-height: 34rpx;
-  margin-bottom: $sp-1;
-  text-align: center;
-  font-size: $fs-tiny;
-  line-height: 1.5;
-  color: $c-text-2;
-}
-
-.qa-input-row {
-  display: flex;
-  align-items: center;
-}
-
-.qa-input {
-  flex: 1;
-  height: 88rpx;
-  margin-right: $sp-2;
-  padding: 0 $sp-3;
-  background: $c-paper;
-  border: 1rpx solid $c-line;
-  border-radius: $radius;
-  font-size: $fs-body;
-  color: $c-text;
-}
-
-/* 发送沿用 ui-btn 的外观，这里只控制它在输入行里的宽度 */
-.qa-send {
-  flex: none;
-  width: 168rpx;
-}
-
-/* 输入为空时弱化，但仍可点击（点击会提示先输入） */
-
-/* 回答的有用性反馈：轻量、成对、命中后只有一处高亮 */
-.qa-helpful {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: $sp-2;
-  margin-top: $sp-2;
-  padding-top: $sp-2;
-  border-top: 1rpx solid $c-line;
-}
-
-.qa-helpful-label {
-  font-size: $fs-tiny;
+  line-height: $lh-body;
   color: $c-muted;
 }
 
-.qa-helpful-btn {
-  @include tap;
-  display: flex;
-  align-items: center;
-  gap: $sp-0;
-  padding: 0 $sp-3;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  color: $c-ink-2;
-
-  &.on {
-    border-color: $c-primary;
-    background: $c-primary-light;
-    color: $c-primary-dark;
-  }
-}
-
-.qa-helpful-text {
-  font-size: $fs-tiny;
-}
-
-/* 助手元信息：这一轮读了哪些数据 / 是否为检索回退 */
+// ---- 助手元信息 --------------------------------------------------------------
 .qa-meta {
   margin-top: $sp-1;
 }
 
 .qa-meta-text {
   font-size: $fs-tiny;
+  line-height: $lh-tight;
   color: $c-muted;
 }
 
-/* ---------------- 知识图谱 ---------------- */
-/* 节点用绝对定位 + transform 居中；动效只做透明度，避免位移与定位互相覆盖 */
+// ---- 有用 / 没用：胶囊描边，命中填 container ----------------------------------
+.qa-helpful {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $sp-2;
+  margin-top: $sp-3;
+  padding-top: $sp-2;
+  border-top: 1rpx solid $c-line;
+}
+
+.qa-helpful-label {
+  flex: 1 0 100%;
+  font-size: $fs-tiny;
+  line-height: $lh-tight;
+  color: $c-muted;
+}
+
+// 选中态要一眼看出来：container 底 + onPrimaryContainer 字 + 主色描边，
+// 右边再补一个勾，不依赖颜色也能分辨。
+.qa-helpful-btn {
+  @include chip;
+  gap: $sp-1;
+  flex: 1;
+  min-width: 200rpx;
+  height: 88rpx;
+  padding: 0 $sp-3;
+  border-radius: $radius-pill;
+
+  &.on {
+    background: $c-primary-container;
+    border-color: $c-primary;
+    color: $c-on-primary-container;
+
+    .icon,
+    .qa-helpful-text {
+      color: $c-on-primary-container;
+    }
+  }
+}
+
+.qa-helpful-text {
+  font-size: $fs-small;
+  line-height: $lh-tight;
+  color: currentColor;
+}
+
+// ---- 底部输入区 --------------------------------------------------------------
+.qa-composer {
+  flex: none;
+  padding: $sp-2 $page-gutter;
+  padding-bottom: calc(#{$sp-2} + env(safe-area-inset-bottom));
+  background: $c-card;
+  border-top: 1rpx solid $c-line;
+}
+
+// 免责声明 + 剩余次数只占一行，不换行不留白，输入区高度才稳
+.qa-disclaimer {
+  display: block;
+  margin-bottom: $sp-1;
+  text-align: center;
+  font-size: $fs-tiny;
+  line-height: $lh-tight;
+  color: $c-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qa-input-row {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+}
+
+// 胶囊外壳：内层原生 input 用 flex:1 填满，高度交给内层，外层不再被行盒撑高
+.qa-field {
+  @include field;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  height: 96rpx;
+  padding: 0 $sp-4;
+  border-radius: $radius-pill;
+  overflow: hidden;
+
+  .taro-input,
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    font-size: $fs-body;
+    color: $c-ink;
+  }
+}
+
+.qa-input {
+  width: 100%;
+  height: 100%;
+  font-size: $fs-body;
+}
+
+// 发送按钮外观由 ui-btn 统一（空输入时 is-disabled = tonal 灰），这里只定宽高
+.qa-send {
+  flex: none;
+  width: 168rpx;
+  min-height: 96rpx;
+  padding: 0 $sp-3;
+}
+
+// 知识库底部的去向：搜索没结果时把人带去找助手
+.qa-kb-shortcut {
+  @include tap;
+  @include pressable(0.98);
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: 0 $sp-4;
+  background: $c-primary-container;
+  border: 1rpx solid $c-primary;
+  border-radius: $radius-pill;
+
+  &:active {
+    background: $c-primary-light;
+  }
+
+  .icon {
+    flex: none;
+  }
+}
+
+.qa-kb-shortcut-text {
+  flex: 1;
+  min-width: 0;
+  font-size: $fs-small;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-on-primary-container;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ---- 知识库 ------------------------------------------------------------------
+.kb-wrap {
+  padding: $sp-3 $page-gutter $sp-5;
+}
+
+// 搜索框：icon + 原生输入 + 清空，外壳就是 field 混入
+.kb-search {
+  @include field;
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  height: 88rpx;
+  padding: 0 $sp-3;
+  border-radius: $radius;
+
+  .icon {
+    flex: none;
+  }
+}
+
+.kb-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-size: $fs-body;
+  color: $c-ink;
+}
+
+.kb-search-clear {
+  @include tap;
+  @include pressable(0.94);
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 88rpx;
+  margin-right: -$sp-2;
+}
+
+.kb-count-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: $sp-2;
+  margin: $sp-3 0 $sp-2;
+}
+
+.kb-count {
+  @include num;
+  flex: none;
+  font-size: $fs-small;
+  color: $c-ink-2;
+}
+
+.kb-count-sub {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  font-size: $fs-tiny;
+  color: $c-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 分类 chips：横排可换行，选中填 container 底
+.kb-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
+  margin-bottom: $sp-2;
+}
+
+.kb-chip {
+  @include chip;
+  padding: 0 $sp-3;
+  border-radius: $radius-pill;
+}
+
+.kb-chip-text {
+  display: block;
+  font-size: $fs-small;
+  line-height: $lh-tight;
+  color: inherit;
+}
+
+// 条目卡：标题 + 两行摘要 + 来源/分类小字；点卡展开，展开后整段全文 + 收起
+.kb-card {
+  @include card;
+  @include tap;
+  @include pressable(0.99);
+  display: flex;
+  flex-direction: column;
+  gap: $sp-1;
+  margin-bottom: $sp-2;
+  padding: $sp-3;
+  transition:
+    background-color $dur-fast $ease,
+    border-color $dur-fast $ease;
+
+  &:active {
+    background: $c-primary-light;
+    border-color: $c-primary;
+  }
+
+  &.open {
+    border-color: $c-primary;
+    background: $c-surface;
+  }
+}
+
+.kb-head {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-2;
+}
+
+.kb-title {
+  flex: 1;
+  min-width: 0;
+  font-size: $fs-h3;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-ink;
+}
+
+.kb-caret {
+  flex: none;
+  margin-top: $sp-0;
+  transition: transform $dur $ease;
+
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+.kb-summary {
+  @include clamp(2);
+  font-size: $fs-small;
+  line-height: 1.7;
+  color: $c-ink-2;
+  word-break: break-word;
+}
+
+.kb-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $sp-1;
+}
+
+.kb-meta-text {
+  font-size: $fs-tiny;
+  line-height: $lh-tight;
+  color: $c-muted;
+  word-break: break-all;
+}
+
+.kb-body {
+  margin-top: $sp-1;
+  padding-top: $sp-2;
+  border-top: 1rpx solid $c-line;
+}
+
+.kb-content {
+  display: block;
+  font-size: $fs-small;
+  line-height: 1.75;
+  color: $c-ink-2;
+  white-space: pre-wrap;
+  word-break: break-word;
+
+  // 检索命中词高亮：浅叶底，不改变字号避免行盒跳动
+  em,
+  .hit {
+    background: $c-primary-light;
+    border-radius: $radius-xs;
+    font-style: normal;
+    color: $c-primary-dark;
+  }
+}
+
+.kb-keywords {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-tiny;
+  line-height: $lh-tight;
+  color: $c-muted;
+}
+
+// 展开态末尾的「收起」：卡片本身可点，这里给一个明确的出口
+.kb-fold {
+  @include tap;
+  @include pressable(0.97);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-1;
+  margin-top: $sp-2;
+  padding: 0 $sp-3;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-pill;
+  background: $c-surface;
+
+  &:active {
+    background: $c-primary-container;
+    border-color: $c-primary;
+
+    .kb-fold-text,
+    .kb-fold-icon {
+      color: $c-on-primary-container;
+    }
+  }
+}
+
+// 图标本身朝下，收起的动作是「往上」，转 180° 说清方向
+.kb-fold-icon {
+  transform: rotate(180deg);
+}
+
+.kb-fold-text {
+  font-size: $fs-tiny;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-primary;
+}
+
+// ---- 知识图谱 ----------------------------------------------------------------
+// 画布尺寸由 TSX 按「可用宽度」算出（px 内联），这里只管节点外观；
+// 节点最小 132rpx×100rpx ≈ 66×50px，远大于 44px 的手指按准线。
 .kg {
-  padding: $sp-2 0 $sp-5;
+  padding: $sp-2 0 $sp-4;
+}
+
+.kg-head {
+  padding: 0 $page-gutter;
+}
+
+// 画布可能比可用宽度宽一点点：给一层横向滚动兜底，绝不撑破页面
+.kg-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.kg-stage {
+  display: block;
 }
 
 .kg-canvas {
   position: relative;
-  margin: $sp-2 auto 0;
+  flex: none;
+  margin: $sp-3 auto $sp-2;
 }
 
+// 连线：从中心节点边缘外起步，靠旋转角决定方向；到分类节点就停，不穿字
 .kg-line {
   position: absolute;
-  height: 1rpx;
+  height: 2rpx;
   background: $c-line-strong;
   transform-origin: left center;
   animation: kg-fade 260ms $ease both;
+
+  &.on {
+    background: $c-primary;
+  }
 }
 
-.kg-node {
+// 连线终点的小圆点：指出「这条线连到哪」
+.kg-dot {
   position: absolute;
-  transform: translate(-50%, -50%);
+  width: 12rpx;
+  height: 12rpx;
+  margin: -6rpx 0 0 -6rpx;
+  border-radius: 50%;
+  background: $c-line-strong;
+
+  &.on {
+    background: $c-primary;
+  }
+}
+
+// 分类节点：白底描边卡片，选中填 container 底 + 主色描边
+.kg-node {
+  @include tap;
+  @include pressable(0.96);
+  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 2rpx;
-  min-width: 140rpx;
-  max-width: 190rpx;
+  min-width: 132rpx;
+  min-height: 100rpx;
+  max-width: 220rpx;
   padding: $sp-1 $sp-2;
+  transform: translate(-50%, -50%);
   background: $c-surface;
   border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  box-sizing: border-box;
+  border-radius: $radius-lg;
+  box-shadow: $shadow;
   animation: kg-fade 220ms $ease both;
-  transition: background-color $dur-fast $ease, border-color $dur-fast $ease;
+
+  &.on {
+    background: $c-primary-container;
+    border-color: $c-primary;
+    box-shadow: none;
+
+    .kg-node-title,
+    .kg-node-count {
+      color: $c-on-primary-container;
+    }
+  }
 }
 
-.kg-node.on {
-  background: $c-primary-light;
-  border-color: $c-primary;
-}
-
+// 中心节点：实底主色圆，比分类节点大一圈，层级一眼分开
 .kg-node--center {
-  min-width: 176rpx;
+  min-width: 152rpx;
+  min-height: 152rpx;
+  max-width: 152rpx;
   padding: $sp-2;
   background: $c-primary;
   border-color: $c-primary;
+  border-radius: 50%;
+  box-shadow: $shadow-lg;
+  z-index: 1;
+  animation: none;
 }
 
 .kg-center-title {
-  font-size: $fs-small;
+  font-size: $fs-h3;
   font-weight: 600;
+  line-height: $lh-tight;
   letter-spacing: 1rpx;
   color: $c-surface;
 }
 
 .kg-center-count {
-  font-size: $fs-tiny;
-  color: rgba(255, 255, 255, 0.72);
+  @include num;
+  font-size: $fs-small;
+  color: $c-primary-light;
 }
 
 .kg-node-title {
-  font-size: $fs-tiny;
-  line-height: 1.4;
-  color: $c-ink-2;
+  font-size: 0.85em;
+  font-weight: 600;
+  line-height: $lh-tight;
   text-align: center;
+  color: $c-ink-2;
+  word-break: break-word;
 }
 
+// 数值字号由 TSX 按权重给（内联 font-size），这里只吃掉 em
 .kg-node-count {
-  font-size: $fs-label;
+  @include num;
+  font-size: 0.75em;
+  line-height: $lh-tight;
   color: $c-muted;
-}
-
-.kg-node.on .kg-node-title,
-.kg-node.on .kg-node-count {
-  color: $c-primary-dark;
 }
 
 .kg-hint {
   display: block;
-  margin: $sp-3 0 $sp-2;
+  margin: $sp-2 $page-gutter $sp-3;
   text-align: center;
+  font-size: $fs-tiny;
+  line-height: $lh-body;
+  color: $c-muted;
+}
+
+// ---- 分类面板：点开分类后列条目 ------------------------------------------------
+.kg-panel {
+  margin: 0 $page-gutter $sp-3;
+}
+
+.kg-panel-head {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-bottom: $sp-2;
+}
+
+.kg-panel-title-wrap {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: baseline;
+  gap: $sp-2;
+}
+
+.kg-panel-title {
+  font-size: $fs-h3;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-ink;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kg-panel-count {
+  @include num;
+  flex: none;
   font-size: $fs-tiny;
   color: $c-muted;
 }
 
-.kg-panel {
-  margin-bottom: $sp-3;
+.kg-panel-close {
+  @include tap;
+  @include pressable(0.97);
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 $sp-3;
+  background: $c-primary-container;
+  border: 1rpx solid $c-primary;
+  border-radius: $radius-pill;
+
+  &:active {
+    background: $c-primary-light;
+  }
+}
+
+.kg-panel-close-text {
+  font-size: $fs-tiny;
+  font-weight: 600;
+  color: $c-on-primary-container;
+}
+
+.kg-panel-body {
+  overflow: hidden;
 }
 
 .kg-entry {
-  padding: $sp-2 $sp-3 $sp-3;
+  padding: $sp-2 $sp-3;
   border-bottom: 1rpx solid $c-line;
-}
 
-.kg-entry:last-child {
-  border-bottom: 0;
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &.open {
+    background: $c-primary-light;
+  }
 }
 
 .kg-entry-head {
@@ -650,30 +1142,52 @@
 
 .kg-entry-title {
   flex: 1;
+  min-width: 0;
   font-size: $fs-small;
   font-weight: 600;
+  line-height: $lh-tight;
   color: $c-ink;
 }
 
-.kg-entry-more {
-  font-size: $fs-tiny;
-  color: $c-primary;
+.kg-entry-caret {
+  flex: none;
+  transition: transform $dur $ease;
+
+  &.open {
+    transform: rotate(180deg);
+  }
 }
 
 .kg-entry-text {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
+  @include clamp(2);
   margin-top: $sp-1;
   font-size: $fs-small;
-  line-height: $lh-body;
+  line-height: 1.7;
   color: $c-ink-2;
+  word-break: break-word;
 }
 
-.kg-entry-text.open {
+.kg-entry-body {
+  margin-top: $sp-1;
+  padding-top: $sp-2;
+  border-top: 1rpx solid $c-line;
+}
+
+.kg-entry-full {
   display: block;
-  -webkit-line-clamp: unset;
+  font-size: $fs-small;
+  line-height: 1.75;
+  color: $c-ink-2;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.kg-entry-from {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-tiny;
+  line-height: $lh-tight;
+  color: $c-muted;
 }
 
 @keyframes kg-fade {

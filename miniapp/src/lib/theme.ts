@@ -6,21 +6,24 @@
  * 这里的值必须与 tokens.scss 保持一致。
  */
 export const THEME = {
-  paper: '#f4efe5',
-  surface: '#fffcf6',
-  ink: '#1e2421',
-  ink2: '#44504a',
-  muted: '#626b65',
-  line: '#ded5c5',
-  starOff: '#cfc6b6',
+  paper: '#f1ece3',
+  surface: '#fbf8f2',
+  surfaceDim: '#e9e2d6',
+  ink: '#242824',
+  ink2: '#49514a',
+  muted: '#61675f',
+  line: '#dcd4c4',
+  starOff: '#cfc7b8',
   white: '#ffffff',
-  primary: '#1f5a50',
-  primaryLight: '#e4ede7',
-  primaryDark: '#16443c',
-  accent: '#9c4833',
-  green: '#2c6a4e',
-  yellow: '#7a5310',
-  red: '#963b33',
+  primary: '#3e5f4b',
+  primaryLight: '#e6ebdf',
+  primaryDark: '#2e4738',
+  primaryContainer: '#dce5d4',
+  onPrimaryContainer: '#1f3527',
+  accent: '#8c5b3f',
+  green: '#47684f',
+  yellow: '#77602f',
+  red: '#8a5048',
 } as const
 
 export type ThemeColor = (typeof THEME)[keyof typeof THEME]

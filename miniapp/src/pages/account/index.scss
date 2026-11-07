@@ -1,0 +1,291 @@
+@use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
+
+// ============================================================================
+// 数据与来源页：生理数据来源（含手动录入）→ 研究参与 → 我的数据
+//
+// 类名统一 ac- 前缀。卡片 / 按钮 / 标签 / 栏目头 / 三态 / 数值单元全部来自
+// components/ui，这里只保留本页独有的排版。
+// ============================================================================
+
+// ---- 通用两栏 ---------------------------------------------------------------
+.ac-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-2;
+}
+
+// ---- 菜单行（研究数据使用 / 我的数据共用） ------------------------------------
+.ac-data {
+  margin-bottom: $sp-3;
+  padding: 0 $sp-4;
+}
+
+.ac-data-item {
+  @include tap;
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-2 0;
+  border-bottom: 1rpx solid $c-line;
+  transition: background-color $dur-fast $ease;
+  border-radius: $radius-sm;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:active {
+    background: $c-primary-light;
+  }
+}
+
+// 带 Switch 的行不整行点击
+.ac-data-item-static {
+  cursor: default;
+
+  &:active {
+    background: transparent;
+  }
+}
+
+.ac-menu-icon {
+  @include icon-tile(72rpx, $c-primary-light);
+  color: $c-primary-dark;
+}
+
+.ac-menu-icon-danger {
+  background: $c-red-bg;
+  color: $c-red;
+}
+
+.ac-menu-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-menu-label {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-ink;
+}
+
+.ac-menu-label-danger {
+  color: $c-red;
+}
+
+.ac-menu-desc {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  line-height: 1.5;
+  color: $c-muted;
+}
+
+// ---- 提示条 / 说明文字 --------------------------------------------------------
+.ac-note-line {
+  display: block;
+  margin-top: $sp-3;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-ink-2;
+}
+
+.ac-success-line {
+  display: block;
+  margin-top: $sp-2;
+  padding: $sp-2 $sp-3;
+  border-radius: $radius-sm;
+  background: $c-green-bg;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-green;
+}
+
+// ---- 生理数据来源 --------------------------------------------------------------
+.ac-source-state {
+  font-size: $fs-h3;
+  font-weight: 600;
+  color: $c-ink;
+}
+
+.ac-source-desc {
+  display: block;
+  margin-top: $sp-2;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-ink-2;
+}
+
+.ac-source-note {
+  display: block;
+  margin-top: $sp-2;
+  padding: $sp-2 $sp-3;
+  border-radius: $radius-sm;
+  font-size: $fs-small;
+  line-height: $lh-body;
+
+  &.note-device {
+    background: $c-green-bg;
+    color: $c-green;
+  }
+
+  &.note-simulated {
+    background: $c-yellow-bg;
+    color: $c-yellow;
+  }
+
+  &.note-manual {
+    background: $c-primary-light;
+    color: $c-primary-dark;
+  }
+}
+
+.ac-physio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $sp-2;
+  margin-top: $sp-3;
+}
+
+.ac-physio-cell {
+  padding: $sp-2 $sp-3;
+  border-radius: $radius-sm;
+  background: $c-surface-dim;
+}
+
+.ac-form-title {
+  display: block;
+  font-size: $fs-h3;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-ink;
+}
+
+.ac-form-label {
+  display: block;
+  margin-top: $sp-3;
+  font-size: $fs-small;
+  color: $c-muted;
+}
+
+.ac-form-block {
+  margin-top: $sp-4;
+  padding-top: $sp-3;
+  border-top: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+}
+
+.ac-form-desc {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-ink-2;
+}
+
+.ac-num-row {
+  display: flex;
+  gap: $sp-2;
+  margin-top: $sp-3;
+}
+
+.ac-num-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-num-input {
+  @include field;
+  @include tap;
+  width: 100%;
+  margin-top: $sp-1;
+  padding: 0 $sp-3;
+}
+
+.ac-submit {
+  margin-top: $sp-3;
+}
+
+// 从首页「生理数据」带 ?focus=physio 进来时定位一次，不做持续动画
+@keyframes ac-focus-flash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(62, 95, 75, 0);
+  }
+
+  35% {
+    box-shadow: 0 0 0 6rpx rgba(62, 95, 75, 0.16);
+  }
+}
+
+.ac-physio-focus {
+  border-color: $c-primary;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ac-physio-focus {
+    animation: ac-focus-flash 1.6s $ease 1;
+  }
+}
+
+// ---- 研究参与 ----------------------------------------------------------------
+.ac-study {
+  margin-bottom: $sp-3;
+}
+
+.ac-study-row {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-top: $sp-3;
+}
+
+.ac-study-input {
+  @include field;
+  flex: 1;
+  min-width: 0;
+  height: 88rpx;
+  padding: 0 $sp-3;
+}
+
+.ac-study-btn {
+  flex: none;
+  min-width: 168rpx;
+}
+
+.ac-study-title {
+  display: block;
+  font-size: $fs-h3;
+  font-weight: 600;
+  color: $c-ink;
+}
+
+.ac-study-sub {
+  display: block;
+  margin-top: $sp-0;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.ac-study-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: $sp-3;
+  margin: $sp-3 0 $sp-1;
+}
+
+.ac-study-window {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-tiny;
+  line-height: 1.5;
+  color: $c-ink-2;
+}
+
+.ac-study-actions {
+  margin-top: $sp-2;
+}

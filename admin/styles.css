@@ -416,3 +416,66 @@ label {
     padding: 20px;
   }
 }
+
+/* ---------------- 知识库 CMS ---------------- */
+
+.kb-toolbar .row {
+  gap: 10px;
+}
+
+.kb-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.kb-title {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.kb-title:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+.kb-link {
+  color: var(--primary-dark);
+  text-decoration: none;
+  margin-right: 10px;
+}
+
+.kb-link:hover {
+  text-decoration: underline;
+}
+
+.kb-actions {
+  white-space: nowrap;
+}
+
+.kb-pager {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 24px;
+}
+
+.kb-form .field {
+  margin-bottom: 14px;
+}
+
+.kb-form input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.kb-content {
+  min-height: 320px;
+  line-height: 1.7;
+  font-family: var(--font);
+}
+
+.kb-content + .kb-hint {
+  text-align: right;
+}

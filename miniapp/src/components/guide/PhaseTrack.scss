@@ -1,4 +1,10 @@
 @use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
+
+// ============================================================================
+// 阶段轨道：呼吸课四拍循环 / 其他课程编号步骤
+// 三态统一走 container 语言：未到 = 纸面、已过 = 浅叶、当前 = 主色填充。
+// ============================================================================
 
 .phase-track {
   display: flex;
@@ -10,31 +16,40 @@
 
 .phase-seg {
   flex: 1;
-  height: 64rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 64rpx;
   border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
   background: $c-surface;
+  transition:
+    background-color $dur $ease,
+    border-color $dur $ease,
+    color $dur $ease;
 
   &.done {
-    background: $c-primary-light;
     border-color: $c-green-line;
+    background: $c-primary-light;
   }
 
   &.on {
+    border-color: $c-primary;
     background: $c-primary;
-    border-color: $c-primary-dark;
-  }
-
-  &.on .phase-seg-text {
-    color: $c-surface;
-    font-weight: 600;
   }
 }
 
 .phase-seg-text {
   font-size: $fs-small;
+  line-height: 1;
   color: $c-ink-2;
+}
+
+.phase-seg.done .phase-seg-text {
+  color: $c-primary-dark;
+}
+
+.phase-seg.on .phase-seg-text {
+  font-weight: 600;
+  color: $c-surface;
 }

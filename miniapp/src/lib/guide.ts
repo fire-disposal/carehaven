@@ -105,10 +105,27 @@ export function scriptForIntervention(item: { title: string; category: string })
   if (title.includes('4-7-8')) return GUIDE_SCRIPTS['breath-478']
   if (title.includes('扫描')) return GUIDE_SCRIPTS['body-scan']
   if (title.includes('五感') || title.includes('落地')) return GUIDE_SCRIPTS.grounding
+  if (title.includes('四拍') || title.includes('腹式呼吸')) return GUIDE_SCRIPTS['breath-box']
   if (item.category === '呼吸放松') return GUIDE_SCRIPTS['breath-box']
   if (item.category === '冥想练习') return GUIDE_SCRIPTS['body-scan']
-  if (item.category === '音乐疗法') return GUIDE_SCRIPTS['breath-478']
   return GUIDE_SCRIPTS.grounding
+}
+
+/**
+ * 减压卡片的按钮文案。
+ * 只有按标题命中了具体课时才报课名；音乐、视频这类还没有专属引导课的条目，
+ * 一律「开始练习」，避免卡片写「音乐疗愈」、按钮却写「开始 · 4-7-8 放松呼吸」的错配。
+ */
+export function ctaForIntervention(item: { title: string; category: string }): string {
+  const title = item.title || ''
+  const matched =
+    title.includes('4-7-8') ||
+    title.includes('扫描') ||
+    title.includes('五感') ||
+    title.includes('落地') ||
+    title.includes('四拍') ||
+    title.includes('腹式呼吸')
+  return matched ? `开始 · ${scriptForIntervention(item).title}` : '开始练习'
 }
 
 export function scriptSeconds(script: GuideScript): number {

@@ -9,7 +9,7 @@ interface PillProps {
   className?: string
 }
 
-/** 状态标签：小圆角矩形，字距略宽；不用胶囊。 */
+/** 状态标签：8rpx 小圆角，字距略宽；三色由 \$tones 生成。 */
 export default function Pill({ children, tone = 'quiet', className = '' }: PillProps) {
   return <Text className={`ui-pill ui-pill--${tone} ${className}`.trim()}>{children}</Text>
 }

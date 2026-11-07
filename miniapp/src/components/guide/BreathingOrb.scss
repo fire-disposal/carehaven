@@ -1,4 +1,10 @@
 @use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
+
+// ============================================================================
+// 呼吸球：唯一一份呼吸动画实现
+// 颜色只用主色透明态（唯一的 rgba 例外）；减少动态效果时停在静息尺寸。
+// ============================================================================
 
 .orb-stage {
   position: relative;
@@ -10,6 +16,7 @@
   margin: 0 auto;
 }
 
+// 外圈薄环：静态参考圆，不参与呼吸动画
 .orb-ring {
   position: absolute;
   border-radius: 50%;
@@ -19,35 +26,46 @@
 .orb-ring--outer {
   width: 520rpx;
   height: 520rpx;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .orb {
   width: 320rpx;
   height: 320rpx;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 35%, rgba(31, 90, 80, 0.28), rgba(31, 90, 80, 0.12) 62%, rgba(31, 90, 80, 0.06));
-  border: 1rpx solid rgba(31, 90, 80, 0.35);
+  border: 1rpx solid rgba(62, 95, 75, 0.32);
+  background: radial-gradient(
+    circle at 40% 34%,
+    rgba(62, 95, 75, 0.26),
+    rgba(62, 95, 75, 0.12) 62%,
+    rgba(62, 95, 75, 0.05)
+  );
   transform: scale(0.8);
   will-change: transform;
-}
 
-.orb.inhale {
-  animation: orb-in var(--dur) linear forwards;
-}
+  &.inhale {
+    animation: orb-in var(--dur) linear forwards;
+  }
 
-.orb.exhale {
-  animation: orb-out var(--dur) linear forwards;
-}
+  &.exhale {
+    animation: orb-out var(--dur) linear forwards;
+  }
 
-.orb.paused {
-  animation-play-state: paused;
+  &.paused {
+    animation-play-state: paused;
+  }
+
+  // 屏息 / 停顿：静态保持，靠内联 transform 定尺寸，不参与动画
+  &.held {
+    animation: none;
+  }
 }
 
 @keyframes orb-in {
   from {
     transform: scale(0.8);
   }
+
   to {
     transform: scale(1.08);
   }
@@ -57,6 +75,7 @@
   from {
     transform: scale(1.08);
   }
+
   to {
     transform: scale(0.8);
   }
@@ -67,18 +86,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: $sp-1;
 }
 
 .orb-phase {
+  font-family: $font-serif;
   font-size: $fs-h3;
-  color: $c-primary-dark;
   letter-spacing: 0.12em;
+  color: $c-primary-dark;
 }
 
 .orb-count {
-  margin-top: $sp-1;
-  font-family: $font-num;
+  @include num;
   font-size: 96rpx;
+  font-weight: 600;
   line-height: 1;
   color: $c-ink;
 }

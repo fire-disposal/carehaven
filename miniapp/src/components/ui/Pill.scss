@@ -3,7 +3,7 @@
 .ui-pill {
   display: inline-flex;
   align-items: center;
-  padding: 4rpx 12rpx;
+  padding: 6rpx 16rpx;
   border-radius: $radius-xs;
   font-size: $fs-label;
   font-weight: 600;
@@ -12,28 +12,14 @@
   white-space: nowrap;
 }
 
-.ui-pill--green {
-  background: $c-green-bg;
-  color: $c-green;
-}
-
-.ui-pill--yellow {
-  background: $c-yellow-bg;
-  color: $c-yellow;
-}
-
-.ui-pill--red {
-  background: $c-red-bg;
-  color: $c-red;
-}
-
-.ui-pill--primary {
-  background: $c-primary-light;
-  color: $c-primary-dark;
+// 三色与主色标签统一从 $tones 生成，新增状态色只改 tokens
+@each $name, $pair in $tones {
+  .ui-pill--#{$name} {
+    background: nth($pair, 2);
+    color: nth($pair, 1);
+  }
 }
 
 .ui-pill--quiet {
-  background: transparent;
   border: 1rpx solid $c-line;
-  color: $c-muted;
 }

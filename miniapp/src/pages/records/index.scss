@@ -1,0 +1,153 @@
+@use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
+
+// ============================================================================
+// 我的记录页：打卡记录（按日分组，可删除单条）→ 干预记录（近 30 天，可展开）
+//
+// 类名统一 rc- 前缀。卡片 / 标签 / 栏目头 / 三态全部来自 components/ui，
+// 这里只保留本页独有的排版。
+// ============================================================================
+
+// ---- 打卡记录：一天一张卡 ------------------------------------------------------
+.rc-days {
+  margin-bottom: $sp-3;
+}
+
+.rc-checkins {
+  padding: 0 $sp-4;
+
+  & + & {
+    margin-top: $sp-2;
+  }
+}
+
+.rc-day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-2;
+  padding: $sp-2 0;
+  border-bottom: 1rpx solid $c-line;
+}
+
+.rc-day-label {
+  @include label;
+}
+
+.rc-day-count {
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+.rc-checkin {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-2;
+  padding: $sp-3 0;
+  border-bottom: 1rpx solid $c-line;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.rc-checkin-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.rc-checkin-title {
+  display: block;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-ink;
+}
+
+.rc-checkin-meta {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-tiny;
+  line-height: $lh-body;
+  color: $c-muted;
+}
+
+.rc-checkin-del {
+  @include tap;
+  @include pressable(0.94);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 64rpx;
+  min-height: 64rpx;
+  border-radius: $radius-sm;
+
+  &:active {
+    background: $c-red-bg;
+  }
+}
+
+// ---- 干预记录 ----------------------------------------------------------------
+.rc-log-card {
+  margin-bottom: $sp-3;
+  padding: $sp-2 $sp-4;
+}
+
+.rc-log-item {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-3;
+  padding: $sp-3 0;
+
+  & + & {
+    border-top: 1rpx solid $c-line;
+  }
+}
+
+.rc-log-icon {
+  @include icon-tile(64rpx, $c-primary-light);
+  color: $c-primary;
+}
+
+.rc-log-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.rc-log-title {
+  display: block;
+  font-size: $fs-body;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-ink;
+}
+
+.rc-log-meta {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $fs-small;
+  color: $c-muted;
+}
+
+.rc-log-feel {
+  display: inline-block;
+  margin-top: $sp-1;
+  padding: 2rpx $sp-2;
+  border-radius: $radius-xs;
+  background: $c-primary-container;
+  font-size: $fs-tiny;
+  color: $c-on-primary-container;
+}
+
+.rc-expand-row {
+  @include tap;
+  @include pressable(0.99);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: $sp-1;
+  border-top: 1rpx solid $c-line;
+  font-size: $fs-small;
+  font-weight: 600;
+  color: $c-primary;
+}

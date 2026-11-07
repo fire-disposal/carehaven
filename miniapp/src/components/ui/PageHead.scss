@@ -1,43 +1,54 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
+// 页头：eyebrow / 标题 / 一句说明。brand 变体只给登录与关于。
 .ui-head {
-  padding: $sp-2 0 $sp-3;
+  margin-bottom: $sp-5;
 }
 
 .ui-head__eyebrow {
-  display: block;
   @include label;
+  display: block;
+  margin-bottom: $sp-1;
 }
 
 .ui-head__row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: $sp-2;
-  margin-top: $sp-1;
+  gap: $sp-3;
 }
 
 .ui-head__title {
-  font-family: $font-sans;
   font-size: $fs-h1;
   font-weight: 600;
   line-height: $lh-tight;
-  letter-spacing: 0.5rpx;
   color: $c-ink;
-}
-
-.ui-head--brand .ui-head__title {
-  font-family: $font-serif;
-  font-size: 56rpx;
-  letter-spacing: 2rpx;
 }
 
 .ui-head__note {
   display: block;
   margin-top: $sp-2;
-  font-size: $fs-small;
+  font-size: $fs-body;
   line-height: $lh-body;
   color: $c-ink-2;
-  max-width: 34em;
+}
+
+.ui-head--brand {
+  text-align: center;
+
+  .ui-head__row {
+    justify-content: center;
+  }
+
+  .ui-head__title {
+    font-family: $font-serif;
+    font-size: 64rpx;
+    letter-spacing: 2rpx;
+  }
+
+  .ui-head__note {
+    font-size: $fs-small;
+    color: $c-muted;
+  }
 }

@@ -112,7 +112,12 @@ export default function HomePage() {
     return d.toDateString() === new Date().toDateString()
   }
   const todayPhysio = sameLocalDay(physio?.date)
-  const todayAssessed = sameLocalDay(latestAssessment?.created)
+  // 量表是「每周一次」：7 天内做过就算已完成，而不是只看当天
+  const assessmentTime = latestAssessment
+    ? new Date(latestAssessment.created.replace(' ', 'T')).getTime()
+    : NaN
+  const assessedThisWeek =
+    Number.isFinite(assessmentTime) && Date.now() - assessmentTime < 7 * 86400000
   const streak = (() => {
     const days = new Set(
       recent
@@ -138,9 +143,6 @@ export default function HomePage() {
     day: 'numeric',
     weekday: 'long',
   })
-  const checkinSubtitle = latestAssessment
-    ? `上次 ${latestAssessment.score} 分 · ${latestAssessment.flag ? '需关注' : latestAssessment.severity}`
-    : '3 分钟了解自己'
   // 首次加载才铺骨架；下拉刷新时保留旧内容，避免整页闪一下
   const firstLoad = loading && score === null && physio === null && checkins.length === 0
 
@@ -239,63 +241,83 @@ export default function HomePage() {
               </View>
             </View>
 
-            {/* 次级入口 */}
-            {/* 今日完成度：三件事各一行，点一下去补 */}
-            <View className="today-check">
+            {/* 今日安排：三件事各一行，写清「做什么、为什么」，已完成的有勾选 */}
+            <SectionHeader
+              title="今日安排"
+              action={<Text className="muted">连续 {streak} 天</Text>}
+            />
+            <Card flush className="plan">
               <View
-                className={`today-check-item ${todayChecked ? 'done' : ''}`}
-                onClick={() => (todayChecked ? undefined : void Taro.navigateTo({ url: '/pages/checkin/index' }))}
+                className={`plan-row ${todayChecked ? 'is-done' : ''}`}
+                onClick={() => void Taro.navigateTo({ url: '/pages/checkin/index' })}
                 ariaRole="button"
-                ariaLabel={todayChecked ? '今日已打卡' : '去打卡'}
+                ariaLabel={todayChecked ? `今日已记录 ${checkins.length} 次，再记一次` : '记录此刻心情'}
               >
-                <Text className="today-check-mark">{todayChecked ? '✓' : '○'}</Text>
-                <Text className="today-check-label">打卡</Text>
+                <View className="plan-icon">
+                  <Icon name="calendar-days" size={36} />
+                </View>
+                <View className="plan-main">
+                  <Text className="plan-title">记录此刻心情</Text>
+                  <Text className="plan-sub">
+                    {todayChecked ? `今天已记录 ${checkins.length} 次，可以补充` : '两分钟，记下现在的感受'}
+                  </Text>
+                </View>
+                {todayChecked ? (
+                  <Icon name="circle-check" size={36} color={THEME.green} />
+                ) : (
+                  <Icon name="chevron-right" size={28} color={THEME.muted} />
+                )}
               </View>
               <View
-                className={`today-check-item ${todayPhysio ? 'done' : ''}`}
-                onClick={() => {
-                  try {
-                    Taro.setStorageSync('zz_profile_focus', 'physio')
-                  } catch (e) {
-                    // 存储失败时只做普通跳转
-                  }
-                  void Taro.switchTab({ url: '/pages/profile/index' })
-                }}
+                className={`plan-row ${todayPhysio ? 'is-done' : ''}`}
+                onClick={() =>
+                  void Taro.navigateTo({ url: '/pages/account/index?focus=physio' })
+                }
                 ariaRole="button"
-                ariaLabel={todayPhysio ? '今日已有生理数据' : '去补录生理数据'}
+                ariaLabel={todayPhysio ? '今日已有生理数据，可继续补录' : '去补录生理数据'}
               >
-                <Text className="today-check-mark">{todayPhysio ? '✓' : '○'}</Text>
-                <Text className="today-check-label">生理</Text>
+                <View className="plan-icon">
+                  <Icon name="heart-pulse" size={36} />
+                </View>
+                <View className="plan-main">
+                  <Text className="plan-title">生理数据</Text>
+                  <Text className="plan-sub">
+                    {todayPhysio ? '今天已有记录，可以继续补录' : '睡眠、心率等，手动填写也可以'}
+                  </Text>
+                </View>
+                {todayPhysio ? (
+                  <Icon name="circle-check" size={36} color={THEME.green} />
+                ) : (
+                  <Icon name="chevron-right" size={28} color={THEME.muted} />
+                )}
               </View>
               <View
-                className={`today-check-item ${todayAssessed ? 'done' : ''}`}
+                className={`plan-row ${assessedThisWeek ? 'is-done' : ''}`}
                 onClick={() => Taro.navigateTo({ url: '/pages/assessment/index' })}
                 ariaRole="button"
-                ariaLabel={todayAssessed ? '今日已完成量表' : '去做量表'}
+                ariaLabel={assessedThisWeek ? '本周已完成量表，可回看结果' : '去做量表自评'}
               >
-                <Text className="today-check-mark">{todayAssessed ? '✓' : '○'}</Text>
-                <Text className="today-check-label">量表</Text>
+                <View className="plan-icon">
+                  <Icon name="clipboard-list" size={36} />
+                </View>
+                <View className="plan-main">
+                  <Text className="plan-title">量表自评</Text>
+                  <Text className="plan-sub">
+                    {assessedThisWeek && latestAssessment
+                      ? `上次 ${latestAssessment.score} 分，本周已完成`
+                      : '每周一次，跟踪照护负担与情绪'}
+                  </Text>
+                </View>
+                {assessedThisWeek ? (
+                  <Icon name="circle-check" size={36} color={THEME.green} />
+                ) : (
+                  <Icon name="chevron-right" size={28} color={THEME.muted} />
+                )}
               </View>
-              <Text className="today-check-streak">连续 {streak} 天</Text>
-            </View>
+            </Card>
 
             <SectionHeader title="支持工具" />
             <View className="tool-grid">
-              <View
-                className="tool-tile tool-wide"
-                onClick={() => Taro.navigateTo({ url: '/pages/assessment/index' })}
-                ariaRole="button"
-                ariaLabel={`量表自评，${checkinSubtitle}`}
-              >
-                <View className="tool-icon">
-                  <Icon name="clipboard-list" size={36} />
-                </View>
-                <View className="tool-main">
-                  <Text className="tool-title">量表自评</Text>
-                  <Text className="tool-sub">{checkinSubtitle}</Text>
-                </View>
-                <Icon name="chevron-right" size={28} color={THEME.muted} />
-              </View>
               <View
                 className="tool-tile"
                 onClick={() => void Taro.switchTab({ url: '/pages/manage/index' })}
@@ -319,6 +341,18 @@ export default function HomePage() {
                 </View>
                 <Text className="tool-title">知识问答</Text>
                 <Text className="tool-sub">照护问题即时查</Text>
+              </View>
+              <View
+                className="tool-tile"
+                onClick={() => void Taro.switchTab({ url: '/pages/community/index' })}
+                ariaRole="button"
+                ariaLabel="互助留言"
+              >
+                <View className="tool-icon">
+                  <Icon name="users" size={36} />
+                </View>
+                <Text className="tool-title">互助留言</Text>
+                <Text className="tool-sub">和同路人互相打气</Text>
               </View>
             </View>
 

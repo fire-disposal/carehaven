@@ -1,16 +1,13 @@
 @use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
 
 .ui-card {
-  background: $c-surface;
-  border: 1rpx solid $c-line;
-  border-radius: $radius;
+  @include card;
   padding: $sp-4;
-  box-sizing: border-box;
 }
 
 .ui-card--quiet {
   background: transparent;
-  border-color: $c-line;
 }
 
 .ui-card--tint {

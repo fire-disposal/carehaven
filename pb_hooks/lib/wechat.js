@@ -115,8 +115,87 @@ function bindWithCode(userId, code) {
   return user
 }
 
+// ---------------- 订阅消息 ----------------
+//
+// 缓存只在本运行时内有效：JSVM 每个 handler 可能跑在不同运行时，
+// 各自去取一次 token 即可（微信侧有频率限制，但 10 分钟一次的 cron 远低于阈值）。
+// 提前 5 分钟过期，避免请求在路上时 token 刚好失效。
+let tokenCache = { token: '', expiresAt: 0 }
+
+/** 取接口调用凭证（client_credential） */
+function accessToken() {
+  const now = Date.now()
+  if (tokenCache.token && tokenCache.expiresAt > now) {
+    return tokenCache.token
+  }
+
+  const appid = $os.getenv('WECHAT_APP_ID')
+  const secret = $os.getenv('WECHAT_APP_SECRET')
+  const url =
+    'https://api.weixin.qq.com/cgi-bin/token' +
+    '?grant_type=client_credential' +
+    '&appid=' + encodeURIComponent(appid) +
+    '&secret=' + encodeURIComponent(secret)
+
+  const res = $http.send({ url: url, method: 'GET', timeout: 15 })
+  if (res.statusCode !== 200) {
+    throw new Error('微信接口不可用（HTTP ' + res.statusCode + '）')
+  }
+  const data = res.json || {}
+  if (data.errcode) {
+    throw new Error('获取 access_token 失败：' + (data.errmsg || String(data.errcode)))
+  }
+  if (!data.access_token) {
+    throw new Error('微信未返回 access_token')
+  }
+
+  const ttl = Number(data.expires_in) || 7200
+  tokenCache = {
+    token: String(data.access_token),
+    expiresAt: now + Math.max(ttl - 300, 60) * 1000,
+  }
+  return tokenCache.token
+}
+
+/**
+ * 发送一次性订阅消息。
+ * 模板字段映射由调用方准备好 data；微信 errcode 非 0 时抛错（带 errmsg），
+ * 一次性订阅的额度此时已被消耗，调用方不应重试，只记录原因。
+ */
+function sendSubscribeMessage(params) {
+  const token = accessToken()
+  const payload = {
+    touser: String(params.openid || ''),
+    template_id: String(params.template_id || ''),
+    page: String(params.page || ''),
+    data: params.data || {},
+    miniprogram_state: String(params.miniprogram_state || 'formal'),
+    lang: 'zh_CN',
+  }
+
+  const res = $http.send({
+    url:
+      'https://api.weixin.qq.com/cgi-bin/message/subscribe/send' +
+      '?access_token=' + encodeURIComponent(token),
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    timeout: 15,
+  })
+  if (res.statusCode !== 200) {
+    throw new Error('微信接口不可用（HTTP ' + res.statusCode + '）')
+  }
+  const data = res.json || {}
+  if (data.errcode) {
+    throw new Error('订阅消息发送失败：' + (data.errmsg || String(data.errcode)))
+  }
+  return data
+}
+
 module.exports = {
   loginWithCode: loginWithCode,
   bindWithCode: bindWithCode,
   missingEnv: configError,
+  accessToken: accessToken,
+  sendSubscribeMessage: sendSubscribeMessage,
 }

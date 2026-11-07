@@ -2,14 +2,18 @@
 @use './styles/iconfont.scss';
 @use './styles/global.scss';
 
-// 全局基础样式：会被编译进 app 级样式表。
+// ============================================================================
+// 应用级样式：字体/底色 + H5 宽屏适配 + 桌面指针交互
+// 页面级布局一律不写在这里；这里只管「跨页面、跨路由」的规则。
+// ============================================================================
+
 page,
 body {
   background: $c-paper;
   color: $c-ink;
   font-family: $font-sans;
   font-size: $fs-body;
-  line-height: 1.65;
+  line-height: $lh-body;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -19,36 +23,34 @@ text {
   box-sizing: border-box;
 }
 
-/* ---------------------------------------------------------------------------
-   H5 宽屏适配
-   内容列不再是「一条手机长条」：720 / 880 / 1040 三档，
-   两侧用更深的纸色与发丝线形成书页感。
-   --------------------------------------------------------------------------- */
-@media screen and (min-width: 700px) {
-  /* 桌面只做阅读栏宽约束，不模拟纸张放在桌面上：同底色、无边框、无投影 */
+// ---------------------------------------------------------------------------
+// H5 宽屏：阅读栏 720 居中；fixed 元素（导航、底部 CTA、悬浮按钮、面板）
+// 必须跟随阅读栏，而不是贴视口边缘。
+// ---------------------------------------------------------------------------
+@media screen and (min-width: $reading-breakpoint) {
   #app {
-    max-width: 720PX;
+    max-width: $reading-width;
     min-height: 100vh;
     margin: 0 auto;
     background: $c-paper;
   }
 
-  /* 底部导航是 fixed 定位（相对视口），需与内容列同宽同轴 */
   .bottom-nav {
-    width: 720PX;
+    width: $reading-width;
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%);
   }
-}
 
-/* ---------------------------------------------------------------------------
-   桌面端交互细节
-   - 悬浮按钮与底部面板在宽屏下要跟随 720 阅读栏，而不是贴视口边缘
-   - 指针设备补 hover / cursor，触屏不受影响
-   --------------------------------------------------------------------------- */
-@media screen and (min-width: 700px) {
-  /* 阅读栏 720 居中：左右边缘各距视口 50% - 360px */
+  // 问答页是整页 fixed 布局，打卡/答题页底部操作条固定（360px = 720 阅读栏的一半）
+  #app .page.qa-page,
+  .ck-footer,
+  .as-quiz-actions {
+    left: calc(50% - 360PX);
+    right: auto;
+    width: $reading-width;
+  }
+
   .fab {
     right: calc(50% - 360PX + 32PX);
   }
@@ -57,32 +59,18 @@ text {
     left: 0;
     right: 0;
     margin: 0 auto;
-    max-width: 720PX;
+    max-width: $reading-width;
   }
 
-  /* 滚动条与选区：与纸本配色一致，不抢眼 */
-  .taro_page::-webkit-scrollbar,
-  body::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  .taro_page::-webkit-scrollbar-thumb,
-  body::-webkit-scrollbar-thumb {
-    background: #cfc6b6;
-    border: 2px solid $c-paper;
-    border-radius: 8px;
-  }
-
-  .taro_page::-webkit-scrollbar-track,
-  body::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
+  // 滚动条全局隐藏（见 global.scss），这里只保留选区配色
   ::selection {
-    background: rgba(31, 90, 80, 0.16);
+    background: rgba(62, 95, 75, 0.16);
   }
 }
 
+// ---------------------------------------------------------------------------
+// 桌面指针：hover 状态与 cursor；触屏设备不命中这些规则
+// ---------------------------------------------------------------------------
 @media (hover: hover) and (pointer: fine) {
   .ui-btn,
   .fab,
@@ -108,13 +96,13 @@ text {
   .chip:hover,
   .preset-chip:hover,
   .qa-helpful-btn:hover {
-    background: rgba(31, 90, 80, 0.06);
+    background: rgba(62, 95, 75, 0.06);
   }
 
   .pf-data-item:hover,
   .pf-menu-item:hover,
   .nav-item:hover {
-    background: rgba(31, 90, 80, 0.05);
+    background: rgba(62, 95, 75, 0.05);
   }
 
   .md-link:hover {

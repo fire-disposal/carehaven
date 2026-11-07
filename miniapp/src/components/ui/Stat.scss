@@ -1,30 +1,27 @@
 @use '@/styles/tokens.scss' as *;
+@use '@/styles/mixins.scss' as *;
 
 .ui-stat {
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-0;
 }
 
 .ui-stat__label {
-  display: block;
-  font-size: $fs-label;
-  line-height: 1.4;
-  letter-spacing: 1rpx;
+  font-size: $fs-tiny;
   color: $c-muted;
 }
 
 .ui-stat__value-row {
   display: flex;
   align-items: baseline;
-  gap: 4rpx;
-  margin-top: 2rpx;
+  gap: $sp-1;
 }
 
 .ui-stat__value {
-  font-family: $font-num;
-  font-variant-numeric: tabular-nums;
-  font-size: 40rpx;
-  font-weight: 600;
-  line-height: 1.2;
+  @include num;
+  font-size: $fs-h1;
+  line-height: $lh-tight;
   color: $c-ink;
 }
 

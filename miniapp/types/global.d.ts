@@ -25,5 +25,7 @@ declare namespace NodeJS {
   interface ProcessEnv {
     /** 后端 API 基址；留空表示与页面同源（H5 构建产物由 PocketBase 托管时使用） */
     TARO_APP_API_BASE?: string
+    /** 构建目标平台：weapp / h5 等，由 Taro 在编译期替换 */
+    TARO_ENV?: string
   }
 }

@@ -1,26 +1,33 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
-/* ---------- 列表页 ---------- */
+// ============================================================================
+// 量表自评：列表 → 答题 → 结果
+//
+// 页面里不重写按钮；卡片 / 标签 / 栏目头 / 三态一律来自 components/ui。
+// 选项整行走 chip 语言：container 底 + 主色描边 + 600 字重。
+// ============================================================================
 
+// ---- 列表页 -----------------------------------------------------------------
 .as-intro {
-  margin-bottom: $sp-3;
+  margin-bottom: $sp-4;
 }
 
 .as-intro-title {
   display: block;
   font-size: $fs-h2;
-  font-weight: 700;
-  color: $c-primary-dark;
+  font-weight: 600;
   line-height: $lh-tight;
+  color: $c-on-primary-container;
 }
 
 .as-intro-text {
   display: block;
   margin-top: $sp-1;
   font-size: $fs-small;
-  color: $c-ink-2;
   line-height: $lh-body;
+  color: $c-on-primary-container;
+  opacity: 0.82;
 }
 
 .as-intro-meta {
@@ -35,45 +42,49 @@
   align-items: center;
   gap: $sp-1;
   font-size: $fs-tiny;
-  color: $c-primary-dark;
+  color: $c-on-primary-container;
 }
 
-/* 量卡片：外层只负责点击与间距，视觉交给 Card */
+// 外层只负责点击与间距，视觉交给 Card
 .as-scale-hit {
+  @include pressable(0.99);
   display: block;
-  margin-bottom: $sp-3;
-  border-radius: $radius-sm;
+  margin-bottom: $sp-2;
+  border-radius: $radius-lg;
 }
 
 .as-scale {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: $sp-3;
+  transition:
+    background-color $dur-fast $ease,
+    border-color $dur-fast $ease;
+}
+
+.as-scale-hit:active .as-scale {
+  background: $c-primary-light;
+  border-color: $c-primary;
 }
 
 .as-scale-icon {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: $radius-sm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.as-scale-icon.tint-primary {
-  background: $c-primary-light;
+  @include icon-tile(88rpx, $c-primary-light);
   color: $c-primary-dark;
-}
 
-.as-scale-icon.tint-yellow {
-  background: $c-yellow-bg;
-  color: $c-yellow;
-}
+  &.tint-primary {
+    background: $c-primary-container;
+    color: $c-on-primary-container;
+  }
 
-.as-scale-icon.tint-red {
-  background: $c-red-bg;
-  color: $c-red;
+  &.tint-yellow {
+    background: $c-yellow-bg;
+    color: $c-yellow;
+  }
+
+  &.tint-red {
+    background: $c-red-bg;
+    color: $c-red;
+  }
 }
 
 .as-scale-main {
@@ -84,27 +95,28 @@
 .as-scale-head {
   display: flex;
   align-items: baseline;
-  gap: $sp-2;
+  flex-wrap: wrap;
+  gap: $sp-1;
 }
 
 .as-scale-name {
-  font-size: $fs-h2;
-  font-weight: 700;
+  font-size: $fs-h3;
+  font-weight: 600;
+  line-height: $lh-tight;
   color: $c-ink;
 }
 
 .as-scale-short {
-  font-size: $fs-tiny;
-  color: $c-muted;
+  @include label;
   letter-spacing: 1rpx;
 }
 
 .as-scale-intro {
-  display: block;
+  @include clamp(2);
   margin-top: $sp-0;
   font-size: $fs-small;
-  color: $c-ink-2;
   line-height: $lh-body;
+  color: $c-ink-2;
 }
 
 .as-scale-meta {
@@ -118,37 +130,44 @@
 }
 
 .as-dot {
-  color: $c-line;
+  color: $c-line-strong;
 }
 
 .as-scale-last {
-  margin-left: $sp-1;
+  margin-left: $sp-0;
 }
 
+// 最近自评：卡片内发丝线分隔，分数右对齐
 .as-history-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $sp-2;
+  gap: $sp-3;
   padding: $sp-3 0;
   border-bottom: 1rpx solid $c-line;
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
 }
 
-.as-history-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.as-history-main {
+  flex: 1;
+  min-width: 0;
 }
 
 .as-history-name {
   display: block;
   font-size: $fs-body;
   font-weight: 600;
+  line-height: $lh-tight;
   color: $c-ink;
 }
 
 .as-history-date {
   display: block;
-  margin-top: $sp-0;
+  margin-top: 2rpx;
   font-size: $fs-tiny;
   color: $c-muted;
 }
@@ -162,55 +181,65 @@
 .as-history-value {
   @include num;
   font-size: $fs-h2;
-  font-weight: 700;
+  font-weight: 600;
   color: $c-ink;
 }
 
 .as-disclaimer {
   display: block;
-  margin-top: $sp-3;
+  margin-top: $sp-4;
   font-size: $fs-tiny;
-  color: $c-muted;
   line-height: $lh-body;
+  color: $c-muted;
   text-align: center;
 }
 
-/* ---------- 答题 ---------- */
-
+// ---- 答题 -------------------------------------------------------------------
+// 进度：贴在 TopBar 下方，胶囊轨道 + 右侧「第 N / M 题」
 .as-progress {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  margin: $sp-2 $page-gutter 0;
+}
+
+.as-progress-track {
+  flex: 1;
   height: 8rpx;
-  background: $c-line;
+  border-radius: $radius-pill;
+  background: $c-surface-dim;
+  overflow: hidden;
 }
 
 .as-progress-fill {
   height: 100%;
+  border-radius: $radius-pill;
   background: $c-primary;
-  border-radius: 0 $radius-xs $radius-xs 0;
   transition: width $dur $ease;
 }
 
+.as-progress-text {
+  @include num;
+  flex: none;
+  font-size: $fs-tiny;
+  color: $c-muted;
+}
+
+// 答题页不显示底部导航；底部操作条固定，正文底部留白避免被遮住
 .as-quiz-scroll {
-  height: calc(100vh - 104rpx);
+  min-height: 0;
 }
 
 .as-quiz-body {
-  padding: $sp-5 $sp-4 $sp-4;
-}
-
-.as-quiz-index {
-  display: block;
-  font-size: $fs-tiny;
-  font-weight: 600;
-  color: $c-primary;
-  letter-spacing: 2rpx;
+  padding: $sp-5 $page-gutter 280rpx;
 }
 
 .as-quiz-question {
   display: block;
-  margin-top: $sp-2;
-  font-size: $fs-h3;
-  line-height: $lh-body;
-  font-weight: 700;
+  font-family: $font-serif;
+  font-size: $fs-h2;
+  font-weight: 600;
+  line-height: $lh-tight;
   color: $c-ink;
 }
 
@@ -218,70 +247,103 @@
   display: block;
   margin-top: $sp-2;
   font-size: $fs-small;
+  line-height: $lh-body;
   color: $c-muted;
 }
 
 .as-options {
-  margin-top: $sp-4;
   display: flex;
   flex-direction: column;
   gap: $sp-2;
+  margin-top: $sp-4;
 }
 
+// 整行选项：自绘单选圆点 + 与 chip 同一套选中语言
 .as-option {
-  @include tap;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-surface;
-  padding: $sp-2 $sp-3;
+  @include chip;
+  justify-content: flex-start;
+  gap: $sp-3;
+  padding: $sp-3 $sp-4;
+  border-radius: $radius;
+  text-align: left;
+}
+
+.as-option-radio {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: $sp-2;
+  justify-content: center;
+  flex: none;
+  width: 40rpx;
+  height: 40rpx;
+  border: 2rpx solid $c-line-strong;
+  border-radius: 50%;
+  background: $c-surface;
 }
 
-.as-option.picked {
+.as-option.picked .as-option-radio {
   border-color: $c-primary;
-  background: $c-primary-light;
+}
+
+.as-option-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: $c-primary;
 }
 
 .as-option-label {
+  flex: 1;
   font-size: $fs-body;
-  color: $c-ink;
+  line-height: $lh-tight;
+  color: inherit;
 }
 
-.as-option.picked .as-option-label {
-  color: $c-primary-dark;
-  font-weight: 700;
+.as-quiz-actions {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: $sp-2;
+  padding: $sp-3 $page-gutter calc(#{$sp-3} + env(safe-area-inset-bottom));
+  background: $c-surface;
+  border-top: 1rpx solid $c-line;
+}
+
+.as-quiz-prev {
+  flex: 1;
+}
+
+.as-quiz-next {
+  flex: 2;
 }
 
 .as-saving {
   display: block;
-  margin-top: $sp-3;
+  margin-top: $sp-4;
   font-size: $fs-small;
   color: $c-ink-2;
   text-align: center;
 }
 
-/* ---------- 结果 ---------- */
-
+// ---- 结果 -------------------------------------------------------------------
 .as-result {
   margin-bottom: $sp-3;
-}
 
-.as-result.tone-green {
-  background: $c-green-bg;
-  border-color: $c-green-line;
-}
+  &.tone-green {
+    background: $c-green-bg;
+    border-color: $c-green-line;
+  }
 
-.as-result.tone-yellow {
-  background: $c-yellow-bg;
-  border-color: $c-yellow-line;
-}
+  &.tone-yellow {
+    background: $c-yellow-bg;
+    border-color: $c-yellow-line;
+  }
 
-.as-result.tone-red {
-  background: $c-red-bg;
-  border-color: $c-red-line;
+  &.tone-red {
+    background: $c-red-bg;
+    border-color: $c-red-line;
+  }
 }
 
 .as-result-head {
@@ -292,7 +354,7 @@
 }
 
 .as-result-name {
-  font-size: $fs-h2;
+  font-size: $fs-h3;
   font-weight: 600;
   color: $c-ink;
 }
@@ -307,8 +369,9 @@
 .as-result-value {
   @include num;
   font-size: $fs-display;
-  line-height: $lh-tight;
-  font-weight: 700;
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
   color: $c-ink;
 }
 
@@ -320,29 +383,30 @@
 .as-result-bar {
   height: 12rpx;
   margin-top: $sp-3;
-  border-radius: $radius-xs;
-  background: $c-line;
+  border-radius: $radius-pill;
+  background: $c-surface-dim;
   overflow: hidden;
 }
 
 .as-result-fill {
   height: 100%;
-  border-radius: $radius-xs;
+  border-radius: $radius-pill;
   transition: width $dur $ease;
+
+  &.lv-green {
+    background: $c-green;
+  }
+
+  &.lv-yellow {
+    background: $c-yellow;
+  }
+
+  &.lv-red {
+    background: $c-red;
+  }
 }
 
-.as-result-fill.lv-green {
-  background: $c-green;
-}
-
-.as-result-fill.lv-yellow {
-  background: $c-yellow;
-}
-
-.as-result-fill.lv-red {
-  background: $c-red;
-}
-
+// ---- 结果说明 ----------------------------------------------------------------
 .as-advice {
   margin-bottom: $sp-3;
 }
@@ -354,7 +418,7 @@
 }
 
 .as-advice-title {
-  font-size: $fs-h2;
+  font-size: $fs-h3;
   font-weight: 600;
   color: $c-ink;
 }
@@ -363,18 +427,29 @@
   display: block;
   margin-top: $sp-2;
   font-size: $fs-body;
-  line-height: $lh-body;
+  line-height: 1.75;
   color: $c-ink;
 }
 
 .as-advice-note {
   display: block;
   margin-top: $sp-2;
+  padding-top: $sp-2;
+  border-top: 1rpx solid $c-line;
   font-size: $fs-tiny;
   line-height: $lh-body;
   color: $c-muted;
 }
 
+.as-advice-followup {
+  display: block;
+  margin-top: $sp-1;
+  font-size: $fs-small;
+  line-height: $lh-body;
+  color: $c-ink-2;
+}
+
+// ---- 安全提示 ----------------------------------------------------------------
 .as-safety {
   margin-bottom: $sp-3;
   background: $c-red-bg;
@@ -388,8 +463,8 @@
 }
 
 .as-safety-title {
-  font-size: $fs-h2;
-  font-weight: 700;
+  font-size: $fs-h3;
+  font-weight: 600;
   color: $c-red;
 }
 
@@ -397,7 +472,7 @@
   display: block;
   margin-top: $sp-2;
   font-size: $fs-body;
-  line-height: $lh-body;
+  line-height: 1.75;
   color: $c-ink;
 }
 
@@ -406,15 +481,8 @@
 }
 
 .as-result-actions {
-  margin-top: $sp-4;
   display: flex;
   flex-direction: column;
   gap: $sp-2;
-}
-
-.as-advice-followup {
-  display: block;
-  margin-top: $sp-1;
-  font-size: $fs-tiny;
-  color: $c-muted;
+  margin-top: $sp-4;
 }

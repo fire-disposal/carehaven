@@ -2,7 +2,7 @@ import { PAGE_TITLES } from '../../content/site'
 
 export default definePageConfig({
   navigationBarTitleText: PAGE_TITLES.feedback,
-  navigationBarBackgroundColor: '#1F5A50',
+  navigationBarBackgroundColor: '#3E5F4B',
   navigationBarTextStyle: 'white',
-  backgroundColor: '#F4EFE5',
+  backgroundColor: '#F1ECE3',
 })

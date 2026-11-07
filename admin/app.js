@@ -111,6 +111,7 @@ function shell(active, title, subtitle, content) {
     ['overview', '概览'],
     ['agent', '助手'],
     ['studies', '研究'],
+    ['knowledge', '知识库'],
     ['moderation', '内容处置'],
     ['config', '配置'],
     ['data', '数据'],
@@ -503,6 +504,252 @@ async function pageModeration() {
   }
 }
 
+// ---------------- 知识库（精简 CMS） ----------------
+// 只做内容运营需要的最小闭环：列表/搜索/分类筛选/新建/编辑/删除。
+// 直接走 PocketBase REST；kb_entries 的写权限只给超管，正好与运营台登录态一致。
+
+const KB_PAGE_SIZE = 20
+const KB_CATEGORIES = ['行为应对', '日常照护', '情绪调适', '自我关怀', '沟通技巧']
+const KB_LIMITS = { title: 120, keywords: 200, source: 120, content: 8000 }
+
+const kbState = { q: '', category: '', page: 1 }
+
+/** PocketBase filter 里的字符串字面量：用 JSON.stringify 一次处理引号与转义 */
+function kbQuoted(value) {
+  return JSON.stringify(String(value))
+}
+
+async function kbCategoryList() {
+  try {
+    const data = await api('/api/collections/kb_entries/records?perPage=200&fields=category')
+    const seen = new Set(KB_CATEGORIES)
+    for (const row of data.items || []) {
+      if (row.category) seen.add(String(row.category))
+    }
+    return [...seen]
+  } catch (err) {
+    return KB_CATEGORIES.slice()
+  }
+}
+
+async function pageKnowledge() {
+  shell('knowledge', '知识库', '加载中…', '<div class="empty">读取中…</div>')
+  try {
+    const [cats, data] = await Promise.all([
+      kbCategoryList(),
+      (() => {
+        const params = new URLSearchParams({
+          perPage: String(KB_PAGE_SIZE),
+          page: String(kbState.page),
+          sort: '-updated',
+        })
+        const clauses = []
+        const q = kbState.q.trim()
+        if (q) {
+          clauses.push(
+            `(title ~ ${kbQuoted(q)} || content ~ ${kbQuoted(q)} || keywords ~ ${kbQuoted(q)})`
+          )
+        }
+        if (kbState.category) clauses.push(`category = ${kbQuoted(kbState.category)}`)
+        if (clauses.length) params.set('filter', clauses.join(' && '))
+        return api(`/api/collections/kb_entries/records?${params.toString()}`)
+      })(),
+    ])
+
+    const items = data.items || []
+    const total = data.totalItems || 0
+    const pages = data.totalPages || 1
+    const rows = items
+      .map(
+        (row) => `<tr>
+          <td><a class="kb-title" href="#/knowledge/${esc(row.id)}">${esc(row.title)}</a></td>
+          <td><span class="badge">${esc(row.category || '未分类')}</span></td>
+          <td class="mono muted">${esc(row.keywords || '')}</td>
+          <td class="muted">${esc(fmtTime(row.updated))}</td>
+          <td class="kb-actions">
+            <a class="kb-link" href="#/knowledge/${esc(row.id)}">编辑</a>
+            <button class="ghost small" data-del="${esc(row.id)}" data-name="${esc(row.title)}">删除</button>
+          </td>
+        </tr>`
+      )
+      .join('')
+
+    const catOptions = [
+      `<option value="">全部分类</option>`,
+      ...cats.map(
+        (cat) => `<option value="${esc(cat)}" ${cat === kbState.category ? 'selected' : ''}>${esc(cat)}</option>`
+      ),
+    ].join('')
+
+    const content = `
+      <form class="card kb-toolbar" id="kb-search">
+        <div class="row">
+          <input id="kb-q" placeholder="搜索标题、正文、关键词" value="${esc(kbState.q)}" style="flex:1;min-width:220px" />
+          <select id="kb-cat">${catOptions}</select>
+          <button class="small" type="submit">搜索</button>
+          <button class="ghost small" type="button" id="kb-new">新建条目</button>
+        </div>
+        <div class="kb-hint">共 ${total} 条${kbState.q.trim() ? `，匹配「${esc(kbState.q.trim())}」` : ''}${
+          kbState.category ? `，分类 ${esc(kbState.category)}` : ''
+        }</div>
+      </form>
+      <div class="card">
+        <table>
+          <thead><tr><th>标题</th><th>分类</th><th>关键词</th><th>更新时间</th><th>操作</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="5" class="empty">没有匹配的条目。</td></tr>'}</tbody>
+        </table>
+      </div>
+      ${
+        pages > 1
+          ? `<div class="kb-pager">
+              <button class="ghost small" data-page="${kbState.page - 1}" ${kbState.page <= 1 ? 'disabled' : ''}>上一页</button>
+              <span class="muted">第 ${kbState.page} / ${pages} 页</span>
+              <button class="ghost small" data-page="${kbState.page + 1}" ${kbState.page >= pages ? 'disabled' : ''}>下一页</button>
+            </div>`
+          : ''
+      }`
+
+    shell('knowledge', '知识库', `${total} 条`, content)
+
+    document.getElementById('kb-search').addEventListener('submit', (event) => {
+      event.preventDefault()
+      kbState.q = document.getElementById('kb-q').value
+      kbState.page = 1
+      render()
+    })
+    document.getElementById('kb-cat').addEventListener('change', (event) => {
+      kbState.category = event.target.value
+      kbState.page = 1
+      render()
+    })
+    document.getElementById('kb-new').addEventListener('click', () => {
+      location.hash = '#/knowledge/new'
+    })
+    document.querySelectorAll('[data-page]').forEach((button) => {
+      button.addEventListener('click', () => {
+        kbState.page = Number(button.dataset.page)
+        render()
+      })
+    })
+    document.querySelectorAll('[data-del]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        if (!confirm(`删除「${button.dataset.name}」？删除后检索库立即生效。`)) return
+        try {
+          await api(`/api/collections/kb_entries/records/${button.dataset.del}`, { method: 'DELETE' })
+          toast('已删除')
+          render()
+        } catch (err) {
+          toast(err.message)
+        }
+      })
+    })
+  } catch (err) {
+    shell('knowledge', '知识库', '', `<div class="card error">${esc(err.message)}</div>`)
+  }
+}
+
+async function pageKnowledgeEdit(id) {
+  const isNew = id === 'new'
+  try {
+    const [record, cats] = await Promise.all([
+      isNew ? Promise.resolve({}) : api(`/api/collections/kb_entries/records/${id}`),
+      kbCategoryList(),
+    ])
+
+    const content = `
+      <form class="card kb-form" id="kb-form">
+        <div class="field">
+          <label for="kb-title">标题</label>
+          <input id="kb-title" maxlength="${KB_LIMITS.title}" value="${esc(record.title || '')}" placeholder="例：患者夜间反复起床怎么办" />
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="kb-category">分类</label>
+            <input id="kb-category" list="kb-cats" maxlength="40" value="${esc(record.category || '')}" placeholder="行为应对" />
+            <datalist id="kb-cats">${cats.map((cat) => `<option value="${esc(cat)}"></option>`).join('')}</datalist>
+          </div>
+          <div class="field">
+            <label for="kb-source">来源</label>
+            <input id="kb-source" maxlength="${KB_LIMITS.source}" value="${esc(record.source || '')}" placeholder="例：WHO iSupport / 内部整理" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="kb-keywords">关键词（逗号分隔，参与检索）</label>
+          <input id="kb-keywords" maxlength="${KB_LIMITS.keywords}" value="${esc(record.keywords || '')}" />
+        </div>
+        <div class="field">
+          <label for="kb-content">正文</label>
+          <textarea id="kb-content" class="kb-content" maxlength="${KB_LIMITS.content}" placeholder="短段落 + 编号要点；避免诊断性表述。">${esc(record.content || '')}</textarea>
+          <div class="kb-hint" id="kb-count"></div>
+        </div>
+        <div class="row">
+          <button class="small" type="submit">${isNew ? '创建条目' : '保存修改'}</button>
+          <button class="ghost small" type="button" id="kb-cancel">取消</button>
+          ${isNew ? '' : '<button class="danger small" type="button" id="kb-delete">删除</button>'}
+        </div>
+      </form>`
+
+    shell(
+      'knowledge',
+      isNew ? '新建知识条目' : '编辑知识条目',
+      record.updated ? `最近更新 ${fmtTime(record.updated)}` : '保存后立即进入检索库',
+      content
+    )
+
+    const countEl = document.getElementById('kb-count')
+    const contentEl = document.getElementById('kb-content')
+    const updateCount = () => {
+      countEl.textContent = `${contentEl.value.length} / ${KB_LIMITS.content} 字`
+    }
+    contentEl.addEventListener('input', updateCount)
+    updateCount()
+
+    document.getElementById('kb-cancel').addEventListener('click', () => {
+      location.hash = '#/knowledge'
+    })
+
+    const remove = async () => {
+      if (!confirm('删除这条知识？删除后检索库立即生效。')) return
+      try {
+        await api(`/api/collections/kb_entries/records/${id}`, { method: 'DELETE' })
+        toast('已删除')
+        location.hash = '#/knowledge'
+      } catch (err) {
+        toast(err.message)
+      }
+    }
+    const deleteBtn = document.getElementById('kb-delete')
+    if (deleteBtn) deleteBtn.addEventListener('click', remove)
+
+    document.getElementById('kb-form').addEventListener('submit', async (event) => {
+      event.preventDefault()
+      const payload = {
+        title: document.getElementById('kb-title').value.trim(),
+        category: document.getElementById('kb-category').value.trim(),
+        source: document.getElementById('kb-source').value.trim(),
+        keywords: document.getElementById('kb-keywords').value.trim(),
+        content: contentEl.value.trim(),
+      }
+      if (!payload.title) return toast('标题不能为空')
+      if (!payload.content) return toast('正文不能为空')
+      try {
+        if (isNew) {
+          await api('/api/collections/kb_entries/records', { method: 'POST', body: payload })
+          toast('已创建')
+        } else {
+          await api(`/api/collections/kb_entries/records/${id}`, { method: 'PATCH', body: payload })
+          toast('已保存')
+        }
+        location.hash = '#/knowledge'
+      } catch (err) {
+        toast(err.message)
+      }
+    })
+  } catch (err) {
+    shell('knowledge', '知识库', '', `<div class="card error">${esc(err.message)}</div>`)
+  }
+}
+
 // ---------------- 配置 ----------------
 
 async function pageConfig() {
@@ -631,6 +878,7 @@ function render() {
   if (page === 'studies') return pageStudies()
   if (page === 'study' && param) return pageStudyDetail(param)
   if (page === 'moderation') return pageModeration()
+  if (page === 'knowledge') return param ? pageKnowledgeEdit(param) : pageKnowledge()
   if (page === 'config') return pageConfig()
   if (page === 'data') return pageData()
   return pageOverview()

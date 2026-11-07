@@ -1,35 +1,50 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
-/* 文档切换：与问答/互助一致的下划线标签 */
+// ============================================================================
+// 协议页：文档切换 tab + 长文排版本
+// 正文 $fs-body / 1.75 行高，章节标题 32rpx 600，段落间距 $sp-3。
+// ============================================================================
+
+// ---- 文档切换：容器轨道 + 填充式选中 ------------------------------------------
 .ag-tabs {
   display: flex;
-  gap: $sp-4;
-  padding: 0 $sp-3;
-  border-bottom: 1rpx solid $c-line;
+  gap: $sp-0;
+  margin: $sp-2 $page-gutter $sp-3;
+  padding: 4rpx;
+  border-radius: $radius-pill;
+  background: $c-surface-dim;
 }
 
 .ag-tab {
   @include tap;
+  @include pressable(0.98);
+  flex: 1;
   display: flex;
   align-items: center;
-  padding: 0 $sp-1;
-  color: $c-muted;
-  border-bottom: 4rpx solid transparent;
-  margin-bottom: -1rpx;
-  transition: color $dur-fast $ease, border-color $dur-fast $ease;
+  justify-content: center;
+  min-height: 80rpx;
+  border-radius: $radius-pill;
+  font-size: $fs-small;
+  color: $c-ink-2;
+  transition:
+    background-color $dur-fast $ease,
+    color $dur-fast $ease;
 
   &.on {
-    color: $c-primary-dark;
-    border-bottom-color: $c-primary;
+    background: $c-primary-container;
+    color: $c-on-primary-container;
+    font-weight: 600;
   }
 }
 
+// ---- 正文 -------------------------------------------------------------------
 .ag-updated {
   display: block;
+  margin-bottom: $sp-3;
   font-size: $fs-tiny;
+  line-height: $lh-body;
   color: $c-muted;
-  margin-bottom: $sp-2;
 }
 
 .ag-section {
@@ -38,26 +53,32 @@
 
 .ag-title {
   display: block;
-  font-size: $fs-body;
-  font-weight: 700;
-  color: $c-ink;
-  margin-bottom: $sp-1;
+  margin-bottom: $sp-2;
+  font-size: $fs-h3;
+  font-weight: 600;
   line-height: $lh-tight;
+  color: $c-ink;
 }
 
 .ag-text {
   display: block;
+  margin-top: $sp-3;
   font-size: $fs-body;
+  line-height: 1.75;
   color: $c-ink-2;
-  line-height: $lh-body;
-  margin-top: $sp-1;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
 }
 
 .ag-foot {
   display: block;
-  margin-top: $sp-4;
+  margin-top: $sp-5;
+  padding-top: $sp-3;
+  border-top: 1rpx solid $c-line;
   font-size: $fs-tiny;
-  color: $c-muted;
   line-height: $lh-body;
+  color: $c-muted;
   text-align: center;
 }

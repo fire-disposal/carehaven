@@ -1,21 +1,33 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
+// ============================================================================
+// 每日打卡页
+//
+// 结构：TopBar → 正文（心情五选一 / 两个滑杆 / 两个数字输入 / 备注）→ 固定底部 CTA。
+// 底部 CTA 是 fixed 的，正文必须自己留出 > CTA 高度的空档，否则最后一块内容会被遮住。
+// 卡片、按钮、栏目头都来自 components/ui，这里只写本页的节奏与控件外观。
+// ============================================================================
+
+// ---- 页面骨架 ---------------------------------------------------------------
 .ck-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: $c-paper;
+  background: $c-bg;
+  box-sizing: border-box;
 }
 
+// CTA（约 96 + 48 上下内边距 + 一句脚注）+ 安全区：固定留 340rpx 空档
 .ck-body {
   padding-bottom: 340rpx;
 }
 
+// ---- 页首说明 ---------------------------------------------------------------
 .ck-date {
-  font-size: $fs-small;
+  display: block;
+  @include label;
   color: $c-muted;
-  letter-spacing: 0.08em;
 }
 
 .ck-intro {
@@ -26,129 +38,206 @@
   color: $c-ink-2;
 }
 
+// ---- 分区节奏 ---------------------------------------------------------------
+// 每个分区自带栏目头（SectionHeader 已有 24rpx 下边距），这里只管块间距。
 .ck-section {
   margin-top: $sp-6;
 }
 
+// ---- 心情五选一 -------------------------------------------------------------
 .ck-moods {
   display: flex;
   gap: $sp-2;
-  margin-top: $sp-3;
 }
 
 .ck-mood {
+  @include tap;
+  @include pressable(0.96);
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8rpx;
-  padding: 20rpx 0;
+  justify-content: center;
+  gap: $sp-1;
+  padding: $sp-3 0;
   border: 1rpx solid $c-line;
-  border-radius: $radius;
+  border-radius: $radius-sm;
   background: $c-surface;
   color: $c-ink-2;
+  box-sizing: border-box;
+}
 
-  &.picked {
-    border-color: $c-primary;
-    background: $c-primary-light;
-    color: $c-primary-dark;
-  }
+.ck-mood:active {
+  background: $c-surface-dim;
+}
+
+// 选中态：container 填充 + 主色描边 + 加粗文字（与 chip 选中态同一套语言）
+.ck-mood.picked {
+  border-color: $c-primary;
+  background: $c-primary-container;
+  color: $c-on-primary-container;
 }
 
 .ck-mood-label {
   font-size: $fs-tiny;
+  line-height: $lh-tight;
+  text-align: center;
 }
 
+.ck-mood.picked .ck-mood-label {
+  font-weight: 600;
+  color: $c-on-primary-container;
+}
+
+// ---- 滑杆（覆盖 WeUI 内联样式，必须 !important）------------------------------
+// Taro 的 Slider 通过内联 style 写轨道底色/手柄色，类选择器优先级不够。
 .ck-card {
-  margin-top: $sp-3;
+  margin-top: 0;
 }
 
+.ck-card .weui-slider__inner {
+  height: 12rpx !important; // 覆盖 WeUI 的 4px 细轨道，做成粗胶囊
+  border-radius: $radius-pill !important;
+  background: $c-surface-dim !important;
+}
+
+.ck-card .weui-slider__track {
+  height: 12rpx !important;
+  border-radius: $radius-pill !important;
+}
+
+// 手柄：白圈把它从轨道里切出来，形状由 blockSize/blockColor 决定
+.ck-card .weui-slider__handler {
+  box-shadow: 0 0 0 4rpx $c-surface;
+}
+
+// ---- 滑杆行：标签 + 当前值 ---------------------------------------------------
 .ck-slider-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-top: $sp-3;
+  gap: $sp-2;
+}
+
+.ck-slider-head + .taro-slider,
+.ck-slider-head + .weui-slider {
+  margin: $sp-2 0;
 }
 
 .ck-label {
+  display: block;
   font-size: $fs-small;
+  line-height: $lh-tight;
   color: $c-ink-2;
 }
 
 .ck-value {
-  font-family: $font-num;
+  @include num;
   font-size: $fs-h2;
+  font-weight: 600;
+  line-height: $lh-tight;
   color: $c-primary-dark;
 }
 
+// ---- 滑杆两端的刻度文字 ------------------------------------------------------
 .ck-scale {
   display: flex;
   justify-content: space-between;
+  gap: $sp-2;
 }
 
 .ck-scale-text {
   font-size: $fs-tiny;
+  line-height: $lh-tight;
   color: $c-muted;
 }
 
+// 两个滑杆之间：上一条刻度后留白
+.ck-scale + .ck-slider-head {
+  margin-top: $sp-5;
+}
+
+// ---- 两个数字输入（睡眠 / 照护）----------------------------------------------
 .ck-num-row {
   display: flex;
-  gap: $sp-4;
+  gap: $sp-3;
 }
 
 .ck-num-field {
   flex: 1;
+  min-width: 0;
 }
 
+// 外框是 field（20rpx 圆角 + 聚焦光环），内层 input 吃剩余宽度，「小时」固定在右端
 .ck-input-line {
+  @include field;
   display: flex;
-  align-items: baseline;
-  gap: 8rpx;
+  align-items: center;
+  gap: $sp-1;
+  height: 96rpx;
   margin-top: $sp-2;
-  padding-bottom: 8rpx;
-  border-bottom: 1rpx solid $c-line-strong;
+  padding: 0 $sp-3;
+  border-radius: $radius;
+  box-sizing: border-box;
 }
 
 .ck-input {
   flex: 1;
-  height: 72rpx;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
   font-family: $font-num;
-  font-size: $fs-h1;
+  font-variant-numeric: tabular-nums;
+  font-size: $fs-h2;
+  font-weight: 600;
   color: $c-ink;
+  text-align: left;
 }
 
 .ck-unit {
+  flex: none;
   font-size: $fs-tiny;
   color: $c-muted;
 }
 
+// ---- 备注 -------------------------------------------------------------------
 .ck-note {
+  @include textarea-field;
+  display: flex;
   width: 100%;
   height: 200rpx;
   margin-top: $sp-2;
-  padding: $sp-3;
-  border: 1rpx solid $c-line;
-  border-radius: $radius;
-  background: $c-surface;
-  font-size: $fs-body;
+  line-height: $lh-body;
   box-sizing: border-box;
 }
 
+// ---- 错误提示 ---------------------------------------------------------------
 .ck-error {
   display: block;
-  margin-top: $sp-3;
-  font-size: $fs-small;
+  margin-top: $sp-4;
+  padding: $sp-2 $sp-3;
+  border-radius: $radius-sm;
+  background: $c-red-bg;
   color: $c-red;
+  font-size: $fs-small;
+  line-height: $lh-tight;
 }
 
+// ---- 固定底部 CTA ------------------------------------------------------------
+// 底部导航是 tabBar 页才有的；打卡页是非 tab 页，所以 CTA 直接贴底 + 安全区。
 .ck-footer {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: $sp-3 $sp-4 calc(#{$sp-3} + env(safe-area-inset-bottom));
-  background: $c-paper;
+  z-index: 10;
+  padding: $sp-3 $page-gutter calc(#{$sp-3} + env(safe-area-inset-bottom));
+  background: $c-surface;
   border-top: 1rpx solid $c-line;
+  box-sizing: border-box;
 }
 
 .ck-footnote {
@@ -156,9 +245,11 @@
   margin-top: $sp-2;
   text-align: center;
   font-size: $fs-tiny;
+  line-height: $lh-tight;
   color: $c-muted;
 }
 
+// ---- 完成态 -----------------------------------------------------------------
 .ck-done {
   display: flex;
   flex-direction: column;
@@ -170,42 +261,51 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 128rpx;
-  height: 128rpx;
-  border-radius: 50%;
-  border: 1rpx solid $c-primary-light;
-  background: $c-primary-light;
+  flex: none;
+  width: 144rpx;
+  height: 144rpx;
+  border-radius: $radius-pill;
+  background: $c-primary-container;
 }
 
 .ck-done-title {
   margin-top: $sp-4;
   font-family: $font-serif;
-  font-size: $fs-h2;
+  font-size: $fs-h1;
+  font-weight: 600;
+  line-height: $lh-tight;
   color: $c-ink;
+  text-align: center;
 }
 
 .ck-done-desc {
+  display: block;
   margin-top: $sp-2;
   font-size: $fs-small;
   line-height: $lh-body;
-  color: $c-muted;
+  color: $c-ink-2;
   text-align: center;
 }
 
 .ck-done-card {
   width: 100%;
-  margin: $sp-5 0;
+  margin: $sp-5 0 $sp-4;
 }
 
 .ck-done-label {
-  font-size: $fs-label;
-  letter-spacing: 0.1em;
-  color: $c-muted;
+  display: block;
+  @include label;
+  margin-bottom: $sp-1;
 }
 
 .ck-done-tip {
   display: block;
-  margin-top: $sp-2;
   font-size: $fs-body;
+  line-height: $lh-body;
   color: $c-ink-2;
+}
+
+// 两个堆叠按钮之间留白（按钮自身有 96rpx 高，这里只补呼吸位）
+.ck-done .ui-btn + .ui-btn {
+  margin-top: $sp-3;
 }

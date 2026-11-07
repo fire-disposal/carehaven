@@ -34,7 +34,6 @@ export default function BottomNav({ active }: { active: string }) {
               <Icon name={tab.icon} size={38} />
             </View>
             <Text className="nav-label">{tab.label}</Text>
-            <View className="nav-dot" />
           </View>
         )
       })}

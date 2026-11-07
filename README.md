@@ -10,7 +10,7 @@
 
 ## 当前阶段（2026-10）
 
-- **已落地**：打卡/生理→HPS→分层干预→量表/问答/TTS；单机部署与备份；「纸本 · 松烟」视觉基座与组件库。
+- **已落地**：打卡/生理→HPS→分层干预→量表/问答/TTS；单机部署与备份；「木质 · 淡叶」视觉基座与组件库（M3 控件语言）。
 - **下一步**：后端 P0（写入收口、评分快照、配置治理、角色/审计、数据权利）；旧自由文本社群数据清理；HPS 专家赋权与 pilot。
 - **未做**：HPS 校准、AI agent、公开注册、举报处置留痕。
 - 详细路线与依赖：[docs/roadmap.md](docs/roadmap.md)。
@@ -143,7 +143,7 @@ Actions 手动触发   → 自动部署：备份 → 切换 → 健康检查 →
 - [docs/study-design.md](docs/study-design.md) — 实验组设计：分组、盲法、窗口、按臂导出
 - [docs/mobile-sensing.md](docs/mobile-sensing.md) — 手机端数据采集与 Flutter 方案的成本评估
 - [docs/transfer-learning.md](docs/transfer-learning.md) — 迁移学习的落地边界：检索、量表先验、跨队列
-- [docs/design-direction.md](docs/design-direction.md) — 视觉方向「纸本 · 松烟」与组件规则
+- [docs/design-direction.md](docs/design-direction.md) — 视觉方向「木质 · 淡叶」与组件规则
 - [docs/deploy.md](docs/deploy.md) — 单机部署与运维
 - [docs/wechat-onboarding.md](docs/wechat-onboarding.md) — 小程序接入与备案
 - [docs/tts-feasibility.md](docs/tts-feasibility.md) — 小程序集成豆包 TTS 的可行性（已验证）

@@ -1,11 +1,18 @@
+// ============================================================================
+// 混入 —— 全部可复用的控件/排版规则都住在这里
+//
+// 页面 scss 只写布局与本页特有装饰；凡是「第二个页面也会用到」的样式，
+// 先在这里收编，再在被使用处 @include。
+// ============================================================================
+
 @use './tokens.scss' as *;
 
-// 发丝线：统一 1rpx，避免各页 2rpx/3rpx 混用。
+// ---- 分隔线：统一 1rpx -------------------------------------------------------
 @mixin hairline($color: $c-line) {
   border: 1rpx solid $color;
 }
 
-// 小标签 / eyebrow：小字号、加字距，像印刷品的页眉。
+// ---- 小标签 / eyebrow --------------------------------------------------------
 @mixin label {
   font-size: $fs-label;
   line-height: 1.4;
@@ -14,14 +21,14 @@
   color: $c-muted;
 }
 
-// 衬线数字：等宽数字，避免数值跳动。
+// ---- 数字：系统黑体 + 等宽，避免数值跳动 ---------------------------------------
 @mixin num {
   font-family: $font-num;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  font-weight: 600;
 }
 
-// 多行截断
+// ---- 多行截断 ----------------------------------------------------------------
 @mixin clamp($lines) {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -29,8 +36,108 @@
   overflow: hidden;
 }
 
-// 可点区域：至少 88rpx，适配中老年用户。
+// ---- 可点区域：至少 88rpx，适配中老年用户 -------------------------------------
 @mixin tap {
   min-height: 88rpx;
   box-sizing: border-box;
+}
+
+// ---- 按压反馈：轻微缩放；减少动态效果时退回纯变色 ------------------------------
+@mixin pressable($scale: 0.98) {
+  transition:
+    transform $dur-fast $ease,
+    background-color $dur-fast $ease,
+    border-color $dur-fast $ease,
+    color $dur-fast $ease;
+
+  &:active {
+    transform: scale($scale);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+// ---- 卡片：M3 outlined card ---------------------------------------------------
+@mixin card {
+  background: $c-surface;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-lg;
+  box-sizing: border-box;
+}
+
+// ---- 图标底托：统一圆角小色块，不再各页自定 ------------------------------------
+@mixin icon-tile($size: 72rpx, $bg: $c-surface-dim) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: $size;
+  height: $size;
+  border-radius: $radius-sm;
+  background: $bg;
+}
+
+// ---- M3 outlined field：圆角浅底，聚焦主色描边 + 浅叶光环 ----------------------
+// 用在 Taro 组件类上（内部才是原生 input/textarea），聚焦用 :focus-within。
+@mixin field {
+  box-sizing: border-box;
+  background: $c-surface;
+  border: 1rpx solid $c-line;
+  border-radius: $radius;
+  font-size: $fs-body;
+  color: $c-ink;
+  transition:
+    border-color $dur-fast $ease,
+    box-shadow $dur-fast $ease;
+
+  &:focus-within {
+    border-color: $c-primary;
+    box-shadow: 0 0 0 4rpx $c-primary-light;
+  }
+}
+
+// ---- 多行文本域：Taro H5 的原生 textarea 默认 height:100% 会撑出外框 -----------
+// 外层 flex + 内层 flex:1，让它吃剩余高度；同时去掉原生拖拽手柄。
+@mixin textarea-field {
+  @include field;
+  display: flex;
+  overflow: hidden;
+  padding: $sp-3;
+
+  .taro-textarea,
+  textarea {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    border-radius: $radius;
+    background: transparent;
+    resize: none;
+  }
+}
+
+// ---- 选中态 chip / 选项卡 -----------------------------------------------------
+@mixin chip {
+  @include tap;
+  @include pressable(0.97);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 $sp-4;
+  border: 1rpx solid $c-line;
+  border-radius: $radius-sm;
+  background: $c-surface;
+  color: $c-ink-2;
+  font-size: $fs-small;
+
+  &.on,
+  &.picked {
+    border-color: $c-primary;
+    background: $c-primary-container;
+    color: $c-on-primary-container;
+    font-weight: 600;
+  }
 }

@@ -1,70 +1,80 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
+// ============================================================================
+// 关于：品牌位 → 说明区块 → 主要功能 → 安全提示 → 开源组件 → 操作
+// 长文统一 $fs-body / 1.75 行高，区块标题 32rpx 600。
+// ============================================================================
+
+// ---- 品牌位 -----------------------------------------------------------------
 .ab-hero {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: $sp-2 0 $sp-4;
+  align-items: center;
+  padding: $sp-4 0 $sp-5;
+  margin-bottom: $sp-2;
 }
 
-
-
-
+// PageHead 的 brand 变体本身居中，这里只让它占满宽度
+.ab-head {
+  width: 100%;
+  margin-bottom: $sp-2;
+}
 
 .ab-version {
   display: block;
   font-size: $fs-tiny;
+  letter-spacing: 1rpx;
   color: $c-muted;
 }
 
-/* PageHead 在居左的品牌区里要占满宽度，避免说明文字被挤成窄条 */
-.ab-head {
-  width: 100%;
-}
-
+// ---- 内容区块 ----------------------------------------------------------------
 .ab-block {
   margin-bottom: $sp-3;
 }
 
 .ab-title {
   display: block;
-  font-size: $fs-h2;
-  font-weight: 700;
-  color: $c-ink;
   margin-bottom: $sp-2;
+  font-size: $fs-h3;
+  font-weight: 600;
+  line-height: $lh-tight;
+  color: $c-ink;
 }
 
 .ab-text {
   display: block;
+  margin-top: $sp-3;
   font-size: $fs-body;
+  line-height: 1.75;
   color: $c-ink-2;
-  line-height: $lh-body;
-  margin-top: $sp-1;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
 }
 
+// ---- 主要功能 ----------------------------------------------------------------
 .ab-feature {
   display: flex;
   align-items: flex-start;
-  gap: $sp-2;
-  padding: $sp-2 0;
+  gap: $sp-3;
+  padding: $sp-3 0;
   border-bottom: 1rpx solid $c-line;
-}
 
-.ab-feature:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+  &:first-of-type {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
 }
 
 .ab-feature-icon {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: $radius-sm;
-  background: $c-primary-light;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
+  @include icon-tile(64rpx, $c-primary-light);
+  color: $c-primary-dark;
 }
 
 .ab-feature-main {
@@ -76,38 +86,45 @@
   display: block;
   font-size: $fs-body;
   font-weight: 600;
+  line-height: $lh-tight;
   color: $c-ink;
 }
 
 .ab-feature-desc {
   display: block;
-  margin-top: $sp-0;
-  font-size: $fs-tiny;
-  color: $c-muted;
+  margin-top: 2rpx;
+  font-size: $fs-small;
   line-height: $lh-body;
+  color: $c-muted;
 }
 
+// ---- 安全提示：整块低饱和红底 ------------------------------------------------
 .ab-safety {
   background: $c-red-bg;
   border-color: $c-red-line;
+
+  .ab-title {
+    color: $c-red;
+  }
+
+  .ab-text {
+    color: $c-ink;
+  }
 }
 
-.ab-safety .ab-title {
-  color: $c-red;
-}
-
+// ---- 操作与页脚 --------------------------------------------------------------
 .ab-actions {
-  margin-top: $sp-4;
   display: flex;
   flex-direction: column;
   gap: $sp-2;
+  margin-top: $sp-4;
 }
 
 .ab-footer {
   display: block;
-  margin-top: $sp-4;
+  margin-top: $sp-5;
   font-size: $fs-tiny;
-  color: $c-muted;
   line-height: $lh-body;
+  color: $c-muted;
   text-align: center;
 }

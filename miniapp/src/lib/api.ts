@@ -545,6 +545,11 @@ export const api = {
     })
   },
 
+  /** 删除自己的单条打卡：checkins 集合的 deleteRule 限定 user = 自己 */
+  deleteCheckin(id: string): Promise<void> {
+    return remove('checkins', id)
+  },
+
   // 减压方案
   async interventions(level?: Level): Promise<Intervention[]> {
     const res = await list<Intervention>('interventions', {

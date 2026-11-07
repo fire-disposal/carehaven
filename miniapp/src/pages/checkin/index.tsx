@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { Input, Slider, Text, Textarea, View } from '@tarojs/components'
 import Icon from '@/components/Icon'
@@ -7,6 +7,7 @@ import { MOODS } from '@/lib/mood'
 import { backOrSwitchTab } from '@/lib/nav'
 import { THEME } from '@/lib/theme'
 import { api } from '@/lib/api'
+import { getReminderConfig, subscribeReminder, type ReminderConfig } from '@/lib/remind'
 import './index.scss'
 
 
@@ -38,6 +39,32 @@ export default function CheckinPage() {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
+  // 订阅提醒：与量表结果页同一套逻辑，只是 kind 与到期时间不同
+  const [remindConfig, setRemindConfig] = useState<ReminderConfig>({ enabled: false, template_id: '' })
+  const [remindState, setRemindState] = useState<'idle' | 'busy' | 'done'>('idle')
+
+  useEffect(() => {
+    void getReminderConfig().then(setRemindConfig)
+  }, [])
+
+  // 一次性订阅：授权成功才登记；拒绝与失败都给出温和提示
+  async function turnOnReminder() {
+    if (remindState === 'busy') return
+    setRemindState('busy')
+    const outcome = await subscribeReminder('checkin_next_day', remindConfig.template_id)
+    if (outcome.status === 'accept') {
+      setRemindState('done')
+      return
+    }
+    setRemindState('idle')
+    if (outcome.status === 'rejected' && outcome.notice) {
+      void Taro.showToast({ title: outcome.notice, icon: 'none', duration: 2500 })
+    } else if (outcome.status === 'decline' || outcome.status === 'ban') {
+      void Taro.showToast({ title: '未开启提醒', icon: 'none' })
+    } else if (outcome.status === 'unknown') {
+      void Taro.showToast({ title: '授权成功，但提醒登记失败，请重试', icon: 'none', duration: 2500 })
+    }
+  }
 
   async function submit() {
     if (saving) return
@@ -97,6 +124,11 @@ export default function CheckinPage() {
           <Button variant="secondary" block onClick={() => void Taro.switchTab({ url: '/pages/index/index' })}>
             返回首页
           </Button>
+          {remindConfig.enabled ? (
+            <Button variant="secondary" block disabled={remindState === 'done'} onClick={turnOnReminder}>
+              {remindState === 'done' ? '已开启，明天提醒你' : '明天提醒我打卡'}
+            </Button>
+          ) : null}
         </View>
       ) : (
         <>
@@ -137,7 +169,7 @@ export default function CheckinPage() {
                   value={anxiety}
                   activeColor={THEME.primary}
                   backgroundColor={THEME.line}
-                  blockColor={THEME.surface}
+                  blockColor={THEME.primary}
                   blockSize={24}
                   ariaLabel={`焦虑程度，当前 ${anxiety} 分，满分 10 分`}
                   onChanging={(e) => setAnxiety(e.detail.value)}
@@ -159,7 +191,7 @@ export default function CheckinPage() {
                   value={fatigue}
                   activeColor={THEME.primary}
                   backgroundColor={THEME.line}
-                  blockColor={THEME.surface}
+                  blockColor={THEME.primary}
                   blockSize={24}
                   ariaLabel={`疲惫程度，当前 ${fatigue} 分，满分 10 分`}
                   onChanging={(e) => setFatigue(e.detail.value)}

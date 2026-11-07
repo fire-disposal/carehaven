@@ -139,7 +139,8 @@ export default function GuidePage() {
   return (
     <View className="gd-page">
       <SceneBackdrop scene={script.scene} />
-      <TopBar title={script.title} backLabel="退出" onBack={() => void backOrSwitchTab('/pages/manage/index')} />
+      {/* 开始前大标题已在下方 hero；顶栏只在进行中/结束后承担「当前课程」提示 */}
+      <TopBar title={started ? script.title : ''} backLabel="退出" onBack={() => void backOrSwitchTab('/pages/manage/index')} />
 
       {!started ? (
         <View className="gd-body gd-start">
@@ -210,8 +211,8 @@ export default function GuidePage() {
             <Button variant="secondary" onClick={togglePause} ariaLabel={session.paused ? '继续' : '暂停'}>
               {session.paused ? '继续' : '暂停'}
             </Button>
-            <Button variant="ghost" onClick={toggleVoice} ariaLabel={voiceOn ? '关闭语音' : '打开语音'}>
-              {voiceOn ? '语音开' : '语音关'}
+            <Button variant="ghost" onClick={toggleVoice} ariaLabel={voiceOn ? '语音引导已开启，点击关闭' : '语音引导已关闭，点击开启'}>
+              {voiceOn ? '语音 · 开' : '语音 · 关'}
             </Button>
             <Button variant="ghost" onClick={() => {
               narrator.current.stop()

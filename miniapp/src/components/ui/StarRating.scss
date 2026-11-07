@@ -8,20 +8,21 @@
 
 .ui-stars__item {
   @include tap;
+  @include pressable(0.96);
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2rpx;
-  padding: $sp-1 0;
+  gap: 4rpx;
+  padding: $sp-2 0;
   border: 1rpx solid $c-line;
   border-radius: $radius-sm;
   background: $c-surface;
 
   &.is-on {
-    border-color: $c-yellow-line;
-    background: $c-yellow-bg;
+    border-color: $c-primary;
+    background: $c-primary-container;
   }
 }
 
@@ -31,6 +32,6 @@
 }
 
 .ui-stars__item.is-on .ui-stars__label {
-  color: $c-yellow;
+  color: $c-on-primary-container;
   font-weight: 600;
 }

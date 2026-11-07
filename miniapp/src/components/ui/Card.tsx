@@ -11,7 +11,7 @@ interface CardProps {
   className?: string
 }
 
-/** 纸本容器：默认 1rpx 发丝线，不投影；tint 只用于极少数强调区。 */
+/** M3 outlined 卡片：24rpx 圆角 + 1rpx 线，不投影；tint 只用于极少数强调区。 */
 export default function Card({ children, tone = 'plain', flush = false, className = '' }: CardProps) {
   const classes = [
     'ui-card',

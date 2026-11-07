@@ -1,137 +1,171 @@
 @use '@/styles/tokens.scss' as *;
 @use '@/styles/mixins.scss' as *;
 
+// ============================================================================
+// 意见反馈页
+//
+// 结构：TopBar → 说明 → 类型 chip 组 → 正文文本域 + 字数 → 联系方式 → 协议 → 错误 → 提交。
+// 提交成功后整页换成一张「已收到」卡片。
+// chip / 文本域 / 输入框全部走 mixins，页面只负责尺寸与间距。
+// ============================================================================
+
+// ---- 页首说明 ---------------------------------------------------------------
 .fb-intro {
   display: block;
   font-size: $fs-body;
-  color: $c-ink-2;
   line-height: $lh-body;
-  margin-bottom: $sp-4;
+  color: $c-ink-2;
 }
 
+// ---- 字段小标题 -------------------------------------------------------------
+// 说明文字之后的第一块小标题只需 $sp-4 的上边距，后续字段靠自身 margin 撑开。
 .fb-label {
   display: block;
-  margin: $sp-3 0 $sp-2;
-  font-size: $fs-body;
+  margin: $sp-5 0 $sp-2;
+  font-size: $fs-small;
   font-weight: 600;
+  letter-spacing: 0.5rpx;
+  line-height: $lh-tight;
   color: $c-ink;
 }
 
+.fb-intro + .fb-label {
+  margin-top: $sp-4;
+}
+
+// ---- 反馈类型 chip 组 -------------------------------------------------------
 .fb-chips {
   display: flex;
   flex-wrap: wrap;
   gap: $sp-2;
 }
 
+// chip 的外形与选中态由 @include chip 给出（16rpx 圆角 + container 填充）
 .fb-chip {
-  @include tap;
-  min-width: 168rpx;
-  padding: 0 $sp-3;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  background: $c-surface;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: $c-ink-2;
-  font-size: $fs-small;
+  @include chip;
+  min-width: 160rpx;
 }
 
-.fb-chip.on {
-  border-color: $c-primary;
-  background: $c-primary-light;
-  color: $c-primary-dark;
-  font-weight: 600;
-}
-
+// ---- 具体内容文本域 ---------------------------------------------------------
+// 固定 280rpx 高；内层原生 textarea 由 textarea-field 拉满剩余高度。
 .fb-textarea {
-  box-sizing: border-box;
+  @include textarea-field;
   width: 100%;
   height: 280rpx;
-  padding: $sp-3;
-  background: $c-surface;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
-  font-size: $fs-body;
   line-height: $lh-body;
-  color: $c-ink;
+  box-sizing: border-box;
 }
 
-.fb-textarea textarea {
-  resize: none;
-}
-
+// ---- 字数统计 ---------------------------------------------------------------
+// 独立成块，排在文本域下方的正常文档流里（不在绝对定位层里），
+// 所以永远不会被文本域覆盖。
 .fb-counter {
   display: block;
   margin-top: $sp-1;
   text-align: right;
   font-size: $fs-tiny;
+  line-height: $lh-tight;
   color: $c-muted;
 }
 
+// ---- 联系方式输入 -----------------------------------------------------------
 .fb-input {
-  box-sizing: border-box;
+  @include field;
+  display: flex;
+  align-items: center;
   width: 100%;
   height: 96rpx;
-  padding: 0 $sp-3;
-  background: $c-surface;
-  border: 1rpx solid $c-line;
-  border-radius: $radius-sm;
+  padding: 0 $sp-4;
+  border-radius: $radius;
   font-size: $fs-body;
   color: $c-ink;
+  box-sizing: border-box;
 }
 
+// ---- 协议行 -----------------------------------------------------------------
 .fb-legal {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: $sp-0;
   margin-top: $sp-3;
   font-size: $fs-tiny;
+  line-height: $lh-body;
   color: $c-muted;
 }
 
+// 行内链接：只给文字宽度 + 上下留白撑到 88rpx 的可点高度，
+// 不用 inline-flex 拉伸行高，避免整行被撑成两块。
 .fb-link {
-  @include tap;
-  display: inline-flex;
-  align-items: center;
-  padding: 0 $sp-0;
+  display: inline-block;
+  padding: $sp-2 0;
+  margin: (-$sp-2) 0;
+  font-size: $fs-tiny;
+  line-height: $lh-tight;
   color: $c-primary-dark;
   text-decoration: underline;
+  text-underline-offset: 4rpx;
+  transition: color $dur-fast $ease;
 }
 
+.fb-link:active {
+  color: $c-primary;
+}
+
+// ---- 错误块 ----------------------------------------------------------------
+// StateBlock(compact) 自己带 $sp-4 内边距；这里只控制它与提交按钮的间距。
+.fb-legal + .ui-state {
+  margin-top: $sp-4;
+}
+
+// ---- 提交按钮（外形由 ui Button 提供）--------------------------------------
 .fb-submit {
   margin-top: $sp-4;
 }
 
+.fb-legal + .fb-submit {
+  margin-top: $sp-5;
+}
+
+// ---- 提交成功卡 ------------------------------------------------------------
 .fb-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-top: $sp-4;
   text-align: center;
 }
 
 .fb-done-icon {
   display: flex;
+  align-items: center;
   justify-content: center;
+  flex: none;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: $radius-pill;
+  background: $c-green-bg;
 }
 
 .fb-done-title {
   display: block;
-  margin-top: $sp-2;
+  margin-top: $sp-3;
+  font-family: $font-serif;
   font-size: $fs-h1;
-  font-weight: 700;
-  color: $c-ink;
+  font-weight: 600;
   line-height: $lh-tight;
+  color: $c-ink;
 }
 
 .fb-done-text {
   display: block;
   margin-top: $sp-2;
-  font-size: $fs-body;
-  color: $c-ink-2;
+  font-size: $fs-small;
   line-height: $lh-body;
+  color: $c-ink-2;
   text-align: left;
 }
 
 .fb-done-btn {
-  margin-top: $sp-4;
+  width: 100%;
+  margin-top: $sp-5;
 }

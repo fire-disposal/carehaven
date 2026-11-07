@@ -15,7 +15,7 @@ interface ButtonProps {
 }
 
 /**
- * 纸本按钮：近直角、发丝线、靠字重与底色区分层级。
+ * M3 胶囊按钮：filled / tonal / outlined / danger 四档。
  * 所有可点区域至少 88rpx，符合中老年用户的触控尺寸。
  */
 export default function Button({
