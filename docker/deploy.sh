@@ -10,6 +10,8 @@
 #   - 失败不静默：健康检查不过就回滚到上一个镜像并返回非零
 #   - 备份走 PocketBase 管理 API（v0.40 没有 backup 子命令），需要 .env 里的超级用户口令；
 #     未配置且 REQUIRE_BACKUP=1 时直接失败，不带着「没备份」的风险上线
+#   - 导出到宿主机的备份必须写入宿主 canonical 账本（/opt/server-ops/backup/cli.py 读它），
+#     否则每日审计把"账本没有的产物"判成孤儿；账本不可用时 fail-open，不阻断部署
 # ---------------------------------------------------------------------------
 set -euo pipefail
 
@@ -69,6 +71,19 @@ if [ "$HAD_RUNNING" = "1" ] && [ -f "$ENV_FILE" ]; then
       mkdir -p "$APP_DIR/backups"
       if docker cp "$CONTAINER:/pb/pb_data/backups/$backup_name" "$APP_DIR/backups/$backup_name" 2>/dev/null; then
         log "已导出到 $APP_DIR/backups/$backup_name"
+        # 记账：宿主侧产物必须进 canonical 账本（/opt/server-ops），否则
+        # `cli.py audit` 的"未记账产物"扫描会把它判成孤儿（2026-11-03/04 共 19 份误报）。
+        # lib.sh 是 fail-open：账本缺失/不可写只告警，绝不影响部署。
+        BK_LIB=/opt/server-ops/backup/lib.sh
+        if [ -r "$BK_LIB" ]; then
+          # shellcheck disable=SC1090
+          . "$BK_LIB"
+          bk_begin carehaven-data backup pre-deploy carehaven-deploy
+          bk_artifact "$APP_DIR/backups/$backup_name"
+          bk_end 0
+        else
+          warn "备份账本不可用（$BK_LIB 缺失），本次部署前备份未记账"
+        fi
       else
         [ "$REQUIRE_BACKUP" = "1" ] && die "备份导出宿主机失败（$backup_name）"
         warn "备份导出宿主机失败，备份仍在容器卷内"
