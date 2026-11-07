@@ -18,8 +18,8 @@
 ./pocketbase serve --http=127.0.0.1:8196 --dir /tmp/pb-dev \
   --migrationsDir=pb_migrations --hooksDir=pb_hooks
 
-# 2. 造样本
-bun research/seed.mjs --base http://127.0.0.1:8196 --users 3 --days 5
+# 2. 造样本（date 由服务端取当前时间，不能造历史日期；--rounds 是同一天的多轮打卡）
+bun research/seed.mjs --base http://127.0.0.1:8196 --users 3 --rounds 2
 
 # 3. 回放：分数必须能由数据复算
 bun research/replay.mjs --db /tmp/pb-dev/data.db --verbose

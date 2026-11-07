@@ -5,17 +5,20 @@
 // 因此会真实触发评分重算与事件落库，不会往生产库塞 demo 账号（脚本只在本地跑）。
 //
 // 用法：
-//   bun research/seed.mjs --base http://127.0.0.1:8196 --users 3 --days 5
+//   bun research/seed.mjs --base http://127.0.0.1:8196 --users 3 --rounds 2
 //
 // 生成账号：seed1@example.com … seedN@example.com / 密码 SeedDemo123
+//
+// 注意：打卡与生理数据都走 /api/zz/*，date 由服务端取当前时间，不能造历史日期。
+// 「-days」已移除：一天多轮打卡用 --rounds 表达，历史数据靠真实时间积累。
 
 function parseArgs(argv) {
-  const args = { base: 'http://127.0.0.1:8090', users: 2, days: 3 }
+  const args = { base: 'http://127.0.0.1:8090', users: 2, rounds: 2 }
   for (let i = 0; i < argv.length; i += 1) {
     const k = argv[i]
     if (k === '--base') args.base = argv[++i]
     else if (k === '--users') args.users = Number(argv[++i])
-    else if (k === '--days') args.days = Number(argv[++i])
+    else if (k === '--rounds') args.rounds = Number(argv[++i])
   }
   return args
 }
@@ -23,8 +26,8 @@ function parseArgs(argv) {
 const args = parseArgs(process.argv.slice(2))
 const PASSWORD = 'SeedDemo123'
 
-function pbDate(date) {
-  return date.toISOString().replace('T', ' ')
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 async function post(path, body, token) {
@@ -77,49 +80,47 @@ for (let i = 1; i <= args.users; i += 1) {
   const user = await ensureUser(i)
   await post('/api/zz/research/consent', { granted: true }, user.token)
 
-  for (let d = args.days - 1; d >= 0; d -= 1) {
-    const day = new Date(Date.now() - d * 86400000)
-    const mood = MOODS[d % MOODS.length]
-    const anxiety = ANXIETY[(d + i) % ANXIETY.length]
-    const fatigue = FATIGUE[(d + i) % FATIGUE.length]
+  for (let round = 0; round < args.rounds; round += 1) {
+    const mood = MOODS[round % MOODS.length]
+    const anxiety = ANXIETY[(round + i) % ANXIETY.length]
+    const fatigue = FATIGUE[(round + i) % FATIGUE.length]
     try {
       await post(
-        '/api/collections/checkins/records',
+        '/api/zz/checkins',
         {
-          user: user.id,
-          date: pbDate(day),
-          period: d % 2 === 0 ? 'morning' : 'evening',
+          period: round % 2 === 0 ? 'morning' : 'evening',
           mood,
           anxiety,
           fatigue,
           sleep_hours: 5 + (i % 3),
-          care_hours: 6 + (d % 5),
+          care_hours: 6 + (round % 5),
         },
         user.token
       )
     } catch (err) {
-      console.warn(`  checkin ${i}/${d}: ${err.message}`)
+      console.warn(`  checkin ${i}/${round}: ${err.message}`)
     }
 
-    // 每三天补一条手动生理数据，制造「有采集 / 缺采集」混合
-    if (d % 3 === 0) {
+    // 与事件错开几十毫秒，避免数据与事件同毫秒写入被回放归为 timing
+    await sleep(80)
+
+    // 首轮补一条手动生理数据，制造「有采集 / 缺采集」混合
+    if (round === 0) {
       try {
         await post(
-          '/api/collections/physio_records/records',
+          '/api/zz/physio/manual',
           {
-            user: user.id,
-            date: pbDate(day),
             hrv: 30 + i * 4,
-            gsr: 4 + (d % 3),
+            gsr: 4 + (round % 3),
             sleep_quality: 55 + i * 5,
-            steps: 3000 + d * 700,
-            source: 'manual',
+            steps: 3000 + round * 700,
           },
           user.token
         )
       } catch (err) {
-        console.warn(`  physio ${i}/${d}: ${err.message}`)
+        console.warn(`  physio ${i}/${round}: ${err.message}`)
       }
+      await sleep(80)
     }
   }
 
@@ -137,7 +138,7 @@ for (let i = 1; i <= args.users; i += 1) {
     console.warn(`  whisper ${i}: ${err.message}`)
   }
 
-  console.log(`[seed] ${user.email} 完成（${args.days} 天打卡）`)
+  console.log(`[seed] ${user.email} 完成（${args.rounds} 轮打卡）`)
 }
 
 console.log('')
